@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
+
+export const runtime = 'edge';
 import { doc, setDoc } from 'firebase/firestore';
 
 export async function GET() {
