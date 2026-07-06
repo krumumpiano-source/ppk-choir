@@ -34,7 +34,7 @@ export async function loginStudent(studentId: string): Promise<{ success: boolea
   }
 }
 
-export async function loginAdminWithFirebase(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+export async function loginAdminWithFirebase(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
     // 1. ตรวจสอบรหัสผ่านกับ Firestore โดยตรง (แทน Firebase Auth ที่ยังมีปัญหา)
     const adminDoc = await getDoc(doc(db, 'users', email));

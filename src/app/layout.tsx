@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
 
-const inter = Inter({ subsets: ["latin", "thai"], variable: "--font-body" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
+const notoSansThai = Noto_Sans_Thai({ subsets: ["thai"], variable: "--font-thai" });
 
 export const metadata: Metadata = {
   title: "PPK CHOIR | ชุมนุมสานฝันด้วยเส้นเสียง",
@@ -18,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th">
-      <body className={inter.variable}>
+      <body className={`${inter.variable} ${notoSansThai.variable}`}>
         <AuthProvider>
           <main className="app-container">
             {children}
