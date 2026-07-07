@@ -1,10 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '@/types/user'; // Ensure paths match the actual project setup
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { User } from '@/types/user';
 
 interface AuthContextType {
   user: User | null;
@@ -27,74 +24,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. ตรวจสอบ State จาก Firebase Auth (สำหรับ Admin)
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        // ดึงข้อมูล Role จาก Firestore `users` collection โดยใช้ uid
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setUser({
-              id: firebaseUser.uid,
-              name: userData.name || 'Admin',
-              voiceType: userData.voiceType || 'All',
-              role: userData.role || 'admin',
-              room: userData.room || '',
-              createdAt: userData.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-            });
-          } else {
-            // ถ้าไม่มีข้อมูลใน Firestore, จำลองเป็น admin เริ่มต้น (กรณีเพิ่งสมัครด้วย Firebase Auth)
-            setUser({
-              id: firebaseUser.uid,
-              name: 'Admin User',
-              voiceType: 'All',
-              role: 'admin',
-              room: '',
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+    async function fetchSession() {
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          setUser(data.user || null);
+        } else {
           setUser(null);
         }
-        setLoading(false);
-      } else {
-        // 2. ถ้าไม่มี Firebase Auth Session ให้เช็ค LocalStorage
-        const localAdmin = localStorage.getItem('admin_session');
-        const localStudent = localStorage.getItem('student_session');
-        
-        if (localAdmin) {
-          try {
-            setUser(JSON.parse(localAdmin));
-          } catch (e) {
-            setUser(null);
-          }
-        } else if (localStudent) {
-          try {
-            setUser(JSON.parse(localStudent));
-          } catch (e) {
-            setUser(null);
-          }
-        } else {
-           setUser(null);
-        }
+      } catch (error) {
+        setUser(null);
+      } finally {
         setLoading(false);
       }
-    });
+    }
 
-    return () => unsubscribe();
+    fetchSession();
   }, []);
 
   const logout = async () => {
     try {
-      await auth.signOut();
+      await fetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
-      console.error("Firebase signout error:", error);
+      console.error("Logout error:", error);
     }
-    localStorage.removeItem('student_session');
     setUser(null);
-    // แจ้งลบ Cookie (สำหรับ Admin Server Action ถ้ามีการใช้)
-    fetch('/admin/actions/logout', { method: 'POST' }).catch(() => {});
+    window.location.href = '/login';
   };
 
   return (

@@ -1,53 +1,53 @@
-import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
-
-// Support both legacy VoiceTypes and detailed detailed Choir sections
-export type VoiceType = 
-  | 'Soprano 1' | 'Soprano 2' | 'Alto 1' | 'Alto 2' 
-  | 'Tenor 1' | 'Tenor 2' | 'Baritone' | 'Bass' 
-  | 'Soprano' | 'Alto' | 'Tenor'; // Legacy for backward compatibility
+export type VoiceType = 'Soprano' | 'Alto' | 'Tenor' | 'Bass' | 'All' | 'Soprano 1' | 'Soprano 2' | 'Alto 1' | 'Alto 2' | 'Tenor 1' | 'Tenor 2' | 'Baritone';
 
 export interface LibraryItem {
-  id?: string;
-  voiceType: VoiceType;
+  id: string;
   title: string;
-  fileUrl: string;
-  uploadedAt?: any;
+  voiceType: VoiceType;
+  fileUrl: string; // Used for Google Drive link
+  uploadedAt: string;
 }
 
-export async function saveLibraryItemLink(fileUrl: string, voiceType: VoiceType, title: string) {
+export async function getLibraryItems(voiceType: VoiceType = 'All'): Promise<LibraryItem[]> {
   try {
-    const docRef = await addDoc(collection(db, 'library'), {
-      voiceType,
-      title,
-      fileUrl,
-      uploadedAt: serverTimestamp()
-    });
-
-    return { success: true, id: docRef.id };
+    const res = await fetch(`/api/library?voiceType=${encodeURIComponent(voiceType)}`);
+    if (!res.ok) throw new Error('Failed to fetch library items');
+    const data = (await res.json()) as any;
+    return data.items;
   } catch (error) {
-    console.error('Error saving library item link:', error);
-    return { success: false, error };
+    console.error("Error fetching library items:", error);
+    return [];
   }
 }
 
-export async function getLibraryItems(voiceType: string) {
+export async function saveLibraryItemLink(title: string, voiceType: VoiceType, fileUrl: string): Promise<{ success: boolean; error?: string }> {
   try {
-    let q;
-    if (voiceType === 'All') {
-      q = query(collection(db, 'library'));
-    } else {
-      q = query(
-        collection(db, 'library'),
-        where('voiceType', '==', voiceType)
-      );
+    const res = await fetch('/api/library', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, voiceType, fileUrl })
+    });
+    const data = (await res.json()) as any;
+    if (!res.ok || !data.success) {
+      return { success: false, error: data.error || 'Failed to save item' };
     }
-    const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as LibraryItem[];
-    return docs.sort((a, b) => (b.uploadedAt?.toMillis?.() || 0) - (a.uploadedAt?.toMillis?.() || 0));
-  } catch (error) {
-    console.error('Error getting library items:', error);
-    return [];
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error saving library item:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteLibraryItem(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/library/${id}`, { method: 'DELETE' });
+    const data = (await res.json()) as any;
+    if (!res.ok || !data.success) {
+      return { success: false, error: data.error || 'Failed to delete item' };
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting library item:", error);
+    return { success: false, error: error.message };
   }
 }

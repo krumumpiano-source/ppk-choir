@@ -15,8 +15,8 @@
   "dependencies": {
     "@cloudflare/next-on-pages": "^1.13.16",
     "@types/leaflet": "^1.9.21",
-    "firebase": "^12.15.0",
     "html2canvas": "^1.4.1",
+    "jose": "^6.2.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.22.0",
     "next": "^16.2.10",
@@ -26,6 +26,7 @@
     "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260707.1",
     "@eslint/eslintrc": "^3.3.5",
     "@google-cloud/storage": "^7.21.0",
     "@types/node": "^20",

@@ -1,0 +1,9 @@
+name = "ppk-choir"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ppk-choir-db"
+database_id = "5740a275-1cf3-41db-9bef-03e1fc11e34c"

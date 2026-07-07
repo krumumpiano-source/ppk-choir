@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, UserPlus, User, Loader2, Camera } from 'lucide-react';
+import { ArrowLeft, UserPlus, User, Loader2, Link as LinkIcon } from 'lucide-react';
 import { createUser } from '@/lib/services/users';
 import { VoiceType } from '@/lib/services/library';
 import { toast } from 'react-hot-toast';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,56 +15,27 @@ export default function RegisterPage() {
   const [studentName, setStudentName] = useState('');
   const [room, setRoom] = useState('');
   const [voiceType, setVoiceType] = useState<VoiceType>('Soprano 1');
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setPhoto(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentId.trim() || !studentName.trim() || !room.trim() || !photo) {
-      toast.error('กรุณากรอกข้อมูลและถ่ายรูปให้ครบถ้วน');
+    if (!studentId.trim() || !studentName.trim() || !room.trim()) {
+      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Upload photo first
-      const formData = new FormData();
-      formData.append('file', photo);
-      formData.append('path', `profiles/${studentId.trim()}-${Date.now()}`);
-
-      const uploadRes = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const { url: photoUrl } = await uploadRes.json();
-
       const res = await createUser({
         id: studentId.trim(),
         name: studentName.trim(),
         voiceType,
         role: 'student',
         status: 'pending',
-        photoUrl,
+        photoUrl: photoUrl.trim() || undefined,
         room: room.trim()
       });
 
@@ -79,7 +48,7 @@ export default function RegisterPage() {
         toast.error(res.error || 'เกิดข้อผิดพลาดในการลงทะเบียน');
       }
     } catch (error: any) {
-      toast.error('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ หรือระบบขัดข้อง');
+      toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อ');
       console.error(error);
     } finally {
       setLoading(false);
@@ -105,31 +74,21 @@ export default function RegisterPage() {
         
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <label 
-              style={{ 
-                width: '120px', height: '120px', borderRadius: '50%', 
-                background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', 
-                justifyContent: 'center', cursor: 'pointer', overflow: 'hidden',
-                border: '2px dashed var(--accent-primary)', position: 'relative'
-              }}
-            >
-              {photoPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoPreview} alt="Profile preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <Camera size={32} color="var(--accent-primary)" />
-              )}
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="photoUrl">ลิ้งค์รูปโปรไฟล์ (Google Drive)</label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <LinkIcon size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
               <input 
-                type="file" 
-                accept="image/*" 
-                capture="user" 
-                onChange={handlePhotoChange} 
-                style={{ display: 'none' }} 
+                type="url" 
+                id="photoUrl" 
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                className="input-field" 
+                placeholder="วางลิ้งค์รูปภาพจาก Google Drive"
+                style={{ width: '100%', paddingLeft: '2.8rem' }}
                 disabled={loading}
               />
-            </label>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>แตะเพื่อถ่ายรูปโปรไฟล์</span>
+            </div>
           </div>
           
           <div className="input-group" style={{ margin: 0 }}>

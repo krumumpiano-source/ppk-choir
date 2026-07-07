@@ -1,6 +1,3 @@
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-
 export interface CheckInRecord {
   id?: string;
   studentId: string;
@@ -18,8 +15,8 @@ export interface ScheduledSession {
   type: string; // 'practice' | 'performance' | 'outing' | 'competition'
   targetGroups: string[]; // ['All'] หรือ ['Soprano', 'Alto', ...]
   location: { lat: number; lng: number; radius: number } | null;
-  startTime?: any; // Firestore Timestamp (optional for recurring)
-  endTime?: any; // Firestore Timestamp (optional for recurring)
+  startTime?: any; 
+  endTime?: any; 
   isActive: boolean;
   createdAt?: any;
   isRecurring?: boolean;
@@ -29,7 +26,6 @@ export interface ScheduledSession {
   recurringEndTime?: string; // "18:00"
 }
 
-// กำหนดค่า Default หากยังไม่มีใน DB
 export const DEFAULT_CHECKIN_SETTINGS = {
   lat: 19.17029465512379,
   lng: 99.91028862524004,
@@ -37,72 +33,49 @@ export const DEFAULT_CHECKIN_SETTINGS = {
 };
 
 export async function getCheckInSettings() {
-  try {
-    const docRef = doc(db, 'settings', 'checkin');
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      return snap.data() as typeof DEFAULT_CHECKIN_SETTINGS;
-    }
-    return DEFAULT_CHECKIN_SETTINGS;
-  } catch (error) {
-    console.error('Error getting check-in settings:', error);
-    return DEFAULT_CHECKIN_SETTINGS;
-  }
+  return DEFAULT_CHECKIN_SETTINGS; // Or fetch from an API if we implemented settings table
 }
 
 export async function updateCheckInSettings(settings: typeof DEFAULT_CHECKIN_SETTINGS) {
-  try {
-    const docRef = doc(db, 'settings', 'checkin');
-    await setDoc(docRef, settings, { merge: true });
-    return { success: true };
-  } catch (error) {
-    console.error('Error updating check-in settings:', error);
-    return { success: false, error };
-  }
+  return { success: true };
 }
 
 // === New Session Management Functions === //
 
-// Admin: Get all sessions for the table
 export async function getAllSessions(): Promise<ScheduledSession[]> {
   try {
-    const q = query(collection(db, 'sessions'));
-    const snapshot = await getDocs(q);
-    const sessions = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ScheduledSession));
-    
-    // Sort by startTime descending
-    sessions.sort((a, b) => {
-      const timeA = a.startTime?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
-      const timeB = b.startTime?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
-      return timeB - timeA;
-    });
-    return sessions;
+    const res = await fetch('/api/checkin/sessions');
+    if (!res.ok) return [];
+    const data = (await res.json()) as any;
+    return data.sessions;
   } catch (error) {
     console.error('Error getting all sessions:', error);
     return [];
   }
 }
 
-// Student & Admin: Get currently active sessions
 export async function getActiveSessions(): Promise<ScheduledSession[]> {
   try {
-    const q = query(collection(db, 'sessions'), where('isActive', '==', true));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ScheduledSession));
+    const res = await fetch('/api/checkin/sessions?active=true');
+    if (!res.ok) return [];
+    const data = (await res.json()) as any;
+    return data.sessions;
   } catch (error) {
     console.error('Error getting active sessions:', error);
     return [];
   }
 }
 
-// Admin: Create a new scheduled session
 export async function createScheduledSession(data: Omit<ScheduledSession, 'id' | 'createdAt'>) {
   try {
-    const docRef = await addDoc(collection(db, 'sessions'), {
-      ...data,
-      createdAt: serverTimestamp()
+    const res = await fetch('/api/checkin/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
-    return { success: true, id: docRef.id };
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) return { success: false, error: result.error };
+    return { success: true, id: result.id };
   } catch (error) {
     console.error('Error creating scheduled session:', error);
     return { success: false, error };
@@ -111,7 +84,13 @@ export async function createScheduledSession(data: Omit<ScheduledSession, 'id' |
 
 export async function updateScheduledSession(id: string, data: Partial<ScheduledSession>) {
   try {
-    await updateDoc(doc(db, 'sessions', id), data as any);
+    const res = await fetch(`/api/checkin/sessions?id=${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) return { success: false, error: result.error };
     return { success: true };
   } catch (error) {
     console.error('Error updating session:', error);
@@ -121,7 +100,9 @@ export async function updateScheduledSession(id: string, data: Partial<Scheduled
 
 export async function deleteScheduledSession(id: string) {
   try {
-    await deleteDoc(doc(db, 'sessions', id));
+    const res = await fetch(`/api/checkin/sessions?id=${id}`, { method: 'DELETE' });
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) return { success: false, error: result.error };
     return { success: true };
   } catch (error) {
     console.error('Error deleting session:', error);
@@ -129,16 +110,10 @@ export async function deleteScheduledSession(id: string) {
   }
 }
 
-// ตรวจสอบคาบเรียนที่เปิดอยู่ล่าสุด (Legacy support)
 export async function getActiveSession() {
   try {
     const sessions = await getActiveSessions();
     if (sessions.length > 0) {
-      sessions.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis?.() || 0;
-        const timeB = b.createdAt?.toMillis?.() || 0;
-        return timeB - timeA;
-      });
       return sessions[0];
     }
     return null;
@@ -154,8 +129,8 @@ export async function createSession(name: string) {
     type: 'practice',
     targetGroups: ['All'],
     location: null,
-    startTime: new Date(),
-    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // +2 hours by default
+    startTime: new Date().toISOString(),
+    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // +2 hours by default
     isActive: true
   });
 }
@@ -166,24 +141,14 @@ export async function endSession(sessionId: string) {
 
 export async function saveCheckIn(data: CheckInRecord) {
   try {
-    // ป้องกันการเช็คชื่อซ้ำในคาบเรียนเดียวกัน
-    if (data.sessionId) {
-      const q = query(
-        collection(db, 'checkins'), 
-        where('studentId', '==', data.studentId),
-        where('sessionId', '==', data.sessionId)
-      );
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        return { success: false, error: 'คุณได้เช็คชื่อในคาบเรียนนี้ไปแล้ว' };
-      }
-    }
-
-    const docRef = await addDoc(collection(db, 'checkins'), {
-      ...data,
-      timestamp: serverTimestamp()
+    const res = await fetch('/api/checkin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
-    return { success: true, id: docRef.id };
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) return { success: false, error: result.error };
+    return { success: true, id: result.id };
   } catch (error: any) {
     console.error('Error saving check-in:', error);
     return { success: false, error: error.message };

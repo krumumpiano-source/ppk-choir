@@ -1,6 +1,3 @@
-import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
 import { VoiceType } from './library';
 
 export interface RubricScore {
@@ -24,14 +21,16 @@ export interface PracticeRecord {
 
 export async function submitPracticeLink(driveUrl: string, data: Omit<PracticeRecord, 'id' | 'timestamp' | 'audioUrl' | 'rubricScore' | 'likes'>) {
   try {
-    const docRef = await addDoc(collection(db, 'practices'), {
-      ...data,
-      audioUrl: driveUrl,
-      likes: 0,
-      timestamp: serverTimestamp()
+    const res = await fetch('/api/practice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, audioUrl: driveUrl })
     });
-
-    return { success: true, id: docRef.id };
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) {
+      return { success: false, error: result.error || 'Failed to submit' };
+    }
+    return { success: true, id: result.id };
   } catch (error) {
     console.error('Error submitting practice record:', error);
     return { success: false, error };
@@ -40,10 +39,14 @@ export async function submitPracticeLink(driveUrl: string, data: Omit<PracticeRe
 
 export async function getStudentPractices(studentId: string) {
   try {
-    const q = query(collection(db, 'practices'), where('studentId', '==', studentId));
-    const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PracticeRecord[];
-    return docs.sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+    const res = await fetch(`/api/practice?studentId=${studentId}`);
+    if (!res.ok) throw new Error('Failed to fetch');
+    const data = (await res.json()) as any;
+    // Parse rubricScore if exists (since SQLite stores JSON as text)
+    return data.practices.map((p: any) => ({
+      ...p,
+      rubricScore: p.rubricScore ? JSON.parse(p.rubricScore) : undefined
+    })) as PracticeRecord[];
   } catch (error) {
     console.error('Error getting student practices:', error);
     return [];
@@ -52,10 +55,18 @@ export async function getStudentPractices(studentId: string) {
 
 export async function getPeerPractices(voiceType: VoiceType) {
   try {
-    const q = query(collection(db, 'practices'), where('voiceType', '==', voiceType));
-    const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PracticeRecord[];
-    return docs.sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+    const res = await fetch('/api/practice');
+    if (!res.ok) throw new Error('Failed to fetch');
+    const data = (await res.json()) as any;
+    let practices = data.practices.map((p: any) => ({
+      ...p,
+      rubricScore: p.rubricScore ? JSON.parse(p.rubricScore) : undefined
+    })) as PracticeRecord[];
+    
+    if (voiceType !== 'All') {
+      practices = practices.filter((p: any) => p.voiceType === voiceType);
+    }
+    return practices;
   } catch (error) {
     console.error('Error getting peer practices:', error);
     return [];
@@ -64,10 +75,14 @@ export async function getPeerPractices(voiceType: VoiceType) {
 
 export async function getPendingAssessments() {
   try {
-    const q = query(collection(db, 'practices'), orderBy('timestamp', 'desc'));
-    const snapshot = await getDocs(q);
-    const practices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PracticeRecord[];
-    return practices.filter(p => !p.rubricScore);
+    const res = await fetch('/api/practice');
+    if (!res.ok) throw new Error('Failed to fetch');
+    const data = (await res.json()) as any;
+    const practices = data.practices.map((p: any) => ({
+      ...p,
+      rubricScore: p.rubricScore ? JSON.parse(p.rubricScore) : undefined
+    })) as PracticeRecord[];
+    return practices.filter((p: any) => !p.rubricScore);
   } catch (error) {
     console.error('Error getting pending assessments:', error);
     return [];
@@ -76,8 +91,13 @@ export async function getPendingAssessments() {
 
 export async function submitRubricScore(recordId: string, rubricScore: RubricScore) {
   try {
-    const recordRef = doc(db, 'practices', recordId);
-    await updateDoc(recordRef, { rubricScore });
+    const res = await fetch(`/api/practice/${recordId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rubricScore, feedback: rubricScore.feedback })
+    });
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) return { success: false, error: result.error };
     return { success: true };
   } catch (error) {
     console.error('Error submitting rubric score:', error);
@@ -87,8 +107,13 @@ export async function submitRubricScore(recordId: string, rubricScore: RubricSco
 
 export async function likePracticeRecord(recordId: string, currentLikes: number) {
   try {
-    const recordRef = doc(db, 'practices', recordId);
-    await updateDoc(recordRef, { likes: currentLikes + 1 });
+    const res = await fetch(`/api/practice/${recordId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'like' })
+    });
+    const result = (await res.json()) as any;
+    if (!res.ok || !result.success) return { success: false, error: result.error };
     return { success: true };
   } catch (error) {
     console.error('Error liking practice record:', error);

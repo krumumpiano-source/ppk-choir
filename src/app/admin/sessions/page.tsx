@@ -7,8 +7,6 @@ import { getAllSessions, createScheduledSession, updateScheduledSession, deleteS
 import MapSelector from '@/components/MapSelector';
 import ThaiDatePicker from '@/components/ThaiDatePicker';
 import TimePicker24h from '@/components/TimePicker24h';
-import { Timestamp } from 'firebase/firestore'; 
-
 function CoordsInput({ lat, lng, onChange }: { lat: number, lng: number, onChange: (lat: number, lng: number) => void }) {
   const [val, setVal] = useState(`${lat}, ${lng}`);
 
