@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, Power, Loader2, MapPin, Save, Plus, Trash2, Calendar } from 'lucide-react';
 import { getAllSessions, createScheduledSession, updateScheduledSession, deleteScheduledSession, ScheduledSession } from '@/lib/services/checkin';
 import MapSelector from '@/components/MapSelector';
+import ThaiDatePicker from '@/components/ThaiDatePicker';
 import { Timestamp } from 'firebase/firestore'; 
 
 export default function AdminSessionsPage() {
@@ -24,7 +25,8 @@ export default function AdminSessionsPage() {
     startDate: '',
     startTime: '',
     endDate: '',
-    endTime: ''
+    endTime: '',
+    dayOfWeek: 1 // 1=Monday
   });
 
   useEffect(() => {
@@ -69,25 +71,30 @@ export default function AdminSessionsPage() {
 
   const handleCreate = async () => {
     if (!formData.name.trim()) return alert('กรุณากรอกชื่อกิจกรรม');
-    if (!formData.startDate || !formData.startTime || !formData.endDate || !formData.endTime) return alert('กรุณากรอกเวลาให้ครบถ้วน');
+    if (!formData.startTime || !formData.endTime) return alert('กรุณากรอกเวลาให้ครบถ้วน');
+    if (formData.type !== 'practice' && (!formData.startDate || !formData.endDate)) return alert('กรุณาเลือกวันที่');
 
     setSaving(true);
-    const start = new Date(`${formData.startDate}T${formData.startTime}`);
-    const end = new Date(`${formData.endDate}T${formData.endTime}`);
-
-    const res = await createScheduledSession({
+    let sessionData: Omit<ScheduledSession, 'id' | 'createdAt'> = {
       name: formData.name.trim(),
       type: formData.type,
       targetGroups: formData.targetGroups,
-      location: {
-        lat: formData.lat,
-        lng: formData.lng,
-        radius: formData.radius
-      },
-      startTime: start,
-      endTime: end,
-      isActive: true // Default open, logic handles time boundaries
-    });
+      location: { lat: formData.lat, lng: formData.lng, radius: formData.radius },
+      isActive: true
+    };
+
+    if (formData.type === 'practice') {
+      sessionData.isRecurring = true;
+      sessionData.dayOfWeek = formData.dayOfWeek;
+      sessionData.recurringStartTime = formData.startTime;
+      sessionData.recurringEndTime = formData.endTime;
+    } else {
+      sessionData.isRecurring = false;
+      sessionData.startTime = new Date(`${formData.startDate}T${formData.startTime}`);
+      sessionData.endTime = new Date(`${formData.endDate}T${formData.endTime}`);
+    }
+
+    const res = await createScheduledSession(sessionData);
 
     if (res.success) {
       alert('บันทึกกิจกรรมสำเร็จ');
@@ -121,9 +128,23 @@ export default function AdminSessionsPage() {
   const isCurrent = (session: ScheduledSession) => {
     if (!session.isActive) return false;
     const now = new Date();
-    const start = session.startTime?.toDate ? session.startTime.toDate() : new Date(session.startTime);
-    const end = session.endTime?.toDate ? session.endTime.toDate() : new Date(session.endTime);
-    return now >= start && now <= end;
+    
+    if (session.isRecurring) {
+      const currentDay = now.getDay();
+      const currentTime = now.toTimeString().slice(0, 5);
+      return currentDay === session.dayOfWeek && 
+             currentTime >= (session.recurringStartTime || '') && 
+             currentTime <= (session.recurringEndTime || '');
+    } else {
+      if (!session.startTime || !session.endTime) return false;
+      const start = session.startTime?.toDate ? session.startTime.toDate() : new Date(session.startTime);
+      const end = session.endTime?.toDate ? session.endTime.toDate() : new Date(session.endTime);
+      return now >= start && now <= end;
+    }
+  };
+
+  const getDayName = (day: number) => {
+    return ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'][day];
   };
 
   return (
@@ -156,6 +177,7 @@ export default function AdminSessionsPage() {
                 <option value="practice">ซ้อมตามปกติ (Practice)</option>
                 <option value="performance">การแสดง (Performance)</option>
                 <option value="outing">ออกงาน (Outing)</option>
+                <option value="competition">แข่งขัน (Competition)</option>
               </select>
             </div>
           </div>
@@ -180,22 +202,47 @@ export default function AdminSessionsPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เวลาเริ่มต้น</label>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <input type="date" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
-                <input type="time" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+          {formData.type === 'practice' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันในสัปดาห์ (ทำซ้ำทุกสัปดาห์)</label>
+                <select className="input-field" value={formData.dayOfWeek} onChange={e => setFormData({...formData, dayOfWeek: parseInt(e.target.value)})}>
+                  <option value={1}>ทุกวันจันทร์</option>
+                  <option value={2}>ทุกวันอังคาร</option>
+                  <option value={3}>ทุกวันพุธ</option>
+                  <option value={4}>ทุกวันพฤหัสบดี</option>
+                  <option value={5}>ทุกวันศุกร์</option>
+                  <option value={6}>ทุกวันเสาร์</option>
+                  <option value={0}>ทุกวันอาทิตย์</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>ช่วงเวลา</label>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+                  <span>ถึง</span>
+                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+                </div>
               </div>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เวลาสิ้นสุด</label>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <input type="date" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})} />
-                <input type="time" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันที่เริ่มต้น</label>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <ThaiDatePicker value={formData.startDate} onChange={val => setFormData({...formData, startDate: val})} style={{ flex: 1, minWidth: '160px' }} />
+                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันที่สิ้นสุด</label>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <ThaiDatePicker value={formData.endDate} onChange={val => setFormData({...formData, endDate: val})} style={{ flex: 1, minWidth: '160px' }} />
+                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <h3 style={{ marginTop: '2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <MapPin size={20} color="var(--accent-primary)" /> เลือกพิกัดสถานที่
@@ -281,7 +328,16 @@ export default function AdminSessionsPage() {
                         {session.targetGroups?.join(', ') || 'All'}
                       </td>
                       <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                        {formatTime(session.startTime)} <br/> ถึง <br/> {formatTime(session.endTime)}
+                        {session.isRecurring ? (
+                          <>
+                            ทุกวัน{getDayName(session.dayOfWeek ?? 1)} <br/>
+                            {session.recurringStartTime} ถึง {session.recurringEndTime}
+                          </>
+                        ) : (
+                          <>
+                            {formatTime(session.startTime)} <br/> ถึง <br/> {formatTime(session.endTime)}
+                          </>
+                        )}
                       </td>
                       <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>

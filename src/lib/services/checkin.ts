@@ -15,13 +15,17 @@ export interface CheckInRecord {
 export interface ScheduledSession {
   id?: string;
   name: string;
-  type: string; // 'practice' | 'performance' | 'outing'
+  type: string; // 'practice' | 'performance' | 'outing' | 'competition'
   targetGroups: string[]; // ['All'] หรือ ['Soprano', 'Alto', ...]
   location: { lat: number; lng: number; radius: number } | null;
-  startTime: any; // Firestore Timestamp
-  endTime: any; // Firestore Timestamp
+  startTime?: any; // Firestore Timestamp (optional for recurring)
+  endTime?: any; // Firestore Timestamp (optional for recurring)
   isActive: boolean;
   createdAt?: any;
+  isRecurring?: boolean;
+  dayOfWeek?: number; // 0=Sunday, 1=Monday...6=Saturday
+  recurringStartTime?: string; // "16:00"
+  recurringEndTime?: string; // "18:00"
 }
 
 // กำหนดค่า Default หากยังไม่มีใน DB

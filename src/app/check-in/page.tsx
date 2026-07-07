@@ -51,13 +51,30 @@ export default function CheckInPage() {
       
       // Filter sessions based on targetGroups (All, or matching voiceType, or matching user.id if supported later)
       const eligibleSessions = sessions.filter(session => {
-        // Also check if current time is within session boundaries (optional, but good)
         const now = new Date();
-        const start = session.startTime?.toDate ? session.startTime.toDate() : new Date(session.startTime);
-        const end = session.endTime?.toDate ? session.endTime.toDate() : new Date(session.endTime);
+        let isTimeValid = false;
+
+        if (session.isRecurring) {
+          const currentDay = now.getDay();
+          const currentTime = now.toTimeString().slice(0, 5);
+          if (
+            currentDay === session.dayOfWeek &&
+            currentTime >= (session.recurringStartTime || '') &&
+            currentTime <= (session.recurringEndTime || '')
+          ) {
+            isTimeValid = true;
+          }
+        } else {
+          if (session.startTime && session.endTime) {
+            const start = session.startTime?.toDate ? session.startTime.toDate() : new Date(session.startTime);
+            const end = session.endTime?.toDate ? session.endTime.toDate() : new Date(session.endTime);
+            if (now >= start && now <= end) {
+              isTimeValid = true;
+            }
+          }
+        }
         
-        const isTimeValid = now >= start && now <= end;
-        const isTargetValid = session.targetGroups.includes('All') || session.targetGroups.includes(user.voiceType);
+        const isTargetValid = session.targetGroups?.includes('All') || session.targetGroups?.includes(user.voiceType);
         
         return isTimeValid && isTargetValid && session.location;
       });
