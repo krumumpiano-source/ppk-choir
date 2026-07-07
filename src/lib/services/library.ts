@@ -16,12 +16,8 @@ export interface LibraryItem {
   uploadedAt?: any;
 }
 
-export async function uploadLibraryItem(file: File, voiceType: VoiceType, title: string) {
+export async function saveLibraryItemLink(fileUrl: string, voiceType: VoiceType, title: string) {
   try {
-    const fileRef = ref(storage, `library/${voiceType}/${Date.now()}_${file.name}`);
-    await uploadBytes(fileRef, file);
-    const fileUrl = await getDownloadURL(fileRef);
-
     const docRef = await addDoc(collection(db, 'library'), {
       voiceType,
       title,
@@ -31,7 +27,7 @@ export async function uploadLibraryItem(file: File, voiceType: VoiceType, title:
 
     return { success: true, id: docRef.id };
   } catch (error) {
-    console.error('Error uploading library item:', error);
+    console.error('Error saving library item link:', error);
     return { success: false, error };
   }
 }

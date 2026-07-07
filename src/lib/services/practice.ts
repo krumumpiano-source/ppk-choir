@@ -22,22 +22,18 @@ export interface PracticeRecord {
   timestamp?: any;
 }
 
-export async function uploadPracticeRecord(file: Blob, data: Omit<PracticeRecord, 'id' | 'timestamp' | 'audioUrl' | 'rubricScore' | 'likes'>) {
+export async function submitPracticeLink(driveUrl: string, data: Omit<PracticeRecord, 'id' | 'timestamp' | 'audioUrl' | 'rubricScore' | 'likes'>) {
   try {
-    const fileRef = ref(storage, `practices/${data.studentId}/${Date.now()}.webm`);
-    await uploadBytes(fileRef, file);
-    const audioUrl = await getDownloadURL(fileRef);
-
     const docRef = await addDoc(collection(db, 'practices'), {
       ...data,
-      audioUrl,
+      audioUrl: driveUrl,
       likes: 0,
       timestamp: serverTimestamp()
     });
 
     return { success: true, id: docRef.id };
   } catch (error) {
-    console.error('Error uploading practice record:', error);
+    console.error('Error submitting practice record:', error);
     return { success: false, error };
   }
 }

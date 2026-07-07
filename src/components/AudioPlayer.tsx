@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
+import GoogleDrivePlayer from './GoogleDrivePlayer';
 
 interface AudioPlayerProps {
   title: string;
@@ -13,6 +14,27 @@ export default function AudioPlayer({ title, url }: AudioPlayerProps) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // If it's a Google Drive URL, use the Google Drive Player iframe instead
+  if (url && url.includes('drive.google.com')) {
+    return (
+      <div style={{
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '12px',
+        padding: '1rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.8rem',
+        marginBottom: '1rem'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 500, color: 'var(--text-primary)' }}>{title}</h4>
+        </div>
+        <GoogleDrivePlayer url={url} />
+      </div>
+    );
+  }
 
   useEffect(() => {
     const audio = audioRef.current;

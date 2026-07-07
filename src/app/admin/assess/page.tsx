@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ClipboardCheck, Loader2, CheckCircle2 } from 'lucide-react';
+import GoogleDrivePlayer from '@/components/GoogleDrivePlayer';
 import { getPendingAssessments, submitRubricScore, PracticeRecord, RubricScore } from '../../../lib/services/practice';
 import { awardBadge } from '../../../lib/services/gamification';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -124,7 +125,9 @@ export default function AdminAssessPage() {
                 </p>
               </div>
 
-              <audio src={work.audioUrl} controls style={{ width: '100%', marginBottom: '2rem' }} />
+              <div style={{ marginBottom: '2rem' }}>
+                <GoogleDrivePlayer url={work.audioUrl} />
+              </div>
 
               <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <h3 style={{ margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

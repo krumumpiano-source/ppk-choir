@@ -3,19 +3,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mic2, Send, Loader2 } from 'lucide-react';
-import AudioRecorder from '../../components/AudioRecorder';
-import { uploadPracticeRecord } from '../../lib/services/practice';
+import { ArrowLeft, Mic2, Send, Loader2, Link as LinkIcon } from 'lucide-react';
+import { submitPracticeLink } from '../../lib/services/practice';
 import { updateStreakAndBadges } from '../../lib/services/gamification';
 import { VoiceType } from '../../lib/services/library';
 import { useAuth } from '@/components/providers/AuthProvider';
+import GoogleDrivePlayer from '@/components/GoogleDrivePlayer';
 
 export default function PracticePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [reflection, setReflection] = useState('');
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [driveUrl, setDriveUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -29,16 +29,21 @@ export default function PracticePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !audioBlob || !reflection) {
-      setMessage('กรุณาอัดเสียงและเขียนสะท้อนผลให้ครบถ้วน');
+    if (!user || !driveUrl || !reflection) {
+      setMessage('กรุณาใส่ลิงก์ผลงานและเขียนสะท้อนผลให้ครบถ้วน');
+      return;
+    }
+
+    if (!driveUrl.includes('drive.google.com')) {
+      setMessage('กรุณาใส่ลิงก์จาก Google Drive เท่านั้น');
       return;
     }
 
     setIsSubmitting(true);
     setMessage('');
 
-    // 1. Upload Record
-    const result = await uploadPracticeRecord(audioBlob, {
+    // 1. Upload Record (Link)
+    const result = await submitPracticeLink(driveUrl, {
       studentId: user.id,
       studentName: user.name,
       voiceType: user.voiceType as VoiceType,
@@ -128,8 +133,24 @@ export default function PracticePage() {
           </div>
 
           <div>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>1. อัดเสียงการซ้อมของคุณ</h3>
-            <AudioRecorder onRecordingComplete={(blob) => setAudioBlob(blob)} />
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>1. อัปโหลดผลงาน (Google Drive Link)</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+              อัดวิดีโอหรือเสียงร้องของคุณ อัปโหลดลง Google Drive ตั้งค่าเป็น "Anyone with the link" แล้วนำลิงก์มาวางที่นี่
+            </p>
+            <input 
+              type="url" 
+              className="input-field" 
+              style={{ width: '100%' }}
+              value={driveUrl}
+              onChange={(e) => setDriveUrl(e.target.value)}
+              placeholder="https://drive.google.com/file/d/..."
+            />
+            {driveUrl && driveUrl.includes('drive.google.com') && (
+              <div style={{ marginTop: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ตัวอย่างผลงาน:</label>
+                <GoogleDrivePlayer url={driveUrl} />
+              </div>
+            )}
           </div>
 
           <div>
@@ -155,12 +176,12 @@ export default function PracticePage() {
           <button 
             type="submit" 
             className="btn-primary" 
-            disabled={isSubmitting || !audioBlob}
+            disabled={isSubmitting || !driveUrl}
             style={{ 
               padding: '1rem', 
               fontSize: '1.2rem', 
               marginTop: '1rem',
-              opacity: (isSubmitting || !audioBlob) ? 0.5 : 1
+              opacity: (isSubmitting || !driveUrl) ? 0.5 : 1
             }}
           >
             {isSubmitting ? (

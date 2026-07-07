@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Users, Heart, MessageSquare, Loader2 } from 'lucide-react';
+import GoogleDrivePlayer from '@/components/GoogleDrivePlayer';
 import { getPeerPractices, likePracticeRecord, PracticeRecord } from '../../lib/services/practice';
 import { VoiceType } from '../../lib/services/library';
 
@@ -82,7 +83,9 @@ export default function PeersPage() {
                 </div>
               </div>
 
-              <audio src={practice.audioUrl} controls style={{ width: '100%', height: '40px', marginBottom: '1rem' }} />
+              <div style={{ marginBottom: '1rem' }}>
+                <GoogleDrivePlayer url={practice.audioUrl} />
+              </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button 

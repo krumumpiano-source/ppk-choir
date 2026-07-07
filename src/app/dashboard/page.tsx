@@ -7,6 +7,7 @@ import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar,
 import { getStudentStats, StudentStats } from '../../lib/services/gamification';
 import { getStudentPractices, PracticeRecord } from '../../lib/services/practice';
 import { useAuth } from '@/components/providers/AuthProvider';
+import GoogleDrivePlayer from '@/components/GoogleDrivePlayer';
 
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -145,7 +146,9 @@ export default function DashboardPage() {
                 
                 <p style={{ margin: '0 0 1rem 0', fontStyle: 'italic' }}>&quot;{practice.reflection}&quot;</p>
                 
-                <audio src={practice.audioUrl} controls style={{ width: '100%', height: '40px' }} />
+              <div style={{ marginTop: '0.5rem' }}>
+                <GoogleDrivePlayer url={practice.audioUrl} />
+              </div>
 
                 {practice.rubricScore && (
                   <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(46, 213, 115, 0.1)', borderRadius: '8px', border: '1px solid rgba(46, 213, 115, 0.2)' }}>
