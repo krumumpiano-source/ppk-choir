@@ -149,3 +149,8 @@ a {
   border-color: var(--accent-primary);
   background: rgba(255, 255, 255, 0.1);
 }
+
+.input-field option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}

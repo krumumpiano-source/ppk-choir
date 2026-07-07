@@ -29,7 +29,7 @@ export default function TimePicker24h({ value, onChange, className, style }: Pro
       >
         {Array.from({length: 24}).map((_, i) => {
           const val = String(i).padStart(2, '0');
-          return <option key={val} value={val} style={{ background: '#1a1a2e', color: '#fff' }}>{val}</option>;
+          return <option key={val} value={val}>{val}</option>;
         })}
       </select>
       <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>:</span>
@@ -41,7 +41,7 @@ export default function TimePicker24h({ value, onChange, className, style }: Pro
       >
         {Array.from({length: 60}).map((_, i) => { // Changed to every minute for more flexibility
           const val = String(i).padStart(2, '0');
-          return <option key={val} value={val} style={{ background: '#1a1a2e', color: '#fff' }}>{val}</option>;
+          return <option key={val} value={val}>{val}</option>;
         })}
       </select>
     </div>
