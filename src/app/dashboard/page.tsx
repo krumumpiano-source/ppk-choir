@@ -143,7 +143,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 
-                <p style={{ margin: '0 0 1rem 0', fontStyle: 'italic' }}>"{practice.reflection}"</p>
+                <p style={{ margin: '0 0 1rem 0', fontStyle: 'italic' }}>&quot;{practice.reflection}&quot;</p>
                 
                 <audio src={practice.audioUrl} controls style={{ width: '100%', height: '40px' }} />
 

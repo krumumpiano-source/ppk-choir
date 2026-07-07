@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Navigation, CheckCircle, AlertTriangle, ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react';
-import { saveCheckIn, getActiveSession, getCheckInSettings, DEFAULT_CHECKIN_SETTINGS } from '../../lib/services/checkin';
+import { saveCheckIn, getActiveSessions, ScheduledSession } from '../../lib/services/checkin';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -34,8 +34,8 @@ export default function CheckInPage() {
   const [status, setStatus] = useState<'idle' | 'locating' | 'success' | 'failed' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   
-  const [activeSession, setActiveSession] = useState<any>(null);
-  const [settings, setSettings] = useState(DEFAULT_CHECKIN_SETTINGS);
+  const [availableSessions, setAvailableSessions] = useState<ScheduledSession[]>([]);
+  const [selectedSession, setSelectedSession] = useState<ScheduledSession | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
@@ -45,21 +45,38 @@ export default function CheckInPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    async function checkSession() {
-      const [session, config] = await Promise.all([
-        getActiveSession(),
-        getCheckInSettings()
-      ]);
-      setActiveSession(session);
-      setSettings(config);
+    async function checkSessions() {
+      if (!user) return;
+      const sessions = await getActiveSessions();
+      
+      // Filter sessions based on targetGroups (All, or matching voiceType, or matching user.id if supported later)
+      const eligibleSessions = sessions.filter(session => {
+        // Also check if current time is within session boundaries (optional, but good)
+        const now = new Date();
+        const start = session.startTime?.toDate ? session.startTime.toDate() : new Date(session.startTime);
+        const end = session.endTime?.toDate ? session.endTime.toDate() : new Date(session.endTime);
+        
+        const isTimeValid = now >= start && now <= end;
+        const isTargetValid = session.targetGroups.includes('All') || session.targetGroups.includes(user.voiceType);
+        
+        return isTimeValid && isTargetValid && session.location;
+      });
+
+      setAvailableSessions(eligibleSessions);
+      if (eligibleSessions.length === 1) {
+        setSelectedSession(eligibleSessions[0]);
+      }
       setCheckingSession(false);
     }
-    checkSession();
-  }, []);
+    
+    if (user) {
+      checkSessions();
+    }
+  }, [user]);
 
   const initiateCheckIn = () => {
-    if (!activeSession) {
-      alert('ขณะนี้ยังไม่มีการเปิดคาบเรียนให้เช็คชื่อ');
+    if (!selectedSession) {
+      alert('กรุณาเลือกกิจกรรมที่ต้องการเช็คชื่อ');
       return;
     }
     if (!pdpaAccepted) {
@@ -84,15 +101,22 @@ export default function CheckInPage() {
       return;
     }
 
+    if (!selectedSession?.location) {
+      setStatus('error');
+      setErrorMessage('กิจกรรมนี้ไม่มีการตั้งค่าพิกัด');
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         setLocation({ lat: latitude, lng: longitude });
         
-        const dist = getDistanceFromLatLonInM(latitude, longitude, settings.lat, settings.lng);
+        const targetLoc = selectedSession.location!;
+        const dist = getDistanceFromLatLonInM(latitude, longitude, targetLoc.lat, targetLoc.lng);
         setDistance(dist);
         
-        const isSuccess = dist <= settings.radius;
+        const isSuccess = dist <= targetLoc.radius;
         
         if (user && isSuccess) {
           const res = await saveCheckIn({
@@ -101,7 +125,7 @@ export default function CheckInPage() {
             location: { lat: latitude, lng: longitude },
             devicePlatform: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
             room: user.room || 'ไม่ระบุห้อง',
-            sessionId: activeSession.id
+            sessionId: selectedSession.id
           });
           
           if (res.success) {
@@ -150,7 +174,7 @@ export default function CheckInPage() {
               <h2 style={{ marginTop: '1rem' }}>ข้อตกลงการประมวลผลข้อมูล (PDPA)</h2>
             </div>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
-              ในการเช็คชื่อเข้ากิจกรรม "ชุมนุมสานฝันด้วยเส้นเสียง" ทางโรงเรียนมีความจำเป็นต้องเข้าถึง **ตำแหน่งที่ตั้ง (GPS)** ของคุณ เพื่อตรวจสอบว่าคุณอยู่ในบริเวณพื้นที่ที่กำหนด
+              ในการเช็คชื่อเข้ากิจกรรม &quot;ชุมนุมสานฝันด้วยเส้นเสียง&quot; ทางโรงเรียนมีความจำเป็นต้องเข้าถึง **ตำแหน่งที่ตั้ง (GPS)** ของคุณ เพื่อตรวจสอบว่าคุณอยู่ในบริเวณพื้นที่ที่กำหนด
               <br/><br/>
               ข้อมูลตำแหน่งของคุณจะถูกใช้สำหรับการเช็คชื่อเท่านั้น และจะไม่ถูกนำไปเปิดเผยหรือใช้งานในวัตถุประสงค์อื่น
             </p>
@@ -181,25 +205,41 @@ export default function CheckInPage() {
             <MapPin size={40} color="var(--accent-primary)" />
           </div>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>ระบบเช็คชื่อกิจกรรม</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>รัศมีที่อนุญาต: {settings.radius} เมตร</p>
           
-          {activeSession ? (
+          {availableSessions.length > 0 ? (
             <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(46, 213, 115, 0.1)', color: 'var(--success)', borderRadius: '8px', fontSize: '0.9rem' }}>
-              กำลังเปิดรับเช็คชื่อ (Session Active)
+              มีกิจกรรมที่คุณสามารถเช็คชื่อได้ ({availableSessions.length} กิจกรรม)
             </div>
           ) : (
             <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(255, 71, 87, 0.1)', color: 'var(--danger)', borderRadius: '8px', fontSize: '0.9rem' }}>
-              ขณะนี้ปิดรับการเช็คชื่อ
+              ขณะนี้ไม่มีกิจกรรมที่เปิดรับการเช็คชื่อสำหรับคุณ
             </div>
           )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
           
-          {status === 'idle' && (
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>สวัสดี, {user.name}</p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>รหัส: {user.id}</p>
+          {status === 'idle' && availableSessions.length > 0 && (
+            <div style={{ width: '100%' }}>
+              <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>เลือกกิจกรรม:</p>
+              {availableSessions.map(session => (
+                <div 
+                  key={session.id}
+                  onClick={() => setSelectedSession(session)}
+                  style={{
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    border: selectedSession?.id === session.id ? '2px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.1)',
+                    background: selectedSession?.id === session.id ? 'rgba(230, 185, 128, 0.1)' : 'transparent',
+                    cursor: 'pointer',
+                    marginBottom: '0.5rem',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <strong style={{ display: 'block', color: 'var(--text-primary)' }}>{session.name}</strong>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>รัศมีอนุญาต: {session.location?.radius || 0} เมตร</span>
+                </div>
+              ))}
             </div>
           )}
 
@@ -227,7 +267,7 @@ export default function CheckInPage() {
               <h3 style={{ fontSize: '1.2rem' }}>คุณอยู่นอกพื้นที่</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                 คุณอยู่ห่างจากจุดศูนย์กลาง {distance?.toFixed(2)} เมตร<br/>
-                (ต้องอยู่ภายในระยะ {settings.radius} เมตร)
+                (ต้องอยู่ภายในระยะ {selectedSession?.location?.radius || 0} เมตร)
               </p>
             </div>
           )}
@@ -242,8 +282,8 @@ export default function CheckInPage() {
             <button 
               onClick={initiateCheckIn} 
               className="btn-primary" 
-              disabled={status === 'locating' || !activeSession}
-              style={{ width: '100%', marginTop: '1rem', opacity: (status === 'locating' || !activeSession) ? 0.5 : 1 }}
+              disabled={status === 'locating' || !selectedSession}
+              style={{ width: '100%', marginTop: '1rem', opacity: (status === 'locating' || !selectedSession) ? 0.5 : 1 }}
             >
               <MapPin size={20} />
               {status === 'failed' || status === 'error' ? 'ลองเช็คชื่อใหม่อีกครั้ง' : 'กดเพื่อเช็คชื่อเข้ากิจกรรม'}
@@ -255,4 +295,3 @@ export default function CheckInPage() {
     </div>
   );
 }
-

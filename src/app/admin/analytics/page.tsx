@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
       ) : !data || data.assessedPractices === 0 ? (
         <div className="glass-panel animate-fade-in" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <h3 style={{ color: 'var(--text-secondary)' }}>ยังไม่มีข้อมูลการประเมินที่เพียงพอ</h3>
-          <p style={{ color: 'var(--text-secondary)' }}>กรุณาประเมินผลงานนักเรียนในเมนู "ตรวจผลงาน (Rubric)" เพื่อให้ระบบ AI เริ่มการวิเคราะห์</p>
+          <p style={{ color: 'var(--text-secondary)' }}>กรุณาประเมินผลงานนักเรียนในเมนู &quot;ตรวจผลงาน (Rubric)&quot; เพื่อให้ระบบ AI เริ่มการวิเคราะห์</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

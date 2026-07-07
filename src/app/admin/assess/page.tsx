@@ -120,7 +120,7 @@ export default function AdminAssessPage() {
               <div style={{ marginBottom: '2rem' }}>
                 <h4 style={{ margin: '0 0 0.5rem 0' }}>Self-Reflection:</h4>
                 <p style={{ margin: 0, fontStyle: 'italic', color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--accent-secondary)' }}>
-                  "{work.reflection}"
+                  &quot;{work.reflection}&quot;
                 </p>
               </div>
 

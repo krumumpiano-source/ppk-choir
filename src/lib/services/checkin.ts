@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export interface CheckInRecord {
@@ -10,6 +10,18 @@ export interface CheckInRecord {
   room?: string;
   timestamp?: any;
   sessionId?: string; // เพิ่ม sessionId เพื่อผูกกับการเปิดคาบเรียน
+}
+
+export interface ScheduledSession {
+  id?: string;
+  name: string;
+  type: string; // 'practice' | 'performance' | 'outing'
+  targetGroups: string[]; // ['All'] หรือ ['Soprano', 'Alto', ...]
+  location: { lat: number; lng: number; radius: number } | null;
+  startTime: any; // Firestore Timestamp
+  endTime: any; // Firestore Timestamp
+  isActive: boolean;
+  createdAt?: any;
 }
 
 // กำหนดค่า Default หากยังไม่มีใน DB
@@ -44,20 +56,85 @@ export async function updateCheckInSettings(settings: typeof DEFAULT_CHECKIN_SET
   }
 }
 
-// ตรวจสอบคาบเรียนที่เปิดอยู่ล่าสุด
-export async function getActiveSession() {
+// === New Session Management Functions === //
+
+// Admin: Get all sessions for the table
+export async function getAllSessions(): Promise<ScheduledSession[]> {
+  try {
+    const q = query(collection(db, 'sessions'));
+    const snapshot = await getDocs(q);
+    const sessions = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ScheduledSession));
+    
+    // Sort by startTime descending
+    sessions.sort((a, b) => {
+      const timeA = a.startTime?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+      const timeB = b.startTime?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+    return sessions;
+  } catch (error) {
+    console.error('Error getting all sessions:', error);
+    return [];
+  }
+}
+
+// Student & Admin: Get currently active sessions
+export async function getActiveSessions(): Promise<ScheduledSession[]> {
   try {
     const q = query(collection(db, 'sessions'), where('isActive', '==', true));
     const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() as any }));
-      // Sort manually to find the most recent one (to avoid composite index error)
-      docs.sort((a, b) => {
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ScheduledSession));
+  } catch (error) {
+    console.error('Error getting active sessions:', error);
+    return [];
+  }
+}
+
+// Admin: Create a new scheduled session
+export async function createScheduledSession(data: Omit<ScheduledSession, 'id' | 'createdAt'>) {
+  try {
+    const docRef = await addDoc(collection(db, 'sessions'), {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error creating scheduled session:', error);
+    return { success: false, error };
+  }
+}
+
+export async function updateScheduledSession(id: string, data: Partial<ScheduledSession>) {
+  try {
+    await updateDoc(doc(db, 'sessions', id), data as any);
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating session:', error);
+    return { success: false, error };
+  }
+}
+
+export async function deleteScheduledSession(id: string) {
+  try {
+    await deleteDoc(doc(db, 'sessions', id));
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    return { success: false, error };
+  }
+}
+
+// ตรวจสอบคาบเรียนที่เปิดอยู่ล่าสุด (Legacy support)
+export async function getActiveSession() {
+  try {
+    const sessions = await getActiveSessions();
+    if (sessions.length > 0) {
+      sessions.sort((a, b) => {
         const timeA = a.createdAt?.toMillis?.() || 0;
         const timeB = b.createdAt?.toMillis?.() || 0;
         return timeB - timeA;
       });
-      return docs[0];
+      return sessions[0];
     }
     return null;
   } catch (error) {
@@ -67,30 +144,19 @@ export async function getActiveSession() {
 }
 
 export async function createSession(name: string) {
-  try {
-    const docRef = await addDoc(collection(db, 'sessions'), {
-      name,
-      isActive: true,
-      createdAt: serverTimestamp()
-    });
-    return { success: true, id: docRef.id };
-  } catch (error) {
-    console.error('Error creating session:', error);
-    return { success: false, error };
-  }
+  return createScheduledSession({
+    name,
+    type: 'practice',
+    targetGroups: ['All'],
+    location: null,
+    startTime: new Date(),
+    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // +2 hours by default
+    isActive: true
+  });
 }
 
 export async function endSession(sessionId: string) {
-  try {
-    await updateDoc(doc(db, 'sessions', sessionId), {
-      isActive: false,
-      endedAt: serverTimestamp()
-    });
-    return { success: true };
-  } catch (error) {
-    console.error('Error ending session:', error);
-    return { success: false, error };
-  }
+  return updateScheduledSession(sessionId, { isActive: false });
 }
 
 export async function saveCheckIn(data: CheckInRecord) {

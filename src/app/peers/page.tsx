@@ -77,7 +77,7 @@ export default function PeersPage() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--text-secondary)' }}>
                   <MessageSquare size={16} style={{ marginTop: '0.2rem', flexShrink: 0 }} />
                   <p style={{ margin: 0, fontStyle: 'italic', fontSize: '0.95rem' }}>
-                    "{practice.reflection}"
+                    &quot;{practice.reflection}&quot;
                   </p>
                 </div>
               </div>
