@@ -189,6 +189,10 @@ a {
   flex: 1;
   width: 100%;
   transition: padding-left 0.3s ease;
+  padding-left: 0;
+}
+
+body:has(.sidebar) .app-container {
   padding-left: var(--sidebar-width);
 }
 
