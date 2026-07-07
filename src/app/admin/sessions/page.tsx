@@ -180,19 +180,19 @@ export default function AdminSessionsPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เวลาเริ่มต้น</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="date" className="input-field" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
-                <input type="time" className="input-field" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <input type="date" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
+                <input type="time" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
               </div>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เวลาสิ้นสุด</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="date" className="input-field" value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})} />
-                <input type="time" className="input-field" value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <input type="date" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})} />
+                <input type="time" className="input-field" style={{ flex: 1, minWidth: '130px' }} value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
               </div>
             </div>
           </div>
