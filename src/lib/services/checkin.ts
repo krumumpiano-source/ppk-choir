@@ -23,7 +23,7 @@ export interface ScheduledSession {
   isActive: boolean;
   createdAt?: any;
   isRecurring?: boolean;
-  dayOfWeek?: number; // 0=Sunday, 1=Monday...6=Saturday
+  daysOfWeek?: number[]; // Array of days: [1, 3, 5] for Mon, Wed, Fri
   recurringStartTime?: string; // "16:00"
   recurringEndTime?: string; // "18:00"
 }

@@ -26,7 +26,7 @@ export default function AdminSessionsPage() {
     startTime: '',
     endDate: '',
     endTime: '',
-    dayOfWeek: 1 // 1=Monday
+    daysOfWeek: [1] // 1=Monday
   });
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function AdminSessionsPage() {
 
     if (formData.type === 'practice') {
       sessionData.isRecurring = true;
-      sessionData.dayOfWeek = formData.dayOfWeek;
+      sessionData.daysOfWeek = formData.daysOfWeek;
       sessionData.recurringStartTime = formData.startTime;
       sessionData.recurringEndTime = formData.endTime;
     } else {
@@ -132,7 +132,8 @@ export default function AdminSessionsPage() {
     if (session.isRecurring) {
       const currentDay = now.getDay();
       const currentTime = now.toTimeString().slice(0, 5);
-      return currentDay === session.dayOfWeek && 
+      const isDayMatch = session.daysOfWeek ? session.daysOfWeek.includes(currentDay) : session.dayOfWeek === currentDay; // Backwards compatibility just in case
+      return isDayMatch && 
              currentTime >= (session.recurringStartTime || '') && 
              currentTime <= (session.recurringEndTime || '');
     } else {
@@ -205,24 +206,37 @@ export default function AdminSessionsPage() {
           {formData.type === 'practice' ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันในสัปดาห์ (ทำซ้ำทุกสัปดาห์)</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันในสัปดาห์ (เลือกได้หลายวัน)</label>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {[{ id: 1, label: 'จ' }, { id: 2, label: 'อ' }, { id: 3, label: 'พ' }, { id: 4, label: 'พฤ' }, { id: 5, label: 'ศ' }, { id: 6, label: 'ส' }, { id: 0, label: 'อา' }].map(day => (
-                    <button 
-                      key={day.id}
-                      onClick={() => setFormData({...formData, dayOfWeek: day.id})}
-                      type="button"
-                      style={{
-                        width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--accent-primary)',
-                        background: formData.dayOfWeek === day.id ? 'var(--accent-primary)' : 'transparent',
-                        color: formData.dayOfWeek === day.id ? '#000' : 'var(--text-primary)',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: formData.dayOfWeek === day.id ? 'bold' : 'normal'
-                      }}
-                    >
-                      {day.label}
-                    </button>
-                  ))}
+                  {[{ id: 1, label: 'จ' }, { id: 2, label: 'อ' }, { id: 3, label: 'พ' }, { id: 4, label: 'พฤ' }, { id: 5, label: 'ศ' }, { id: 6, label: 'ส' }, { id: 0, label: 'อา' }].map(day => {
+                    const isSelected = formData.daysOfWeek.includes(day.id);
+                    return (
+                      <button 
+                        key={day.id}
+                        onClick={() => setFormData(prev => {
+                          let newDays = [...prev.daysOfWeek];
+                          if (isSelected) {
+                            newDays = newDays.filter(d => d !== day.id);
+                            if (newDays.length === 0) newDays = [day.id]; // Prevent deselecting all
+                          } else {
+                            newDays.push(day.id);
+                          }
+                          return { ...prev, daysOfWeek: newDays };
+                        })}
+                        type="button"
+                        style={{
+                          width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--accent-primary)',
+                          background: isSelected ? 'var(--accent-primary)' : 'transparent',
+                          color: isSelected ? '#000' : 'var(--text-primary)',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: isSelected ? 'bold' : 'normal',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div>
@@ -339,7 +353,7 @@ export default function AdminSessionsPage() {
                       <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                         {session.isRecurring ? (
                           <>
-                            ทุกวัน{getDayName(session.dayOfWeek ?? 1)} <br/>
+                            ทุกวัน{session.daysOfWeek ? session.daysOfWeek.map(getDayName).join(', ') : getDayName(session.dayOfWeek ?? 1)} <br/>
                             {session.recurringStartTime} ถึง {session.recurringEndTime}
                           </>
                         ) : (

@@ -57,8 +57,9 @@ export default function CheckInPage() {
         if (session.isRecurring) {
           const currentDay = now.getDay();
           const currentTime = now.toTimeString().slice(0, 5);
+          const isDayMatch = session.daysOfWeek ? session.daysOfWeek.includes(currentDay) : session.dayOfWeek === currentDay;
           if (
-            currentDay === session.dayOfWeek &&
+            isDayMatch &&
             currentTime >= (session.recurringStartTime || '') &&
             currentTime <= (session.recurringEndTime || '')
           ) {
