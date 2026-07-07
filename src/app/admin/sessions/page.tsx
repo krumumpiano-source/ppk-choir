@@ -6,6 +6,7 @@ import { ArrowLeft, Clock, Power, Loader2, MapPin, Save, Plus, Trash2, Calendar 
 import { getAllSessions, createScheduledSession, updateScheduledSession, deleteScheduledSession, ScheduledSession } from '@/lib/services/checkin';
 import MapSelector from '@/components/MapSelector';
 import ThaiDatePicker from '@/components/ThaiDatePicker';
+import TimePicker24h from '@/components/TimePicker24h';
 import { Timestamp } from 'firebase/firestore'; 
 
 export default function AdminSessionsPage() {
@@ -241,10 +242,10 @@ export default function AdminSessionsPage() {
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>ช่วงเวลา</label>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <TimePicker24h value={formData.startTime} onChange={val => setFormData({...formData, startTime: val})} />
                   <span>ถึง</span>
-                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+                  <TimePicker24h value={formData.endTime} onChange={val => setFormData({...formData, endTime: val})} />
                 </div>
               </div>
             </div>
@@ -254,14 +255,14 @@ export default function AdminSessionsPage() {
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันที่เริ่มต้น</label>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <ThaiDatePicker value={formData.startDate} onChange={val => setFormData({...formData, startDate: val})} style={{ flex: 1, minWidth: '160px' }} />
-                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} />
+                  <TimePicker24h value={formData.startTime} onChange={val => setFormData({...formData, startTime: val})} />
                 </div>
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันที่สิ้นสุด</label>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <ThaiDatePicker value={formData.endDate} onChange={val => setFormData({...formData, endDate: val})} style={{ flex: 1, minWidth: '160px' }} />
-                  <input type="time" className="input-field" style={{ flex: 1, minWidth: '100px' }} value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} />
+                  <TimePicker24h value={formData.endTime} onChange={val => setFormData({...formData, endTime: val})} />
                 </div>
               </div>
             </div>
