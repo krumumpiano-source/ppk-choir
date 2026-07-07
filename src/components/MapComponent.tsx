@@ -37,8 +37,8 @@ function LocationMarker({ lat, lng, onLocationChange }: { lat: number, lng: numb
   });
 
   useEffect(() => {
-    // Automatically get user location on mount if using the default Bangkok coordinates
-    if (Math.abs(lat - 13.736717) < 0.0001 && Math.abs(lng - 100.523186) < 0.0001) {
+    // Automatically get user location on mount if using the default Phayao coordinates
+    if (Math.abs(lat - 19.170294) < 0.0001 && Math.abs(lng - 99.910288) < 0.0001) {
       map.locate({ setView: true, maxZoom: 16 });
     }
   }, [map, lat, lng]);

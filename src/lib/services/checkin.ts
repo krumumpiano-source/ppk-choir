@@ -31,8 +31,8 @@ export interface ScheduledSession {
 
 // กำหนดค่า Default หากยังไม่มีใน DB
 export const DEFAULT_CHECKIN_SETTINGS = {
-  lat: 13.7563,
-  lng: 100.5018,
+  lat: 19.17029465512379,
+  lng: 99.91028862524004,
   radius: 10
 };
 
