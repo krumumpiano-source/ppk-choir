@@ -24,6 +24,7 @@ export interface ScheduledSession {
   createdAt?: any;
   isRecurring?: boolean;
   daysOfWeek?: number[]; // Array of days: [1, 3, 5] for Mon, Wed, Fri
+  dayOfWeek?: number; // Legacy backwards compatibility
   recurringStartTime?: string; // "16:00"
   recurringEndTime?: string; // "18:00"
 }
