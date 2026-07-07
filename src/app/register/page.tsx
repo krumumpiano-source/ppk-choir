@@ -207,6 +207,7 @@ export default function RegisterPage() {
             <Link href="/login" style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>
               เข้าสู่ระบบ
             </Link>
+            <br/><span style={{ fontSize: '0.7rem', opacity: 0.5 }}>v1.1 (Proxy)</span>
           </p>
         </div>
         
