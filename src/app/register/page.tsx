@@ -45,9 +45,20 @@ export default function RegisterPage() {
 
     try {
       // Upload photo first
-      const photoRef = ref(storage, `profiles/${studentId.trim()}-${Date.now()}`);
-      await uploadBytes(photoRef, photo);
-      const photoUrl = await getDownloadURL(photoRef);
+      const formData = new FormData();
+      formData.append('file', photo);
+      formData.append('path', `profiles/${studentId.trim()}-${Date.now()}`);
+
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const { url: photoUrl } = await uploadRes.json();
 
       const res = await createUser({
         id: studentId.trim(),
