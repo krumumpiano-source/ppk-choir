@@ -206,15 +206,24 @@ export default function AdminSessionsPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>วันในสัปดาห์ (ทำซ้ำทุกสัปดาห์)</label>
-                <select className="input-field" value={formData.dayOfWeek} onChange={e => setFormData({...formData, dayOfWeek: parseInt(e.target.value)})}>
-                  <option value={1}>ทุกวันจันทร์</option>
-                  <option value={2}>ทุกวันอังคาร</option>
-                  <option value={3}>ทุกวันพุธ</option>
-                  <option value={4}>ทุกวันพฤหัสบดี</option>
-                  <option value={5}>ทุกวันศุกร์</option>
-                  <option value={6}>ทุกวันเสาร์</option>
-                  <option value={0}>ทุกวันอาทิตย์</option>
-                </select>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {[{ id: 1, label: 'จ' }, { id: 2, label: 'อ' }, { id: 3, label: 'พ' }, { id: 4, label: 'พฤ' }, { id: 5, label: 'ศ' }, { id: 6, label: 'ส' }, { id: 0, label: 'อา' }].map(day => (
+                    <button 
+                      key={day.id}
+                      onClick={() => setFormData({...formData, dayOfWeek: day.id})}
+                      type="button"
+                      style={{
+                        width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--accent-primary)',
+                        background: formData.dayOfWeek === day.id ? 'var(--accent-primary)' : 'transparent',
+                        color: formData.dayOfWeek === day.id ? '#000' : 'var(--text-primary)',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: formData.dayOfWeek === day.id ? 'bold' : 'normal'
+                      }}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>ช่วงเวลา</label>
