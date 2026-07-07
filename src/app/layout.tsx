@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "นวัตกรรมการจัดการเรียนรู้และประเมินผลสำหรับชุมนุมขับร้องประสานเสียง PPK CHOIR",
 };
 
+import Sidebar from '@/components/Sidebar';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,6 +23,7 @@ export default function RootLayout({
     <html lang="th">
       <body className={`${inter.variable} ${notoSansThai.variable}`}>
         <AuthProvider>
+          <Sidebar />
           <main className="app-container">
             {children}
           </main>
