@@ -28,12 +28,13 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
     const totalPractices = practices.length;
     const assessedPractices = practices.filter(p => p.rubricScore).length;
 
-    const voiceGroups: Record<string, PracticeRecord[]> = {
-      Soprano: [], Alto: [], Tenor: [], Bass: []
-    };
+    const voiceGroups: Record<string, PracticeRecord[]> = {};
 
     practices.forEach(p => {
-      if (p.rubricScore && voiceGroups[p.voiceType]) {
+      if (p.rubricScore && p.voiceType) {
+        if (!voiceGroups[p.voiceType]) {
+          voiceGroups[p.voiceType] = [];
+        }
         voiceGroups[p.voiceType].push(p);
       }
     });

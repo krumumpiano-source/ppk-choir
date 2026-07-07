@@ -2,7 +2,11 @@ import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } f
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
 
-export type VoiceType = 'Soprano' | 'Alto' | 'Tenor' | 'Bass';
+// Support both legacy VoiceTypes and detailed detailed Choir sections
+export type VoiceType = 
+  | 'Soprano 1' | 'Soprano 2' | 'Alto 1' | 'Alto 2' 
+  | 'Tenor 1' | 'Tenor 2' | 'Baritone' | 'Bass' 
+  | 'Soprano' | 'Alto' | 'Tenor'; // Legacy for backward compatibility
 
 export interface LibraryItem {
   id?: string;

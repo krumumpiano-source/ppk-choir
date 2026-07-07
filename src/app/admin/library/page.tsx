@@ -88,18 +88,20 @@ export default function AdminLibraryPage() {
 
           <div className="input-group">
             <label>หมวดหมู่ (แนวเสียง)</label>
-            <select 
-              className="input-field"
-              value={voiceType}
-              onChange={(e) => setVoiceType(e.target.value as VoiceType)}
-              style={{ appearance: 'auto' }}
-            >
-              <option value="All">ทั้งหมด (All)</option>
-              <option value="Soprano">Soprano</option>
-              <option value="Alto">Alto</option>
-              <option value="Tenor">Tenor</option>
-              <option value="Bass">Bass</option>
-            </select>
+            <select className="input-field" value={voiceType} 
+                onChange={(e) => setVoiceType(e.target.value as VoiceType)}
+                style={{ appearance: 'auto' }}
+              >
+                <option value="All">ทั้งหมด (ทุกแนวเสียง)</option>
+                <option value="Soprano 1">Soprano 1</option>
+                <option value="Soprano 2">Soprano 2</option>
+                <option value="Alto 1">Alto 1</option>
+                <option value="Alto 2">Alto 2</option>
+                <option value="Tenor 1">Tenor 1</option>
+                <option value="Tenor 2">Tenor 2</option>
+                <option value="Baritone">Baritone</option>
+                <option value="Bass">Bass</option>
+              </select>
           </div>
 
           <div className="input-group">

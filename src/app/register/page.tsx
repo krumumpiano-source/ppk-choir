@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [studentId, setStudentId] = useState('');
   const [studentName, setStudentName] = useState('');
   const [room, setRoom] = useState('');
-  const [voiceType, setVoiceType] = useState<VoiceType>('Soprano');
+  const [voiceType, setVoiceType] = useState<VoiceType>('Soprano 1');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -166,19 +166,21 @@ export default function RegisterPage() {
 
           <div className="input-group" style={{ margin: 0 }}>
             <label htmlFor="voiceType">แนวเสียง (Voice Type)</label>
-            <select 
-              id="voiceType"
-              value={voiceType}
-              onChange={(e) => setVoiceType(e.target.value as VoiceType)}
-              className="input-field"
-              style={{ appearance: 'auto' }}
-              disabled={loading}
-            >
-              <option value="Soprano">Soprano</option>
-              <option value="Alto">Alto</option>
-              <option value="Tenor">Tenor</option>
-              <option value="Bass">Bass</option>
-            </select>
+              <select 
+                className="input-field" 
+                value={voiceType} 
+                onChange={(e) => setVoiceType(e.target.value as VoiceType)}
+                style={{ appearance: 'auto' }}
+              >
+                <option value="Soprano 1">Soprano 1</option>
+                <option value="Soprano 2">Soprano 2</option>
+                <option value="Alto 1">Alto 1</option>
+                <option value="Alto 2">Alto 2</option>
+                <option value="Tenor 1">Tenor 1</option>
+                <option value="Tenor 2">Tenor 2</option>
+                <option value="Baritone">Baritone</option>
+                <option value="Bass">Bass</option>
+              </select>
           </div>
           
           <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1rem', width: '100%', opacity: loading ? 0.7 : 1 }}>

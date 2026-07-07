@@ -7,7 +7,7 @@ import { getPeerPractices, likePracticeRecord, PracticeRecord } from '../../lib/
 import { VoiceType } from '../../lib/services/library';
 
 export default function PeersPage() {
-  const [studentVoiceType, setStudentVoiceType] = useState<VoiceType>('Soprano'); // สำหรับ Demo
+  const [studentVoiceType, setStudentVoiceType] = useState<VoiceType>('Soprano 1'); // สำหรับ Demo
   const [practices, setPractices] = useState<PracticeRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [likingId, setLikingId] = useState<string | null>(null);

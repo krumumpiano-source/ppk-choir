@@ -16,7 +16,7 @@ export default function AdminUsersPage() {
   // Form State
   const [newId, setNewId] = useState('');
   const [newName, setNewName] = useState('');
-  const [newVoiceType, setNewVoiceType] = useState<VoiceType>('Soprano');
+  const [newVoiceType, setNewVoiceType] = useState<VoiceType>('Soprano 1');
   const [newRole, setNewRole] = useState<UserRole>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -112,9 +112,13 @@ export default function AdminUsersPage() {
             <div className="input-group">
               <label>แนวเสียง</label>
               <select className="input-field" value={newVoiceType} onChange={e => setNewVoiceType(e.target.value as VoiceType)} style={{ appearance: 'auto' }}>
-                <option value="Soprano">Soprano</option>
-                <option value="Alto">Alto</option>
-                <option value="Tenor">Tenor</option>
+                <option value="Soprano 1">Soprano 1</option>
+                <option value="Soprano 2">Soprano 2</option>
+                <option value="Alto 1">Alto 1</option>
+                <option value="Alto 2">Alto 2</option>
+                <option value="Tenor 1">Tenor 1</option>
+                <option value="Tenor 2">Tenor 2</option>
+                <option value="Baritone">Baritone</option>
                 <option value="Bass">Bass</option>
                 <option value="All">All (สำหรับ Admin)</option>
               </select>

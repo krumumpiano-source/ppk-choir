@@ -8,7 +8,7 @@ import AudioPlayer from '../../components/AudioPlayer';
 import { getLibraryItems, VoiceType, LibraryItem } from '../../lib/services/library';
 import { useAuth } from '@/components/providers/AuthProvider';
 
-const VOICE_TABS: (VoiceType | 'All')[] = ['All', 'Soprano', 'Alto', 'Tenor', 'Bass'];
+const VOICE_TABS: (VoiceType | 'All')[] = ['All', 'Soprano 1', 'Soprano 2', 'Alto 1', 'Alto 2', 'Tenor 1', 'Tenor 2', 'Baritone', 'Bass'];
 
 export default function LibraryPage() {
   const { user, loading: authLoading } = useAuth();

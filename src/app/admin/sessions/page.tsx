@@ -187,7 +187,7 @@ export default function AdminSessionsPage() {
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>กลุ่มเป้าหมายที่ต้องเช็คชื่อ</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {['All', 'Soprano', 'Alto', 'Tenor', 'Bass'].map(g => (
+              {['All', 'Soprano 1', 'Soprano 2', 'Alto 1', 'Alto 2', 'Tenor 1', 'Tenor 2', 'Baritone', 'Bass'].map(g => (
                 <button 
                   key={g}
                   onClick={() => handleTargetChange(g)}
