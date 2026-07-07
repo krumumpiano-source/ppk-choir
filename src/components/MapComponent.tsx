@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -29,7 +29,19 @@ function LocationMarker({ lat, lng, onLocationChange }: { lat: number, lng: numb
       onLocationChange(e.latlng.lat, e.latlng.lng);
       map.flyTo(e.latlng, map.getZoom());
     },
+    locationfound(e) {
+      setPosition(e.latlng);
+      onLocationChange(e.latlng.lat, e.latlng.lng);
+      map.flyTo(e.latlng, map.getZoom());
+    }
   });
+
+  useEffect(() => {
+    // Automatically get user location on mount if using the default Bangkok coordinates
+    if (Math.abs(lat - 13.736717) < 0.0001 && Math.abs(lng - 100.523186) < 0.0001) {
+      map.locate({ setView: true, maxZoom: 16 });
+    }
+  }, [map, lat, lng]);
 
   return position === null ? null : (
     <Marker position={position}></Marker>
