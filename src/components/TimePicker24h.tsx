@@ -24,22 +24,24 @@ export default function TimePicker24h({ value, onChange, className, style }: Pro
       <select 
         value={h} 
         onChange={handleHour} 
-        style={{ padding: '0.75rem 0.5rem', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255, 255, 255, 0.2)', outline: 'none' }}
+        className="input-field"
+        style={{ padding: '0.75rem 0.5rem', width: '70px', marginBottom: 0 }}
       >
         {Array.from({length: 24}).map((_, i) => {
           const val = String(i).padStart(2, '0');
-          return <option key={val} value={val}>{val}</option>;
+          return <option key={val} value={val} style={{ background: '#1a1a2e', color: '#fff' }}>{val}</option>;
         })}
       </select>
       <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>:</span>
       <select 
         value={m} 
         onChange={handleMin} 
-        style={{ padding: '0.75rem 0.5rem', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-primary)', border: '1px solid rgba(255, 255, 255, 0.2)', outline: 'none' }}
+        className="input-field"
+        style={{ padding: '0.75rem 0.5rem', width: '70px', marginBottom: 0 }}
       >
-        {Array.from({length: 12}).map((_, i) => { // intervals of 5 minutes are usually better, but let's do every minute just in case. Or maybe just every minute.
-          const val = String(i * 5).padStart(2, '0');
-          return <option key={val} value={val}>{val}</option>;
+        {Array.from({length: 60}).map((_, i) => { // Changed to every minute for more flexibility
+          const val = String(i).padStart(2, '0');
+          return <option key={val} value={val} style={{ background: '#1a1a2e', color: '#fff' }}>{val}</option>;
         })}
       </select>
     </div>
