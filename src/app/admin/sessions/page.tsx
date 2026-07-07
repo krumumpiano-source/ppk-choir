@@ -9,6 +9,39 @@ import ThaiDatePicker from '@/components/ThaiDatePicker';
 import TimePicker24h from '@/components/TimePicker24h';
 import { Timestamp } from 'firebase/firestore'; 
 
+function CoordsInput({ lat, lng, onChange }: { lat: number, lng: number, onChange: (lat: number, lng: number) => void }) {
+  const [val, setVal] = useState(`${lat}, ${lng}`);
+
+  useEffect(() => {
+    const parts = val.split(',');
+    const currentLat = parseFloat(parts[0] || '');
+    const currentLng = parseFloat(parts[1] || '');
+    if (Math.abs(currentLat - lat) > 0.000001 || Math.abs(currentLng - lng) > 0.000001 || isNaN(currentLat) || isNaN(currentLng)) {
+      setVal(`${lat}, ${lng}`);
+    }
+  }, [lat, lng]);
+
+  return (
+    <input 
+      type="text" 
+      className="input-field" 
+      value={val} 
+      onChange={e => {
+        setVal(e.target.value);
+        const parts = e.target.value.split(',');
+        if (parts.length >= 2) {
+          const newLat = parseFloat(parts[0].trim());
+          const newLng = parseFloat(parts[1].trim());
+          if (!isNaN(newLat) && !isNaN(newLng)) {
+            onChange(newLat, newLng);
+          }
+        }
+      }} 
+      placeholder="ตัวอย่าง: 19.17029, 99.91028"
+    />
+  );
+}
+
 export default function AdminSessionsPage() {
   const [sessions, setSessions] = useState<ScheduledSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,12 +308,12 @@ export default function AdminSessionsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
             <div>
               <div className="input-group">
-                <label>ละติจูด</label>
-                <input type="number" step="any" className="input-field" value={formData.lat} onChange={e => setFormData({...formData, lat: parseFloat(e.target.value) || 0})} />
-              </div>
-              <div className="input-group">
-                <label>ลองจิจูด</label>
-                <input type="number" step="any" className="input-field" value={formData.lng} onChange={e => setFormData({...formData, lng: parseFloat(e.target.value) || 0})} />
+                <label>พิกัด (ละติจูด, ลองจิจูด)</label>
+                <CoordsInput 
+                  lat={formData.lat} 
+                  lng={formData.lng} 
+                  onChange={(lat, lng) => setFormData(prev => ({ ...prev, lat, lng }))}
+                />
               </div>
               <div className="input-group">
                 <label>รัศมีอนุญาต (เมตร)</label>
