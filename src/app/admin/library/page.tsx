@@ -20,7 +20,7 @@ export default function AdminLibraryPage() {
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/admin/login');
+      router.push('/login');
     }
   }, [user, authLoading, router]);
 

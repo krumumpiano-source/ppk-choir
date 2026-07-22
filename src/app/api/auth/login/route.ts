@@ -26,6 +26,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }, { status: 401 });
     }
 
+    if (user.status === 'pending') {
+      return NextResponse.json({ error: 'บัญชีของคุณอยู่ระหว่างรอการอนุมัติจากแอดมิน' }, { status: 403 });
+    }
+    if (user.status === 'rejected') {
+      return NextResponse.json({ error: 'บัญชีของคุณไม่ได้รับการอนุมัติ' }, { status: 403 });
+    }
+
     const payload = { 
       id: user.id, 
       studentId: user.studentId, 
@@ -34,6 +41,7 @@ export async function POST(request: Request) {
       role: user.role, 
       voiceType: user.voiceType, 
       section: user.section,
+      room: user.section,
       profileUrl: user.profileUrl
     };
     

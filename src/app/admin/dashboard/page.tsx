@@ -12,13 +12,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
-      router.push('/admin/login');
+      router.push('/login');
     }
   }, [user, loading, router]);
 
   const handleLogout = async () => {
     await logout();
-    router.push('/admin/login');
+    router.push('/login');
   };
 
   if (loading || !user) return null;

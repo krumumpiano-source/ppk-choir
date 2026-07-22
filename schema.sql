@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL DEFAULT 'student',
   voiceType TEXT,
   section TEXT,
+  status TEXT DEFAULT 'approved',
   profileUrl TEXT,
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -42,9 +43,14 @@ CREATE TABLE IF NOT EXISTS checkins (
   studentId TEXT NOT NULL,
   studentName TEXT NOT NULL,
   voiceType TEXT,
+  location TEXT,
+  devicePlatform TEXT,
+  room TEXT,
+  sessionId TEXT,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
 );
+
 
 -- gamification table
 CREATE TABLE IF NOT EXISTS gamification (

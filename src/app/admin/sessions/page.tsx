@@ -68,11 +68,18 @@ export default function AdminSessionsPage() {
     const now = new Date();
     const later = new Date(now.getTime() + 2 * 60 * 60 * 1000);
     
+    const formatDateLocal = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
     setFormData(prev => ({
       ...prev,
-      startDate: now.toISOString().split('T')[0],
+      startDate: formatDateLocal(now),
       startTime: now.toTimeString().slice(0, 5),
-      endDate: later.toISOString().split('T')[0],
+      endDate: formatDateLocal(later),
       endTime: later.toTimeString().slice(0, 5)
     }));
   }, []);
