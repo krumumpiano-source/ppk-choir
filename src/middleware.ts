@@ -6,7 +6,9 @@ const protectedPaths = ['/admin'];
 // Path สำหรับหน้า Login
 const loginPath = '/login';
 
-export function proxy(request: NextRequest) {
+export const runtime = 'edge';
+
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ตรวจสอบว่าเป็น path ที่อยู่ภายใต้ /admin หรือไม่
