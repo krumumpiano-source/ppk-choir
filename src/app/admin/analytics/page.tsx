@@ -1,6 +1,6 @@
 'use client';
 
-export const runtime = 'edge';import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, LineChart, Lightbulb, Beaker, Copy, Loader2, CheckCircle2 } from 'lucide-react';
