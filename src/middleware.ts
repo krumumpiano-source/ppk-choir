@@ -6,8 +6,6 @@ const protectedPaths = ['/admin'];
 // Path สำหรับหน้า Login
 const loginPath = '/login';
 
-export const runtime = 'edge';
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
