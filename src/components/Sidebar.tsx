@@ -16,7 +16,8 @@ import {
   X,
   LogOut,
   Mic,
-  UsersRound
+  UsersRound,
+  PieChart
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -28,15 +29,26 @@ export default function Sidebar() {
   if (!user) return null;
 
   const isAdmin = user.role === 'admin';
+  const isSectionLeader = user.role === 'section_leader';
 
   const adminLinks = [
     { name: 'แดชบอร์ด', path: '/admin/dashboard', icon: Home },
+    { name: 'คัดเลือกช่วงเสียง', path: '/admin/auditions', icon: Mic },
+    { name: 'จัดสรรแนวเสียงวง', path: '/admin/voice-allocation', icon: PieChart },
     { name: 'จัดการกิจกรรม', path: '/admin/sessions', icon: MapPin },
     { name: 'ตรวจประเมิน', path: '/admin/assess', icon: CheckSquare },
     { name: 'คลังสื่อ', path: '/admin/library', icon: Music },
     { name: 'จัดการผู้ใช้งาน', path: '/admin/users', icon: Users },
     { name: 'สถิติ Analytics', path: '/admin/analytics', icon: BarChart2 },
     { name: 'ออกรายงาน', path: '/admin/reports', icon: FileText },
+  ];
+
+  const sectionLeaderLinks = [
+    { name: 'หน้าแรก', path: '/dashboard', icon: Home },
+    { name: 'คัดเลือกช่วงเสียง', path: '/admin/auditions', icon: Mic },
+    { name: 'คลังสื่อ', path: '/library', icon: Music },
+    { name: 'ส่งงาน/ฝึกซ้อม', path: '/practice', icon: Mic },
+    { name: 'เพียร์ประเมิน', path: '/peers', icon: UsersRound },
   ];
 
   const studentLinks = [
@@ -46,7 +58,8 @@ export default function Sidebar() {
     { name: 'เพียร์ประเมิน', path: '/peers', icon: UsersRound },
   ];
 
-  const links = isAdmin ? adminLinks : studentLinks;
+  const links = isAdmin ? adminLinks : isSectionLeader ? sectionLeaderLinks : studentLinks;
+
 
   const handleLogout = async () => {
     await logout();

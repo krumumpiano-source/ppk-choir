@@ -84,3 +84,18 @@ CREATE TABLE IF NOT EXISTS settings (
   data TEXT
 );
 
+-- auditions table
+CREATE TABLE IF NOT EXISTS auditions (
+  id TEXT PRIMARY KEY,
+  studentId TEXT NOT NULL,
+  lowestNote TEXT NOT NULL,
+  highestNote TEXT NOT NULL,
+  timbreQuality TEXT,
+  pitchAccuracy INTEGER DEFAULT 5,
+  auditedBy TEXT,
+  auditedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  notes TEXT,
+  FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
