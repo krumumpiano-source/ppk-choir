@@ -39,12 +39,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as any;
     const studentId = body.studentId || body.id;
-    const { name, role, voiceType, status, nickname, phone, lineId, parentName, parentPhone, parentLineId, address, advisorName } = body;
+    const { name, role, voiceType, status, nickname, phone, lineId, parentName, parentPhone, parentLineId, parentEmail, address, advisorName } = body;
     const section = body.section || body.room;
     const profileUrl = body.profileUrl || body.photoUrl;
     
     if (!studentId || !name || !nickname || !phone || !lineId || !parentName || !parentPhone || !parentLineId || !address || !advisorName) {
-      return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง' }, { status: 400 });
+      return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นอีเมลผู้ปกครอง)' }, { status: 400 });
     }
 
     const db = getDb();
@@ -63,12 +63,12 @@ export async function POST(request: Request) {
     await db.prepare(
       `INSERT INTO users (
         id, studentId, name, nickname, email, phone, lineId, 
-        parentName, parentPhone, parentLineId, address, advisorName, 
+        parentName, parentPhone, parentLineId, parentEmail, address, advisorName, 
         passwordHash, role, voiceType, section, status, profileUrl
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       id, studentId, name, nickname, email, phone, lineId,
-      parentName, parentPhone, parentLineId, address, advisorName,
+      parentName, parentPhone, parentLineId, parentEmail || '', address, advisorName,
       passwordHash, role || 'student', voiceType || 'All', 
       section || '', status || 'approved', profileUrl || ''
     ).run();

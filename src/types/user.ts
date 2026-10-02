@@ -24,6 +24,7 @@ export interface User {
   parentName: string;
   parentPhone: string;
   parentLineId: string;
+  parentEmail?: string;
   address: string;
   advisorName: string;
   voiceType: string;

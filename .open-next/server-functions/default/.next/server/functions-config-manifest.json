@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "functions": {
+    "/admin/actions/logout": {},
+    "/api/analytics": {},
+    "/api/auditions": {},
+    "/api/auth/login": {},
+    "/api/auth/logout": {},
+    "/api/auth/session": {},
+    "/api/checkin": {},
+    "/api/checkin/sessions": {},
+    "/api/gamification": {},
+    "/api/library": {},
+    "/api/library/[id]": {},
+    "/api/practice": {},
+    "/api/practice/[id]": {},
+    "/api/reports": {},
+    "/api/users": {},
+    "/api/users/[id]": {},
+    "/api/voice-allocation": {}
+  }
+}

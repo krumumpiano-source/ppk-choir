@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [parentName, setParentName] = useState('');
   const [parentPhone, setParentPhone] = useState('');
   const [parentLineId, setParentLineId] = useState('');
+  const [parentEmail, setParentEmail] = useState('');
   const [address, setAddress] = useState('');
   const [advisorName, setAdvisorName] = useState('');
   
@@ -31,7 +32,7 @@ export default function RegisterPage() {
     e.preventDefault();
     
     if (!studentId.trim() || !studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง');
+      toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นอีเมลผู้ปกครอง)');
       return;
     }
 
@@ -47,6 +48,7 @@ export default function RegisterPage() {
         parentName: parentName.trim(),
         parentPhone: parentPhone.trim(),
         parentLineId: parentLineId.trim(),
+        parentEmail: parentEmail.trim(),
         address: address.trim(),
         advisorName: advisorName.trim(),
         email: `${studentId.trim()}@ppk-choir.app`,
@@ -268,6 +270,19 @@ export default function RegisterPage() {
               placeholder="ไอดีไลน์ของผู้ปกครอง"
               disabled={loading}
               required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="parentEmail">อีเมลผู้ปกครอง <span style={{color: 'var(--text-secondary)', fontSize: '0.8rem'}}>(ไม่บังคับ)</span></label>
+            <input 
+              type="email" 
+              id="parentEmail" 
+              value={parentEmail}
+              onChange={(e) => setParentEmail(e.target.value)}
+              className="input-field" 
+              placeholder="สำหรับเข้าสู่ระบบตรวจสอบการเข้าร่วมกิจกรรม (ระบุทีหลังได้)"
+              disabled={loading}
             />
           </div>
 

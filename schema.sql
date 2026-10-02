@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   parentName TEXT,
   parentPhone TEXT,
   parentLineId TEXT,
+  parentEmail TEXT,
   address TEXT,
   advisorName TEXT,
   passwordHash TEXT,

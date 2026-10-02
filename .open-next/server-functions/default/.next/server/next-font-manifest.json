@@ -1,0 +1,83 @@
+{
+  "app": {
+    "[project]/src/app/_not-found/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/analytics/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/assess/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/auditions/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/dashboard/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/library/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/reports/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/sessions/[id]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/sessions/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/users/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/admin/voice-allocation/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/check-in/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/dashboard/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/library/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/login/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/peers/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/practice/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ],
+    "[project]/src/app/register/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/bfd813093b8ca1bb-s.p.3ok2djvs6w93k.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}
