@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -22,26 +22,37 @@ interface MapComponentProps {
 
 function LocationMarker({ lat, lng, onLocationChange }: { lat: number, lng: number, onLocationChange: (lat: number, lng: number) => void }) {
   const [position, setPosition] = useState<L.LatLng>(new L.LatLng(lat, lng));
+  const onLocationChangeRef = useRef(onLocationChange);
+  const hasLocated = useRef(false);
+
+  // Keep the ref updated without triggering re-renders
+  useEffect(() => {
+    onLocationChangeRef.current = onLocationChange;
+  });
 
   const map = useMapEvents({
     click(e) {
       setPosition(e.latlng);
-      onLocationChange(e.latlng.lat, e.latlng.lng);
+      onLocationChangeRef.current(e.latlng.lat, e.latlng.lng);
       map.flyTo(e.latlng, map.getZoom());
     },
     locationfound(e) {
       setPosition(e.latlng);
-      onLocationChange(e.latlng.lat, e.latlng.lng);
+      onLocationChangeRef.current(e.latlng.lat, e.latlng.lng);
       map.flyTo(e.latlng, map.getZoom());
     }
   });
 
   useEffect(() => {
-    // Automatically get user location on mount if using the default Phayao coordinates
-    if (Math.abs(lat - 19.170294) < 0.0001 && Math.abs(lng - 99.910288) < 0.0001) {
-      map.locate({ setView: true, maxZoom: 16 });
+    // Only auto-locate once on mount if using default Phayao coords
+    if (!hasLocated.current) {
+      hasLocated.current = true;
+      if (Math.abs(lat - 19.170294) < 0.0001 && Math.abs(lng - 99.910288) < 0.0001) {
+        map.locate({ setView: true, maxZoom: 16 });
+      }
     }
-  }, [map, lat, lng]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
 
   return position === null ? null : (
     <Marker position={position}></Marker>
