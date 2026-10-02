@@ -190,7 +190,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="phone">เบอร์โทรศัพท์ <span style={{color: 'red'}}>*</span></label>
+            <label htmlFor="phone">เบอร์โทรศัพท์นักเรียน <span style={{color: 'red'}}>*</span></label>
             <input 
               type="tel" 
               id="phone" 
@@ -204,7 +204,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="lineId">Line ID <span style={{color: 'red'}}>*</span></label>
+            <label htmlFor="lineId">Line ID นักเรียน <span style={{color: 'red'}}>*</span></label>
             <input 
               type="text" 
               id="lineId" 
