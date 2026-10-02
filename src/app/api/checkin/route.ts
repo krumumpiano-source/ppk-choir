@@ -3,6 +3,25 @@ import { getDb } from '@/lib/db';
 
 export const runtime = 'edge';
 
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const sessionId = url.searchParams.get('sessionId');
+    const db = getDb();
+    
+    if (!sessionId) {
+      return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
+    }
+
+    const result = await db.prepare('SELECT * FROM checkins WHERE sessionId = ? ORDER BY timestamp DESC').bind(sessionId).all<any>();
+    
+    return NextResponse.json({ checkins: result.results });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json() as any;

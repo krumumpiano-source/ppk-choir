@@ -154,3 +154,15 @@ export async function saveCheckIn(data: CheckInRecord) {
     return { success: false, error: error.message };
   }
 }
+
+export async function getSessionCheckIns(sessionId: string): Promise<CheckInRecord[]> {
+  try {
+    const res = await fetch(`/api/checkin?sessionId=${sessionId}`);
+    if (!res.ok) return [];
+    const data = (await res.json()) as any;
+    return data.checkins;
+  } catch (error) {
+    console.error('Error getting session checkins:', error);
+    return [];
+  }
+}

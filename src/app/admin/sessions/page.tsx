@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Power, Loader2, MapPin, Save, Plus, Trash2, Calendar } from 'lucide-react';
+import { ArrowLeft, Clock, Power, Loader2, MapPin, Save, Plus, Trash2, Calendar, Users } from 'lucide-react';
 import { getAllSessions, createScheduledSession, updateScheduledSession, deleteScheduledSession, ScheduledSession } from '@/lib/services/checkin';
 import MapSelector from '@/components/MapSelector';
 import ThaiDatePicker from '@/components/ThaiDatePicker';
@@ -403,6 +403,17 @@ export default function AdminSessionsPage() {
                       </td>
                       <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <Link
+                            href={`/admin/sessions/${session.id}`}
+                            style={{ 
+                              padding: '0.5rem', borderRadius: '8px', cursor: 'pointer',
+                              background: 'var(--accent-primary)', border: 'none',
+                              color: '#000'
+                            }}
+                            title="ดูรายชื่อที่เช็คชื่อแล้ว"
+                          >
+                            <Users size={18} />
+                          </Link>
                           <button 
                             onClick={() => toggleSessionStatus(session)}
                             style={{ 

@@ -45,6 +45,7 @@ export default function Sidebar() {
 
   const sectionLeaderLinks = [
     { name: 'หน้าแรก', path: '/dashboard', icon: Home },
+    { name: 'เช็คชื่อ (GPS)', path: '/check-in', icon: MapPin },
     { name: 'คัดเลือกช่วงเสียง', path: '/admin/auditions', icon: Mic },
     { name: 'คลังสื่อ', path: '/library', icon: Music },
     { name: 'ส่งงาน/ฝึกซ้อม', path: '/practice', icon: Mic },
@@ -53,6 +54,7 @@ export default function Sidebar() {
 
   const studentLinks = [
     { name: 'หน้าแรก', path: '/dashboard', icon: Home },
+    { name: 'เช็คชื่อ (GPS)', path: '/check-in', icon: MapPin },
     { name: 'คลังสื่อ', path: '/library', icon: Music },
     { name: 'ส่งงาน/ฝึกซ้อม', path: '/practice', icon: Mic },
     { name: 'เพียร์ประเมิน', path: '/peers', icon: UsersRound },
