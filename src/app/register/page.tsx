@@ -25,8 +25,11 @@ export default function RegisterPage() {
   
   const [room, setRoom] = useState('');
   const [voiceType, setVoiceType] = useState<VoiceType>('Soprano 1');
+  const [bandPosition, setBandPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const BAND_POSITIONS = ['เปียโน', 'กลอง', 'เบส', 'กีต้าร์', 'คีย์บอร์ด', 'นักร้องนำ'];
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +56,7 @@ export default function RegisterPage() {
         advisorName: advisorName.trim(),
         email: `${studentId.trim()}@ppk-choir.app`,
         voiceType,
+        bandPosition: bandPosition || undefined,
         role: 'student',
         status: 'pending',
         photoUrl: photoUrl.trim() || undefined,
@@ -305,6 +309,30 @@ export default function RegisterPage() {
                 <option value="Baritone">Baritone</option>
                 <option value="Bass">Bass</option>
               </select>
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label>ตำแหน่งในวงสตริง <span style={{color: 'var(--text-secondary)', fontSize: '0.8rem'}}>(ไม่บังคับ — เลือกถ้าเล่นเครื่องดนตรีในวงด้วย)</span></label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.3rem' }}>
+              {BAND_POSITIONS.map(pos => (
+                <button
+                  key={pos}
+                  type="button"
+                  onClick={() => setBandPosition(prev => prev === pos ? '' : pos)}
+                  disabled={loading}
+                  style={{
+                    padding: '0.5rem 1rem', borderRadius: '50px',
+                    border: '1px solid var(--accent-primary)',
+                    background: bandPosition === pos ? 'var(--accent-primary)' : 'transparent',
+                    color: bandPosition === pos ? '#000' : 'var(--text-primary)',
+                    cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s'
+                  }}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
+            {bandPosition && <p style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginTop: '0.5rem' }}>เลือก: {bandPosition} (คลิกอีกครั้งเพื่อยกเลิก)</p>}
           </div>
           
           <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1rem', width: '100%', opacity: loading ? 0.7 : 1 }}>

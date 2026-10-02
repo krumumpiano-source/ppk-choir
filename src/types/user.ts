@@ -1,5 +1,6 @@
 export type UserRole = 'student' | 'section_leader' | 'admin';
 export type UserStatus = 'pending' | 'approved' | 'rejected';
+export type BandPosition = 'เปียโน' | 'กลอง' | 'เบส' | 'กีต้าร์' | 'คีย์บอร์ด' | 'นักร้องนำ' | '';
 
 export type VoicePart = 
   | 'Soprano 1' 
@@ -28,6 +29,7 @@ export interface User {
   address: string;
   advisorName: string;
   voiceType: string;
+  bandPosition?: string;
   role: UserRole;
   status?: UserStatus;
   photoUrl?: string;

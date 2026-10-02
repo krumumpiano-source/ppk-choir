@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as any;
     const studentId = body.studentId || body.id;
-    const { name, role, voiceType, status, nickname, phone, lineId, parentName, parentPhone, parentLineId, parentEmail, address, advisorName } = body;
+    const { name, role, voiceType, status, nickname, phone, lineId, parentName, parentPhone, parentLineId, parentEmail, address, advisorName, bandPosition } = body;
     const section = body.section || body.room;
     const profileUrl = body.profileUrl || body.photoUrl;
     
@@ -64,12 +64,12 @@ export async function POST(request: Request) {
       `INSERT INTO users (
         id, studentId, name, nickname, email, phone, lineId, 
         parentName, parentPhone, parentLineId, parentEmail, address, advisorName, 
-        passwordHash, role, voiceType, section, status, profileUrl
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        passwordHash, role, voiceType, bandPosition, section, status, profileUrl
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       id, studentId, name, nickname, email, phone, lineId,
       parentName, parentPhone, parentLineId, parentEmail || '', address, advisorName,
-      passwordHash, role || 'student', voiceType || 'All', 
+      passwordHash, role || 'student', voiceType || 'All', bandPosition || '',
       section || '', status || 'approved', profileUrl || ''
     ).run();
     
