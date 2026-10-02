@@ -13,6 +13,15 @@ export default function RegisterPage() {
   
   const [studentId, setStudentId] = useState('');
   const [studentName, setStudentName] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [phone, setPhone] = useState('');
+  const [lineId, setLineId] = useState('');
+  const [parentName, setParentName] = useState('');
+  const [parentPhone, setParentPhone] = useState('');
+  const [parentLineId, setParentLineId] = useState('');
+  const [address, setAddress] = useState('');
+  const [advisorName, setAdvisorName] = useState('');
+  
   const [room, setRoom] = useState('');
   const [voiceType, setVoiceType] = useState<VoiceType>('Soprano 1');
   const [photoUrl, setPhotoUrl] = useState('');
@@ -21,8 +30,8 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentId.trim() || !studentName.trim() || !room.trim()) {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
+    if (!studentId.trim() || !studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
+      toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง');
       return;
     }
 
@@ -32,6 +41,15 @@ export default function RegisterPage() {
       const res = await createUser({
         id: studentId.trim(),
         name: studentName.trim(),
+        nickname: nickname.trim(),
+        phone: phone.trim(),
+        lineId: lineId.trim(),
+        parentName: parentName.trim(),
+        parentPhone: parentPhone.trim(),
+        parentLineId: parentLineId.trim(),
+        address: address.trim(),
+        advisorName: advisorName.trim(),
+        email: `${studentId.trim()}@ppk-choir.app`,
         voiceType,
         role: 'student',
         status: 'pending',
@@ -92,7 +110,7 @@ export default function RegisterPage() {
           </div>
           
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="studentId">รหัสนักเรียน</label>
+            <label htmlFor="studentId">รหัสนักเรียน <span style={{color: 'red'}}>*</span></label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <User size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
               <input 
@@ -104,12 +122,13 @@ export default function RegisterPage() {
                 placeholder="เช่น 65001"
                 style={{ width: '100%', paddingLeft: '2.8rem' }}
                 disabled={loading}
+                required
               />
             </div>
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="studentName">ชื่อ-สกุล</label>
+            <label htmlFor="studentName">ชื่อ-สกุล <span style={{color: 'red'}}>*</span></label>
             <input 
               type="text" 
               id="studentName" 
@@ -118,11 +137,26 @@ export default function RegisterPage() {
               className="input-field" 
               placeholder="เช่น สมชาย ใจดี"
               disabled={loading}
+              required
             />
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="room">ห้องเรียน</label>
+            <label htmlFor="nickname">ชื่อเล่น <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="text" 
+              id="nickname" 
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              className="input-field" 
+              placeholder="ชื่อเล่น"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="room">ห้องเรียน <span style={{color: 'red'}}>*</span></label>
             <input 
               type="text" 
               id="room" 
@@ -131,11 +165,116 @@ export default function RegisterPage() {
               className="input-field" 
               placeholder="เช่น ม.4/1 หรือ 4/1"
               disabled={loading}
+              required
             />
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="voiceType">แนวเสียง (Voice Type)</label>
+            <label htmlFor="advisorName">ชื่อครูที่ปรึกษา <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="text" 
+              id="advisorName" 
+              value={advisorName}
+              onChange={(e) => setAdvisorName(e.target.value)}
+              className="input-field" 
+              placeholder="ชื่อครูที่ปรึกษา"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="phone">เบอร์โทรศัพท์ <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="tel" 
+              id="phone" 
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="input-field" 
+              placeholder="เช่น 0812345678"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="lineId">Line ID <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="text" 
+              id="lineId" 
+              value={lineId}
+              onChange={(e) => setLineId(e.target.value)}
+              className="input-field" 
+              placeholder="ไอดีไลน์ของนักเรียน"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="address">ที่อยู่ <span style={{color: 'red'}}>*</span></label>
+            <textarea 
+              id="address" 
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="input-field" 
+              placeholder="ที่อยู่ปัจจุบัน"
+              disabled={loading}
+              required
+              rows={2}
+            />
+          </div>
+
+          <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '1rem 0' }} />
+
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--accent-primary)' }}>ข้อมูลผู้ปกครอง</h3>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="parentName">ชื่อ-สกุล ผู้ปกครอง <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="text" 
+              id="parentName" 
+              value={parentName}
+              onChange={(e) => setParentName(e.target.value)}
+              className="input-field" 
+              placeholder="ชื่อและนามสกุลของผู้ปกครอง"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="parentPhone">เบอร์โทรศัพท์ผู้ปกครอง <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="tel" 
+              id="parentPhone" 
+              value={parentPhone}
+              onChange={(e) => setParentPhone(e.target.value)}
+              className="input-field" 
+              placeholder="เบอร์โทรศัพท์สำหรับติดต่อฉุกเฉิน"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="parentLineId">Line ID ผู้ปกครอง <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="text" 
+              id="parentLineId" 
+              value={parentLineId}
+              onChange={(e) => setParentLineId(e.target.value)}
+              className="input-field" 
+              placeholder="ไอดีไลน์ของผู้ปกครอง"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '1rem 0' }} />
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="voiceType">แนวเสียง (Voice Type) <span style={{color: 'red'}}>*</span></label>
               <select 
                 className="input-field" 
                 value={voiceType} 

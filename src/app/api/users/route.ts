@@ -39,12 +39,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as any;
     const studentId = body.studentId || body.id;
-    const { name, role, voiceType, status } = body;
+    const { name, role, voiceType, status, nickname, phone, lineId, parentName, parentPhone, parentLineId, address, advisorName } = body;
     const section = body.section || body.room;
     const profileUrl = body.profileUrl || body.photoUrl;
     
-    if (!studentId || !name) {
-      return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' }, { status: 400 });
+    if (!studentId || !name || !nickname || !phone || !lineId || !parentName || !parentPhone || !parentLineId || !address || !advisorName) {
+      return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง' }, { status: 400 });
     }
 
     const db = getDb();
@@ -61,18 +61,16 @@ export async function POST(request: Request) {
     
     const id = crypto.randomUUID();
     await db.prepare(
-      'INSERT INTO users (id, studentId, name, email, passwordHash, role, voiceType, section, status, profileUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      `INSERT INTO users (
+        id, studentId, name, nickname, email, phone, lineId, 
+        parentName, parentPhone, parentLineId, address, advisorName, 
+        passwordHash, role, voiceType, section, status, profileUrl
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
-      id, 
-      studentId, 
-      name, 
-      email, 
-      passwordHash, 
-      role || 'student', 
-      voiceType || 'All', 
-      section || '', 
-      status || 'approved',
-      profileUrl || ''
+      id, studentId, name, nickname, email, phone, lineId,
+      parentName, parentPhone, parentLineId, address, advisorName,
+      passwordHash, role || 'student', voiceType || 'All', 
+      section || '', status || 'approved', profileUrl || ''
     ).run();
     
     return NextResponse.json({ success: true, id });

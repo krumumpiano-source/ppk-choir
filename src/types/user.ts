@@ -17,6 +17,15 @@ export interface User {
   id: string;
   studentId?: string;
   name: string;
+  nickname: string;
+  email: string;
+  phone: string;
+  lineId: string;
+  parentName: string;
+  parentPhone: string;
+  parentLineId: string;
+  address: string;
+  advisorName: string;
   voiceType: string;
   role: UserRole;
   status?: UserStatus;
