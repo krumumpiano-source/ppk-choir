@@ -2,7 +2,7 @@ import { User, UserRole } from '@/types/user';
 
 export async function getAllUsers(): Promise<User[]> {
   try {
-    const res = await fetch('/api/users');
+    const res = await fetch('/api/users', { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch users');
     const data = (await res.json()) as any;
     return data.users;
