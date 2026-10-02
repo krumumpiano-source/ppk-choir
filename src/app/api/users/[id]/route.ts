@@ -33,8 +33,12 @@ export async function PATCH(request: Request, context: { params: { id: string } 
     const body = await request.json() as any;
     const { status } = body;
     
-    // Cloudflare D1 doesn't have status column initially in our schema, but let's assume we can update roles or just ignore status if not needed.
-    // Or we can add status column if needed. Let's just return success for now if it's just 'approved'
+    if (!status) {
+      return NextResponse.json({ error: 'Status is required' }, { status: 400 });
+    }
+
+    const db = getDb();
+    await db.prepare('UPDATE users SET status = ? WHERE id = ?').bind(status, params.id).run();
     
     return NextResponse.json({ success: true });
   } catch (error: any) {
