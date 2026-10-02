@@ -20,7 +20,7 @@
     "jose": "^6.2.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.22.0",
-    "next": "^16.2.10",
+    "next": "^15.5.2",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-hot-toast": "^2.6.0",
@@ -30,16 +30,12 @@
     "@cloudflare/workers-types": "^5.20260707.1",
     "@eslint/eslintrc": "^3.3.5",
     "@google-cloud/storage": "^7.21.0",
-    "@opennextjs/cloudflare": "^1.20.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^16.2.10",
+    "eslint-config-next": "^15.5.2",
     "typescript": "^5",
     "wrangler": "^4.108.0"
   },
-  "overrides": {
-    "esbuild": "0.24.2"
-  }
 }
