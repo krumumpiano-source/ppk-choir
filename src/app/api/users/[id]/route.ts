@@ -6,13 +6,13 @@ import { cookies } from 'next/headers';
 
 export const runtime = 'edge';
 
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, context: { params: { id: string } }) {
   try {
     const token = (await cookies()).get('token')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const payload = await verifyToken(token);
     if (!payload || (payload as any).role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const params = await context.params;
+    const params = context.params;
     const db = getDb();
     await db.prepare('DELETE FROM users WHERE id = ?').bind(params.id).run();
     return NextResponse.json({ success: true });
@@ -22,14 +22,14 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   }
 }
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: Request, context: { params: { id: string } }) {
   try {
     const token = (await cookies()).get('token')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const payload = await verifyToken(token);
     if (!payload || (payload as any).role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
-    const params = await context.params;
+    const params = context.params;
     const body = await request.json() as any;
     const { status } = body;
     
