@@ -16,7 +16,8 @@ export async function GET(request: Request) {
     else if (period === 'month') startDate.setMonth(now.getMonth() - 1);
     else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
     
-    const result = await db.prepare('SELECT * FROM checkins WHERE timestamp >= ? ORDER BY timestamp DESC').bind(startDate.toISOString()).all<any>();
+    const sqliteDateStr = startDate.toISOString().replace('T', ' ').slice(0, 19);
+    const result = await db.prepare('SELECT * FROM checkins WHERE timestamp >= ? ORDER BY timestamp DESC').bind(sqliteDateStr).all<any>();
     
     // Group by Room
     const grouped = result.results.reduce((acc: any, checkin: any) => {

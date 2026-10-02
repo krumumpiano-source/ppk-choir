@@ -136,7 +136,7 @@ export default function DashboardPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                     <Calendar size={16} /> 
-                    {practice.timestamp ? new Date(practice.timestamp.seconds * 1000).toLocaleDateString('th-TH') : 'กำลังดำเนินการ'}
+                    {practice.timestamp ? new Date(practice.timestamp.seconds ? practice.timestamp.seconds * 1000 : practice.timestamp).toLocaleDateString('th-TH') : 'กำลังดำเนินการ'}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: practice.rubricScore ? 'var(--success)' : '#f39c12' }}>
                     <Activity size={16} />

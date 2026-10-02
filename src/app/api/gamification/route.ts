@@ -41,7 +41,8 @@ export async function POST(request: Request) {
     let badgesArray = stats.badges ? JSON.parse(stats.badges) : [];
     
     if (action === 'update_streak') {
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = new Date(now.getTime() + (7 * 60 * 60 * 1000)).toISOString().split('T')[0]; // Asia/Bangkok
       if (stats.lastPracticeDate === today) {
         return NextResponse.json({ success: true, stats: { ...stats, badges: badgesArray } });
       }

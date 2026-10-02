@@ -69,7 +69,7 @@ export default function PeersPage() {
                 <div>
                   <h3 style={{ margin: '0 0 0.2rem 0', fontSize: '1.2rem' }}>{practice.studentName}</h3>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    {practice.timestamp ? new Date(practice.timestamp.seconds * 1000).toLocaleString('th-TH') : 'เมื่อสักครู่'}
+                    {practice.timestamp ? new Date(practice.timestamp.seconds ? practice.timestamp.seconds * 1000 : practice.timestamp).toLocaleString('th-TH') : 'เมื่อสักครู่'}
                   </span>
                 </div>
               </div>

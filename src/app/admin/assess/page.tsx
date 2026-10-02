@@ -114,7 +114,7 @@ export default function AdminAssessPage() {
                   </span>
                 </div>
                 <div style={{ textAlign: 'right', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                  ส่งเมื่อ: {work.timestamp ? new Date(work.timestamp.seconds * 1000).toLocaleString('th-TH') : '-'}
+                  ส่งเมื่อ: {work.timestamp ? new Date(work.timestamp.seconds ? work.timestamp.seconds * 1000 : work.timestamp).toLocaleString('th-TH') : '-'}
                 </div>
               </div>
 

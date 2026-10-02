@@ -152,7 +152,7 @@ export default function ReportsPage() {
                     <div key={idx} style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                       <span style={{ fontWeight: 500 }}>{checkin.studentName} ({checkin.studentId})</span>
                       <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                        {checkin.timestamp ? new Date(checkin.timestamp.seconds * 1000).toLocaleString('th-TH') : 'ไม่ทราบเวลา'}
+                        {checkin.timestamp ? new Date(checkin.timestamp.seconds ? checkin.timestamp.seconds * 1000 : checkin.timestamp).toLocaleString('th-TH') : 'ไม่ทราบเวลา'}
                       </span>
                     </div>
                   ))}

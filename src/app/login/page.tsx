@@ -78,7 +78,7 @@ export default function LoginPage() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="input-field" 
-                placeholder="เช่น 65001 หรือ admin@email.com"
+                placeholder="เช่น 65001 หรือ krumum.piano@gmail.com"
                 style={{ width: '100%', paddingLeft: '2.8rem' }}
                 disabled={loading}
               />
