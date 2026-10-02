@@ -6,6 +6,8 @@ import { ArrowLeft, MapPin, Users, Loader2 } from 'lucide-react';
 import { getSessionCheckIns, CheckInRecord } from '@/lib/services/checkin';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+export const runtime = 'edge';
+
 export default function SessionCheckinsPage({ params }: { params: { id: string } }) {
   const [checkins, setCheckins] = useState<CheckInRecord[]>([]);
   const [loading, setLoading] = useState(true);
