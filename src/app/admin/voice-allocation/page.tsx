@@ -26,6 +26,25 @@ import toast from 'react-hot-toast';
 
 const VOICE_PARTS = Object.keys(VOICE_PART_SPECS);
 
+const CHOIR_FORMAT_TEMPLATES: Record<string, Record<string, number>> = {
+  'SSAATTBB (8 แนว)': {
+    'Soprano 1': 15, 'Soprano 2': 15, 'Alto 1': 15, 'Alto 2': 15, 
+    'Tenor 1': 10, 'Tenor 2': 10, 'Baritone': 10, 'Bass': 10
+  },
+  'SATB (4 แนว)': {
+    'Soprano': 30, 'Alto': 30, 'Tenor': 20, 'Bass': 20
+  },
+  'SSAB (4 แนว)': {
+    'Soprano 1': 30, 'Soprano 2': 25, 'Alto': 25, 'Baritone': 20
+  },
+  'SSAA (4 แนว)': {
+    'Soprano 1': 25, 'Soprano 2': 25, 'Alto 1': 25, 'Alto 2': 25
+  },
+  'SAB (3 แนว)': {
+    'Soprano': 40, 'Alto': 30, 'Baritone': 30
+  }
+};
+
 export default function VoiceAllocationPage() {
   const { user } = useAuth();
   const [students, setStudents] = useState<any[]>([]);
@@ -256,8 +275,37 @@ export default function VoiceAllocationPage() {
             </button>
           </div>
 
+          <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
+            <span style={{ fontWeight: 'bold' }}>รูปแบบวง (Choir Format):</span>
+            <select
+              onChange={(e) => {
+                if (e.target.value) {
+                  const newRatios = CHOIR_FORMAT_TEMPLATES[e.target.value];
+                  setRatios(newRatios);
+                  runAllocationEngine(students, newRatios);
+                  toast.success(`เปลี่ยนรูปแบบวงเป็น ${e.target.value} แล้ว (อย่าลืมกดบันทึก)`);
+                }
+              }}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '6px',
+                background: '#1a1a2e',
+                color: '#fff',
+                border: '1px solid var(--accent-primary)',
+              }}
+            >
+              <option value="">-- เลือกรูปแบบวงด่วน --</option>
+              {Object.keys(CHOIR_FORMAT_TEMPLATES).map(fmt => (
+                <option key={fmt} value={fmt}>{fmt}</option>
+              ))}
+            </select>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              * เลือกเพื่อตั้งค่าสัดส่วนอัตโนมัติ (จะซ่อนแนวเสียงที่ไม่ได้ใช้ออกไป)
+            </span>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
-            {VOICE_PARTS.map((part) => (
+            {VOICE_PARTS.filter(p => ratios[p] !== undefined && ratios[p] > 0).map((part) => (
               <div key={part} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>{part}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
@@ -292,7 +340,7 @@ export default function VoiceAllocationPage() {
         <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
           <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>สัดส่วนการจัดสรรปัจจุบันเทียบกับเป้าหมาย</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            {VOICE_PARTS.map((part) => {
+            {VOICE_PARTS.filter(p => ratios[p] !== undefined && ratios[p] > 0).map((part) => {
               const current = actualCounts[part] || 0;
               const targetPct = ratios[part] || 0;
               const targetCount = Math.max(1, Math.round((targetPct / 100) * totalAudited));

@@ -12,10 +12,13 @@ export interface VoicePartSpec {
 export const VOICE_PART_SPECS: Record<string, VoicePartSpec> = {
   'Soprano 1': { name: 'Soprano 1', minMidi: 60, maxMidi: 84, idealLowMidi: 62, idealHighMidi: 81, genderHint: 'F' }, // C4 - C6
   'Soprano 2': { name: 'Soprano 2', minMidi: 59, maxMidi: 81, idealLowMidi: 60, idealHighMidi: 79, genderHint: 'F' }, // B3 - A5
+  'Soprano':   { name: 'Soprano',   minMidi: 60, maxMidi: 84, idealLowMidi: 60, idealHighMidi: 81, genderHint: 'F' }, // C4 - C6 (Generic)
   'Alto 1':    { name: 'Alto 1',    minMidi: 57, maxMidi: 77, idealLowMidi: 59, idealHighMidi: 74, genderHint: 'F' }, // A3 - F5
   'Alto 2':    { name: 'Alto 2',    minMidi: 53, maxMidi: 74, idealLowMidi: 55, idealHighMidi: 72, genderHint: 'F' }, // F3 - D5
+  'Alto':      { name: 'Alto',      minMidi: 53, maxMidi: 77, idealLowMidi: 55, idealHighMidi: 74, genderHint: 'F' }, // F3 - F5 (Generic)
   'Tenor 1':   { name: 'Tenor 1',   minMidi: 48, maxMidi: 72, idealLowMidi: 50, idealHighMidi: 69, genderHint: 'M' }, // C3 - C5
   'Tenor 2':   { name: 'Tenor 2',   minMidi: 46, maxMidi: 69, idealLowMidi: 48, idealHighMidi: 67, genderHint: 'M' }, // Bb2 - A4
+  'Tenor':     { name: 'Tenor',     minMidi: 46, maxMidi: 72, idealLowMidi: 48, idealHighMidi: 69, genderHint: 'M' }, // Bb2 - C5 (Generic)
   'Baritone':  { name: 'Baritone',  minMidi: 43, maxMidi: 65, idealLowMidi: 45, idealHighMidi: 64, genderHint: 'M' }, // G2 - F4
   'Bass':      { name: 'Bass',      minMidi: 40, maxMidi: 64, idealLowMidi: 41, idealHighMidi: 62, genderHint: 'M' }, // E2 - E4
 };
@@ -131,7 +134,12 @@ export function smartAllocateVoiceParts(
     let topPart = 'Soprano 1';
     let topScore = -1;
 
-    Object.keys(VOICE_PART_SPECS).forEach((part) => {
+    // Only consider parts that have a target ratio > 0 in the current configuration
+    const activeParts = Object.keys(VOICE_PART_SPECS).filter(p => (targetRatios[p] || 0) > 0);
+    // If no target ratios set yet, fallback to all parts
+    const partsToEvaluate = activeParts.length > 0 ? activeParts : Object.keys(VOICE_PART_SPECS);
+
+    partsToEvaluate.forEach((part) => {
       const score = calculateFitScore(lowMidi, highMidi, part);
       scores[part] = score;
       if (score > topScore) {
