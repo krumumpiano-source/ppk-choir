@@ -11,6 +11,8 @@ export interface CheckInRecord {
   liveLat?: number;
   liveLng?: number;
   lastLocationUpdate?: any;
+  phone?: string;
+  lineId?: string;
 }
 
 export interface ScheduledSession {

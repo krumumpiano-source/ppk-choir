@@ -20,7 +20,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ checkin: record || null });
     }
 
-    const result = await db.prepare('SELECT * FROM checkins WHERE sessionId = ? ORDER BY timestamp DESC').bind(sessionId).all<any>();
+    const result = await db.prepare(`
+      SELECT checkins.*, users.phone, users.lineId 
+      FROM checkins 
+      LEFT JOIN users ON checkins.studentId = users.id 
+      WHERE sessionId = ? ORDER BY timestamp DESC
+    `).bind(sessionId).all<any>();
     return NextResponse.json({ checkins: result.results });
   } catch (error: any) {
     console.error('API Error:', error);

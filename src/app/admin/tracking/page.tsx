@@ -36,7 +36,9 @@ export default function LiveTrackingPage() {
                 name: `${c.studentName} (${session.name})`,
                 lat: c.liveLat || c.location?.lat || 19.170294,
                 lng: c.liveLng || c.location?.lng || 99.910288,
-                lastUpdate: c.lastLocationUpdate || c.timestamp
+                lastUpdate: c.lastLocationUpdate || c.timestamp,
+                phone: c.phone,
+                lineId: c.lineId
               });
             }
           }
