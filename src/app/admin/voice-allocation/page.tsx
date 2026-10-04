@@ -6,7 +6,8 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { 
   VOICE_PART_SPECS, 
   smartAllocateVoiceParts, 
-  StudentFitResult 
+  StudentFitResult,
+  midiToNote
 } from '@/lib/services/voiceAllocation';
 import { 
   PieChart, 
@@ -81,14 +82,28 @@ export default function VoiceAllocationPage() {
   };
 
   const runAllocationEngine = (studentList: any[], currentRatios: Record<string, number>) => {
-    // Filter students with valid auditions
-    const auditioned = studentList.filter((s) => s.audition).map((s) => ({
-      id: s.id,
-      name: s.name,
-      lowestNote: s.audition.lowestNote,
-      highestNote: s.audition.highestNote,
-      currentVoiceType: s.voiceType,
-    }));
+    // Filter students with valid auditions or registered voiceTypes
+    const auditioned = studentList.filter((s) => s.audition || (s.voiceType && s.voiceType !== 'All' && s.voiceType !== 'Unassigned' && s.voiceType !== '')).map((s) => {
+      let lowestNote = 'C4';
+      let highestNote = 'C5';
+      
+      if (s.audition) {
+        lowestNote = s.audition.lowestNote;
+        highestNote = s.audition.highestNote;
+      } else if (s.voiceType && VOICE_PART_SPECS[s.voiceType]) {
+        // Fallback to the ideal range for their registered voiceType
+        lowestNote = midiToNote(VOICE_PART_SPECS[s.voiceType].idealLowMidi);
+        highestNote = midiToNote(VOICE_PART_SPECS[s.voiceType].idealHighMidi);
+      }
+
+      return {
+        id: s.id,
+        name: s.name,
+        lowestNote,
+        highestNote,
+        currentVoiceType: s.voiceType,
+      };
+    });
 
     const results = smartAllocateVoiceParts(auditioned, currentRatios);
     setAllocatedStudents(results);
@@ -371,11 +386,13 @@ export default function VoiceAllocationPage() {
                   {allocatedStudents.map((st) => {
                     const currentAssigned = manualAssignments[st.studentId] || st.assignedVoicePart;
                     const isOverridden = currentAssigned !== st.topSuggestedPart;
+                    const originalStudent = students.find(s => s.id === st.studentId);
+                    const displayName = originalStudent?.nickname ? `${st.studentName} (${originalStudent.nickname})` : st.studentName;
 
                     return (
                       <tr key={st.studentId} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s ease' }}>
                         <td style={{ padding: '0.85rem 1rem' }}>
-                          <div style={{ fontWeight: 'bold' }}>{st.studentName}</div>
+                          <div style={{ fontWeight: 'bold' }}>{displayName}</div>
                         </td>
 
                         <td style={{ padding: '0.85rem 1rem' }}>
