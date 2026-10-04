@@ -88,12 +88,22 @@ export default function ProfilePage() {
     if (!user?.id) return;
     
     if (!studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นรหัสผ่านและอีเมลผู้ปกครอง)');
+      toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นอีเมลผู้ปกครอง)');
+      return;
+    }
+
+    if (isSetup && !password.trim()) {
+      toast.error('กรุณาตั้งรหัสผ่านใหม่เพื่อความปลอดภัย');
       return;
     }
 
     if (password && password.length < 6) {
       toast.error('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
+
+    if (isSetup && !photoUrl) {
+      toast.error('กรุณาอัปโหลดรูปโปรไฟล์เพื่อให้ง่ายต่อการจดจำและเช็คชื่อ');
       return;
     }
 

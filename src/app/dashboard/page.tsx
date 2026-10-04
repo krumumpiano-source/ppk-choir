@@ -8,6 +8,7 @@ import { getStudentStats, StudentStats } from '../../lib/services/gamification';
 import { getStudentPractices, PracticeRecord } from '../../lib/services/practice';
 import { useAuth } from '@/components/providers/AuthProvider';
 import GoogleDrivePlayer from '@/components/GoogleDrivePlayer';
+import toast from 'react-hot-toast';
 
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
