@@ -2,12 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Navigation, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getActiveSessions, getSessionCheckIns, CheckInRecord, ScheduledSession } from '@/lib/services/checkin';
 import dynamic from 'next/dynamic';
 
 const LiveMapComponent = dynamic(() => import('@/components/LiveMapComponent'), { ssr: false });
+
+function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371e3; 
+  const p1 = lat1 * Math.PI/180;
+  const p2 = lat2 * Math.PI/180;
+  const deltaP = p2 - p1;
+  const deltaLon = lon2 - lon1;
+  const deltaLambda = (deltaLon * Math.PI) / 180;
+  const a = Math.sin(deltaP/2) * Math.sin(deltaP/2) +
+            Math.cos(p1) * Math.cos(p2) *
+            Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
 export const runtime = 'edge';
 
@@ -15,6 +29,7 @@ export default function LiveTrackingPage() {
   const { user } = useAuth();
   const [activeSessions, setActiveSessions] = useState<ScheduledSession[]>([]);
   const [allStudents, setAllStudents] = useState<any[]>([]);
+  const [outOfBoundsStudents, setOutOfBoundsStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,26 +39,49 @@ export default function LiveTrackingPage() {
         setActiveSessions(sessions);
         
         let students: any[] = [];
+        let outOfBounds: any[] = [];
+        
         for (const session of sessions) {
           if (session.id) {
             const checkins = await getSessionCheckIns(session.id);
-            // Filter only active checkins (no checkoutTime)
             const active = checkins.filter(c => !c.checkoutTime && (c.liveLat || c.location));
             
             for (const c of active) {
-              students.push({
+              const lat = c.liveLat || c.location?.lat || 19.170294;
+              const lng = c.liveLng || c.location?.lng || 99.910288;
+              
+              let isOutOfBounds = false;
+              let distance = 0;
+              
+              if (session.location) {
+                distance = getDistanceFromLatLonInM(session.location.lat, session.location.lng, lat, lng);
+                // 50 meters buffer for GPS inaccuracy
+                if (distance > session.location.radius + 50) {
+                  isOutOfBounds = true;
+                }
+              }
+
+              const studentData = {
                 id: c.studentId,
                 name: `${c.studentName} (${session.name})`,
-                lat: c.liveLat || c.location?.lat || 19.170294,
-                lng: c.liveLng || c.location?.lng || 99.910288,
+                lat,
+                lng,
                 lastUpdate: c.lastLocationUpdate || c.timestamp,
                 phone: c.phone,
-                lineId: c.lineId
-              });
+                lineId: c.lineId,
+                isOutOfBounds,
+                distance: Math.round(distance)
+              };
+
+              students.push(studentData);
+              if (isOutOfBounds) {
+                outOfBounds.push(studentData);
+              }
             }
           }
         }
         setAllStudents(students);
+        setOutOfBoundsStudents(outOfBounds);
       } catch (e) {
         console.error(e);
       } finally {
@@ -76,6 +114,21 @@ export default function LiveTrackingPage() {
           </div>
           {loading && <Loader2 size={24} className="animate-spin" color="var(--accent-primary)" />}
         </div>
+        
+        {outOfBoundsStudents.length > 0 && (
+          <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(255, 59, 48, 0.1)', borderLeft: '4px solid var(--danger)', borderRadius: '4px' }}>
+            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--danger)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertTriangle size={18} /> แจ้งเตือน: พบนักเรียนอยู่นอกพื้นที่ ({outOfBoundsStudents.length} คน)
+            </h3>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {outOfBoundsStudents.map(s => (
+                <div key={s.id} style={{ background: 'white', padding: '0.3rem 0.6rem', borderRadius: '50px', fontSize: '0.85rem', color: 'var(--danger)', border: '1px solid var(--danger)' }}>
+                  {s.name} ({s.distance}m)
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         <div style={{ flex: 1, position: 'relative', zIndex: 1, minHeight: '400px' }}>
           {activeSessions.length > 0 ? (

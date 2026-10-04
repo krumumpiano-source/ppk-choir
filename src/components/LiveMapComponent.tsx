@@ -16,9 +16,18 @@ if (typeof window !== 'undefined') {
   });
 }
 
+const redIcon = typeof window !== 'undefined' ? new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+}) : undefined;
+
 interface LiveMapComponentProps {
   center: { lat: number; lng: number };
-  students: { id: string; name: string; lat: number; lng: number; lastUpdate: string; phone?: string; lineId?: string }[];
+  students: { id: string; name: string; lat: number; lng: number; lastUpdate: string; phone?: string; lineId?: string; isOutOfBounds?: boolean }[];
 }
 
 export default function LiveMapComponent({ center, students }: LiveMapComponentProps) {
@@ -29,7 +38,7 @@ export default function LiveMapComponent({ center, students }: LiveMapComponentP
         url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
       />
       {students.map(s => (
-        <Marker key={s.id} position={[s.lat, s.lng]}>
+        <Marker key={s.id} position={[s.lat, s.lng]} icon={s.isOutOfBounds && redIcon ? redIcon : undefined}>
           <Popup>
             <div style={{ padding: '0.5rem', fontFamily: 'var(--font-body)' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#1a1a24', fontSize: '1.1rem' }}>{s.name}</h4>
