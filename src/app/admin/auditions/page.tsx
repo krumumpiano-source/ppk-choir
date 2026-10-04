@@ -135,7 +135,7 @@ export default function AuditionsPage() {
       s.studentId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const auditedCount = students.filter((s) => s.audition).length;
+  const auditedCount = students.filter((s) => s.audition || (s.voiceType && s.voiceType !== 'All' && s.voiceType !== 'Unassigned' && s.voiceType !== '')).length;
   const lowMidi = noteToMidi(lowestNote);
   const highMidi = noteToMidi(highestNote);
   const rangeSpan = Math.max(0, highMidi - lowMidi);
@@ -211,7 +211,8 @@ export default function AuditionsPage() {
               <div style={{ maxHeight: '520px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {filteredStudents.map((s) => {
                   const isSelected = selectedStudent?.id === s.id;
-                  const isAudited = !!s.audition;
+                  const hasAssignedVoice = s.voiceType && s.voiceType !== 'All' && s.voiceType !== 'Unassigned' && s.voiceType !== '';
+                  const isAudited = !!s.audition || hasAssignedVoice;
 
                   return (
                     <div
@@ -239,7 +240,7 @@ export default function AuditionsPage() {
                       <div>
                         {isAudited ? (
                           <span style={{ fontSize: '0.75rem', background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', padding: '0.25rem 0.6rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <CheckCircle2 size={12} /> {s.audition.lowestNote}-{s.audition.highestNote}
+                            <CheckCircle2 size={12} /> {s.audition ? `${s.audition.lowestNote}-${s.audition.highestNote}` : `คัดเลือกแล้ว (${s.voiceType})`}
                           </span>
                         ) : (
                           <span style={{ fontSize: '0.75rem', background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', padding: '0.25rem 0.6rem', borderRadius: '20px' }}>
