@@ -13,7 +13,8 @@ function getDriveImageUrl(url: string | undefined): string | undefined {
   if (!url) return undefined;
   const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    // lh3.googleusercontent.com/d/ID is more reliable for embedding than uc?export=view
+    return `https://lh3.googleusercontent.com/d/${match[1]}`;
   }
   return url;
 }
@@ -36,8 +37,9 @@ const Avatar = ({ src, alt, size = 40 }: { src?: string, alt: string, size?: num
     <img 
       src={driveSrc} 
       alt={alt} 
-      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }}
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', background: 'rgba(255,255,255,0.05)' }}
       onError={() => setError(true)}
+      referrerPolicy="no-referrer"
     />
   );
 };
