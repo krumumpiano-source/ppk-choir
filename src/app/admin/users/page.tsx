@@ -169,6 +169,7 @@ export default function AdminUsersPage() {
                 <option value="Tenor 2">Tenor 2</option>
                 <option value="Baritone">Baritone</option>
                 <option value="Bass">Bass</option>
+                <option value="นักดนตรี (Instrumentalist)">นักดนตรี (Instrumentalist)</option>
                 <option value="All">All (สำหรับ Admin)</option>
               </select>
             </div>

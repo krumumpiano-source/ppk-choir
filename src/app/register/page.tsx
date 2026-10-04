@@ -351,6 +351,7 @@ export default function RegisterPage() {
                 <option value="Tenor 2">Tenor 2</option>
                 <option value="Baritone">Baritone</option>
                 <option value="Bass">Bass</option>
+                <option value="นักดนตรี (Instrumentalist)">นักดนตรี (ไม่ร้องประสานเสียง)</option>
               </select>
           </div>
 
