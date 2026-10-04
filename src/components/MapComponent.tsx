@@ -60,6 +60,20 @@ function LocationMarker({ lat, lng, onLocationChange }: { lat: number, lng: numb
   );
 }
 
+function MapBoundsFitter({ lat, lng, radius, trackingRadius }: { lat: number, lng: number, radius: number, trackingRadius?: number }) {
+  const map = useMapEvents({});
+  
+  useEffect(() => {
+    const maxRadius = trackingRadius && trackingRadius > radius ? trackingRadius : radius;
+    if (maxRadius > 0 && lat && lng) {
+      const circle = L.circle([lat, lng], { radius: maxRadius });
+      map.fitBounds(circle.getBounds(), { padding: [30, 30] });
+    }
+  }, [lat, lng, radius, trackingRadius, map]);
+  
+  return null;
+}
+
 export default function MapComponent({ lat, lng, radius, trackingRadius, onLocationChange }: MapComponentProps) {
   return (
     <MapContainer 
@@ -72,6 +86,7 @@ export default function MapComponent({ lat, lng, radius, trackingRadius, onLocat
         url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
       />
       <LocationMarker lat={lat} lng={lng} onLocationChange={onLocationChange} />
+      <MapBoundsFitter lat={lat} lng={lng} radius={radius} trackingRadius={trackingRadius} />
       <Circle center={[lat, lng]} radius={radius} pathOptions={{ color: '#ffb142', fillColor: '#ffb142', fillOpacity: 0.4, weight: 3 }} />
       {trackingRadius && trackingRadius > radius && (
         <Circle center={[lat, lng]} radius={trackingRadius} pathOptions={{ color: '#2ed573', fillColor: '#2ed573', fillOpacity: 0.15, weight: 3, dashArray: '8, 8' }} />
