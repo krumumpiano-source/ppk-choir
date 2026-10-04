@@ -20,7 +20,7 @@ export interface ScheduledSession {
   name: string;
   type: string; // 'practice' | 'performance' | 'outing' | 'competition'
   targetGroups: string[]; // ['All'] หรือ ['Soprano', 'Alto', ...]
-  location: { lat: number; lng: number; radius: number } | null;
+  location: { lat: number; lng: number; radius: number; trackingRadius?: number } | null;
   startTime?: any; 
   endTime?: any; 
   isActive: boolean;

@@ -62,6 +62,7 @@ export default function AdminSessionsPage() {
     lat: 19.17029465512379,
     lng: 99.91028862524004,
     radius: 50,
+    trackingRadius: 500,
     startDate: '',
     startTime: '',
     endDate: '',
@@ -103,6 +104,7 @@ export default function AdminSessionsPage() {
       lat: session.location?.lat || 19.17029465512379,
       lng: session.location?.lng || 99.91028862524004,
       radius: session.location?.radius || 50,
+      trackingRadius: session.location?.trackingRadius || 500,
       startDate: stDate,
       startTime: stTime,
       endDate: enDate,
@@ -173,7 +175,7 @@ export default function AdminSessionsPage() {
       name: formData.name.trim(),
       type: formData.type,
       targetGroups: formData.targetGroups,
-      location: { lat: formData.lat, lng: formData.lng, radius: formData.radius },
+      location: { lat: formData.lat, lng: formData.lng, radius: formData.radius, trackingRadius: formData.trackingRadius },
       isActive: true
     };
 
@@ -399,8 +401,14 @@ export default function AdminSessionsPage() {
                 />
               </div>
               <div className="input-group">
-                <label>รัศมีอนุญาต (เมตร)</label>
+                <label>รัศมีเช็คชื่อเข้า (เมตร)</label>
                 <input type="number" className="input-field" value={formData.radius} onChange={e => setFormData({...formData, radius: parseInt(e.target.value) || 50})} />
+                <small style={{ color: 'var(--text-secondary)' }}>ระยะที่อนุญาตให้กดเช็คชื่อได้ (เช่น 50m)</small>
+              </div>
+              <div className="input-group" style={{ marginTop: '1rem' }}>
+                <label>รัศมีพื้นที่ปลอดภัย (เมตร)</label>
+                <input type="number" className="input-field" value={formData.trackingRadius} onChange={e => setFormData({...formData, trackingRadius: parseInt(e.target.value) || 500})} />
+                <small style={{ color: 'var(--text-secondary)' }}>ระยะที่อนุญาตให้อยู่ระหว่างกิจกรรม (เช่น 500m เพื่อให้อยู่ในโรงเรียนได้)</small>
               </div>
             </div>
             <div style={{ height: '300px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -408,6 +416,7 @@ export default function AdminSessionsPage() {
                 lat={formData.lat} 
                 lng={formData.lng} 
                 radius={formData.radius} 
+                trackingRadius={formData.trackingRadius}
                 onLocationChange={(lat, lng) => setFormData(prev => ({ ...prev, lat, lng }))}
               />
             </div>

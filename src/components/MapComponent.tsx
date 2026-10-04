@@ -17,6 +17,7 @@ interface MapComponentProps {
   lat: number;
   lng: number;
   radius: number;
+  trackingRadius?: number;
   onLocationChange: (lat: number, lng: number) => void;
 }
 
@@ -59,7 +60,7 @@ function LocationMarker({ lat, lng, onLocationChange }: { lat: number, lng: numb
   );
 }
 
-export default function MapComponent({ lat, lng, radius, onLocationChange }: MapComponentProps) {
+export default function MapComponent({ lat, lng, radius, trackingRadius, onLocationChange }: MapComponentProps) {
   return (
     <MapContainer 
       center={[lat, lng]} 
@@ -72,6 +73,9 @@ export default function MapComponent({ lat, lng, radius, onLocationChange }: Map
       />
       <LocationMarker lat={lat} lng={lng} onLocationChange={onLocationChange} />
       <Circle center={[lat, lng]} radius={radius} pathOptions={{ color: 'var(--accent-primary)', fillColor: 'var(--accent-primary)', fillOpacity: 0.2 }} />
+      {trackingRadius && trackingRadius > radius && (
+        <Circle center={[lat, lng]} radius={trackingRadius} pathOptions={{ color: 'var(--success)', fillColor: 'var(--success)', fillOpacity: 0.1, dashArray: '5, 10' }} />
+      )}
     </MapContainer>
   );
 }

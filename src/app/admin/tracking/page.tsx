@@ -55,8 +55,8 @@ export default function LiveTrackingPage() {
               
               if (session.location) {
                 distance = getDistanceFromLatLonInM(session.location.lat, session.location.lng, lat, lng);
-                // 50 meters buffer for GPS inaccuracy
-                if (distance > session.location.radius + 50) {
+                const safeZone = session.location.trackingRadius || (session.location.radius + 50);
+                if (distance > safeZone) {
                   isOutOfBounds = true;
                 }
               }

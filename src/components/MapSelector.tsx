@@ -7,6 +7,7 @@ interface MapSelectorProps {
   lat: number;
   lng: number;
   radius: number;
+  trackingRadius?: number;
   onLocationChange: (lat: number, lng: number) => void;
 }
 
