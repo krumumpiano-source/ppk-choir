@@ -10,30 +10,39 @@ export async function GET(request: Request) {
     const db = getDb();
     
     const now = new Date();
-    let startDate = new Date();
+    let startDate = new Date(now);
+    let endDate = new Date(now);
     
-    if (period === 'week') startDate.setDate(now.getDate() - 7);
-    else if (period === 'month') startDate.setMonth(now.getMonth() - 1);
-    else if (period === 'year') startDate.setFullYear(now.getFullYear() - 1);
+    if (period === 'today') {
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+    } else if (period === 'week') {
+      startDate.setDate(now.getDate() - 7);
+    } else if (period === 'month') {
+      startDate.setMonth(now.getMonth() - 1);
+    } else if (period === 'term1') {
+      startDate = new Date(now.getFullYear(), 4, 16); // May 16
+      endDate = new Date(now.getFullYear(), 9, 31); // Oct 31
+    } else if (period === 'term2') {
+      startDate = new Date(now.getFullYear(), 10, 1); // Nov 1
+      endDate = new Date(now.getFullYear() + 1, 2, 31); // Mar 31 next year
+    } else if (period === 'year') {
+      startDate = new Date(now.getFullYear(), 4, 1); // May 1 academic year start
+    } else if (period === 'all') {
+      startDate = new Date(2000, 0, 1);
+    }
     
-    const sqliteDateStr = startDate.toISOString().replace('T', ' ').slice(0, 19);
-    const result = await db.prepare('SELECT * FROM checkins WHERE timestamp >= ? ORDER BY timestamp DESC').bind(sqliteDateStr).all<any>();
+    const sqliteStartDate = startDate.toISOString().replace('T', ' ').slice(0, 19);
+    const sqliteEndDate = endDate.toISOString().replace('T', ' ').slice(0, 19);
     
-    // Group by Room
-    const grouped = result.results.reduce((acc: any, checkin: any) => {
-      const room = checkin.room || 'ไม่ระบุห้อง';
-      if (!acc[room]) acc[room] = [];
-      acc[room].push({ ...checkin, location: checkin.location ? JSON.parse(checkin.location) : null });
-      return acc;
-    }, {});
+    const result = await db.prepare('SELECT checkins.*, users.voiceType as studentVoiceType FROM checkins LEFT JOIN users ON checkins.studentId = users.id WHERE checkins.timestamp >= ? AND checkins.timestamp <= ? ORDER BY checkins.timestamp DESC').bind(sqliteStartDate, sqliteEndDate).all<any>();
     
-    const reportData = Object.keys(grouped).map(room => ({
-      room,
-      count: grouped[room].length,
-      students: grouped[room]
-    })).sort((a, b) => a.room.localeCompare(b.room));
+    const flatData = result.results.map((c: any) => ({
+      ...c,
+      location: c.location ? JSON.parse(c.location) : null
+    }));
     
-    return NextResponse.json({ data: reportData });
+    return NextResponse.json({ data: flatData });
   } catch (error: any) {
     console.error('API Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
