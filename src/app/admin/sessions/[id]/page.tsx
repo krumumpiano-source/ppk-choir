@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { ArrowLeft, MapPin, Users, Loader2 } from 'lucide-react';
 import { getSessionCheckIns, CheckInRecord } from '@/lib/services/checkin';
 import { useAuth } from '@/components/providers/AuthProvider';
+import dynamic from 'next/dynamic';
+
+const LiveMapComponent = dynamic(() => import('@/components/LiveMapComponent'), { ssr: false });
 
 export const runtime = 'edge';
 
@@ -20,6 +23,8 @@ export default function SessionCheckinsPage({ params }: { params: { id: string }
       setLoading(false);
     }
     load();
+    const interval = setInterval(load, 10000);
+    return () => clearInterval(interval);
   }, [params.id]);
 
   if (!user || user.role !== 'admin') {
@@ -52,7 +57,27 @@ export default function SessionCheckinsPage({ params }: { params: { id: string }
         </div>
       </div>
 
-      {loading ? (
+      {!loading && checkins.filter(c => !c.checkoutTime && (c.liveLat || c.location)).length > 0 && (
+        <div className="glass-panel" style={{ padding: '1rem', marginBottom: '2rem' }}>
+          <h2 style={{ marginTop: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
+            <MapPin /> แผนที่ตำแหน่งนักเรียน (Real-time)
+          </h2>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <LiveMapComponent 
+              center={checkins[0]?.location || { lat: 19.170294, lng: 99.910288 }} 
+              students={checkins.filter(c => !c.checkoutTime && (c.liveLat || c.location)).map(c => ({
+                id: c.studentId,
+                name: c.studentName,
+                lat: c.liveLat || c.location?.lat || 19.170294,
+                lng: c.liveLng || c.location?.lng || 99.910288,
+                lastUpdate: c.lastLocationUpdate || c.timestamp
+              }))} 
+            />
+          </div>
+        </div>
+      )}
+
+      {loading && checkins.length === 0 ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
           <Loader2 size={48} className="animate-spin" color="var(--accent-primary)" />
         </div>

@@ -57,6 +57,10 @@ CREATE TABLE IF NOT EXISTS checkins (
   room TEXT,
   sessionId TEXT,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  checkoutTime DATETIME,
+  liveLat REAL,
+  liveLng REAL,
+  lastLocationUpdate DATETIME,
   FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
 );
 

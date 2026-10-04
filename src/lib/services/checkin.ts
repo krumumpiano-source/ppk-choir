@@ -7,6 +7,10 @@ export interface CheckInRecord {
   room?: string;
   timestamp?: any;
   sessionId?: string; // เพิ่ม sessionId เพื่อผูกกับการเปิดคาบเรียน
+  checkoutTime?: any;
+  liveLat?: number;
+  liveLng?: number;
+  lastLocationUpdate?: any;
 }
 
 export interface ScheduledSession {

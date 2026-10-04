@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Navigation, CheckCircle, AlertTriangle, ArrowLeft, ShieldCheck, Loader2, LogOut } from 'lucide-react';
@@ -38,6 +38,44 @@ export default function CheckInPage() {
   const [availableSessions, setAvailableSessions] = useState<ScheduledSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<ScheduledSession | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
+
+  const watchIdRef = useRef<number | null>(null);
+
+  // Live Location Tracking
+  useEffect(() => {
+    if (status === 'already_in' && !checkoutTime && selectedSession?.id && user?.id) {
+      if (navigator.geolocation) {
+        watchIdRef.current = navigator.geolocation.watchPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              await fetch('/api/checkin/live', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: user.id, sessionId: selectedSession.id, lat: latitude, lng: longitude })
+              });
+            } catch (e) {
+              console.error('Failed to update live location', e);
+            }
+          },
+          (err) => console.error('Live location error:', err),
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        );
+      }
+    } else {
+      if (watchIdRef.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    }
+
+    return () => {
+      if (watchIdRef.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [status, checkoutTime, selectedSession?.id, user?.id]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -227,9 +265,10 @@ export default function CheckInPage() {
               <h2 style={{ marginTop: '1rem' }}>ข้อตกลงการประมวลผลข้อมูล (PDPA)</h2>
             </div>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
-              ในการเช็คชื่อเข้ากิจกรรม &quot;ชุมนุมสานฝันด้วยเส้นเสียง&quot; ทางโรงเรียนมีความจำเป็นต้องเข้าถึง <strong>ตำแหน่งที่ตั้ง (GPS)</strong> ของคุณ เพื่อตรวจสอบว่าคุณอยู่ในบริเวณพื้นที่ที่กำหนด
+              ในการเช็คชื่อเข้ากิจกรรม &quot;ชุมนุมสานฝันด้วยเส้นเสียง&quot; ทางโรงเรียนมีความจำเป็นต้องเข้าถึง <strong>ตำแหน่งที่ตั้ง (GPS)</strong> ของคุณ เพื่อตรวจสอบว่าคุณอยู่ในบริเวณที่กำหนด 
+              รวมถึง <strong>ติดตามตำแหน่งแบบเรียลไทม์ระหว่างที่คุณยังอยู่ในกิจกรรม</strong> เพื่อความปลอดภัยขณะอยู่ในความดูแลของคุณครู
               <br/><br/>
-              ข้อมูลตำแหน่งของคุณจะถูกใช้สำหรับการเช็คชื่อเท่านั้น และจะไม่ถูกนำไปเปิดเผยหรือใช้งานในวัตถุประสงค์อื่น
+              ข้อมูลตำแหน่งจะถูกใช้เฉพาะขณะทำการเช็คชื่อและในระหว่างที่คุณทำกิจกรรมอยู่เท่านั้น ระบบจะหยุดแชร์ตำแหน่งทันทีเมื่อคุณกดเช็คชื่อออก (Check-out) และจะไม่มีการนำไปเปิดเผยเพื่อวัตถุประสงค์อื่น
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowPdpa(false)} style={{ padding: '0.8rem 1.5rem', background: 'transparent', border: '1px solid var(--text-secondary)', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>ปฏิเสธ</button>
@@ -302,6 +341,17 @@ export default function CheckInPage() {
                 {checkinTime && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เวลาเข้า: {formatTime(checkinTime)}</p>}
                 {distance !== null && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>ระยะห่าง: {distance.toFixed(0)} เมตร</p>}
               </div>
+
+              {!checkoutTime && (
+                <div style={{ background: 'rgba(255, 60, 60, 0.1)', border: '1px solid var(--danger)', padding: '1rem', borderRadius: '8px', width: '100%', display: 'flex', alignItems: 'flex-start', gap: '0.8rem', marginTop: '0.5rem' }}>
+                  <div className="animate-pulse" style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--danger)', marginTop: '4px', flexShrink: 0 }}></div>
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 'bold', color: 'var(--danger)', fontSize: '0.9rem' }}>กำลังแชร์ตำแหน่งแบบเรียลไทม์</p>
+                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>เพื่อความปลอดภัยขณะทำกิจกรรม ระบบจะแชร์ตำแหน่งของคุณให้คุณครูทราบ และจะหยุดทันทีเมื่อเช็คชื่อออก หรือปิดหน้านี้</p>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={handleCheckOut}
                 disabled={checkoutLoading}
