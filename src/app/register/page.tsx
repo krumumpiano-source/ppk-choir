@@ -43,7 +43,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const formattedName = `${namePrefix}${studentName.trim()}`;
+      // Clean up any accidentally typed prefixes in the name field
+      let cleanName = studentName.trim();
+      cleanName = cleanName.replace(/^(นาย|นางสาว|เด็กชาย|เด็กหญิง|ด\.ช\.|ด\.ญ\.|น\.ส\.|นส\.)\s*/, '');
+      const formattedName = `${namePrefix}${cleanName}`;
       
       const res = await createUser({
         id: studentId.trim(),
