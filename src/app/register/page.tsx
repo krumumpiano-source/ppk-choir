@@ -7,6 +7,7 @@ import { ArrowLeft, UserPlus, User, Loader2, Link as LinkIcon } from 'lucide-rea
 import { createUser } from '@/lib/services/users';
 import { VoiceType } from '@/lib/services/library';
 import { toast } from 'react-hot-toast';
+import { compressImage } from '@/lib/image-upload';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,6 +31,15 @@ export default function RegisterPage() {
   const [bandPosition, setBandPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      compressImage(file, (base64) => {
+        setPhotoUrl(base64);
+      });
+    }
+  };
 
   const BAND_POSITIONS = ['เปียโน', 'กลอง', 'เบส', 'กีต้าร์', 'คีย์บอร์ด', 'นักร้องนำ'];
 
@@ -112,23 +122,27 @@ export default function RegisterPage() {
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="photoUrl">ลิงก์รูปโปรไฟล์ (Google Drive) <span style={{color: 'red'}}>*</span></label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <LinkIcon size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
+            <label>รูปโปรไฟล์ <span style={{color: 'red'}}>*</span></label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '8px' }}>
+              {photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoUrl} alt="Preview" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <User size={30} color="var(--text-secondary)" />
+                </div>
+              )}
               <input 
-                type="url" 
-                id="photoUrl" 
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                className="input-field" 
-                placeholder="วางลิ้งค์รูปภาพจาก Google Drive"
-                style={{ width: '100%', paddingLeft: '2.8rem' }}
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
                 disabled={loading}
-                required
+                required={!photoUrl}
+                style={{ width: '100%', fontSize: '0.9rem' }}
               />
             </div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginTop: '4px', display: 'block' }}>
-              ⚠️ สำคัญ: ต้องตั้งค่าแชร์ไฟล์เป็น "ทุกคนที่มีลิงก์ (Anyone with the link)" เท่านั้น รูปจึงจะแสดง
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+              สามารถกดถ่ายรูปจากกล้องมือถือ หรือเลือกรูปจากแกลลอรี่ได้
             </span>
           </div>
           

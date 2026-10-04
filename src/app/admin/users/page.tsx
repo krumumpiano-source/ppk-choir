@@ -11,6 +11,8 @@ import { toast } from 'react-hot-toast';
 
 function getDriveImageUrl(url: string | undefined): string | undefined {
   if (!url) return undefined;
+  if (url.startsWith('data:image')) return url;
+  
   const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
     // lh3.googleusercontent.com/d/ID is more reliable for embedding than uc?export=view
