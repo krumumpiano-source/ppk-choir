@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     // Set email and password for student login
     const email = `${studentId}@ppk-choir.app`;
-    const passwordHash = await hashPassword(studentId);
+    const passwordHash = await hashPassword(body.password || studentId);
     
     const id = crypto.randomUUID();
     await db.prepare(

@@ -24,8 +24,8 @@ export default function LoginPage() {
       return;
     }
     
-    if (isEmail && !password) {
-      setError('กรุณากรอกรหัสผ่านสำหรับแอดมิน');
+    if (!password) {
+      setError('กรุณากรอกรหัสผ่าน');
       return;
     }
 
@@ -41,10 +41,16 @@ export default function LoginPage() {
         setError(res.error || 'การเข้าสู่ระบบล้มเหลว');
       }
     } else {
-      const res = await loginStudent(identifier.trim());
+      const res = await loginStudent(identifier.trim(), password);
       if (res.success && res.user) {
         setUser(res.user);
-        router.push('/dashboard');
+        
+        // Force password change if password is the same as studentId
+        if (password === identifier.trim()) {
+          router.push('/change-password');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(res.error || 'รหัสนักเรียนไม่ถูกต้อง');
       }
@@ -85,24 +91,22 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {isEmail && (
-            <div className="input-group animate-fade-in" style={{ marginTop: '1rem' }}>
-              <label htmlFor="password">รหัสผ่าน (สำหรับแอดมิน)</label>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Lock size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
-                <input 
-                  type="password" 
-                  id="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field" 
-                  placeholder="กรอกรหัสผ่าน"
-                  style={{ width: '100%', paddingLeft: '2.8rem' }}
-                  disabled={loading}
-                />
-              </div>
+          <div className="input-group animate-fade-in" style={{ marginTop: '1rem' }}>
+            <label htmlFor="password">รหัสผ่าน</label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Lock size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
+              <input 
+                type="password" 
+                id="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field" 
+                placeholder="กรอกรหัสผ่าน"
+                style={{ width: '100%', paddingLeft: '2.8rem' }}
+                disabled={loading}
+              />
             </div>
-          )}
+          </div>
           
           {error && (
             <div style={{ color: 'var(--danger)', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center' }}>
@@ -110,7 +114,13 @@ export default function LoginPage() {
             </div>
           )}
           
-          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1rem', width: '100%', opacity: loading ? 0.7 : 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+            <Link href="/forgot-password" style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textDecoration: 'underline' }}>
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
+          
+          <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', opacity: loading ? 0.7 : 1 }}>
             {loading ? <span className="animate-spin" style={{ display: 'inline-block', border: '2px solid transparent', borderTopColor: 'currentColor', borderRadius: '50%', width: '18px', height: '18px' }} /> : <LogIn size={18} />}
             {loading ? 'กำลังตรวจสอบ...' : 'ลงชื่อเข้าใช้งาน'}
           </button>

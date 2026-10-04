@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const router = useRouter();
   
   const [studentId, setStudentId] = useState('');
+  const [password, setPassword] = useState('');
   const [namePrefix, setNamePrefix] = useState('นาย');
   const [studentName, setStudentName] = useState('');
   const [nickname, setNickname] = useState('');
@@ -35,8 +36,13 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentId.trim() || !studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
+    if (!studentId.trim() || !password.trim() || !studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นอีเมลผู้ปกครอง)');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
       return;
     }
 
@@ -51,6 +57,7 @@ export default function RegisterPage() {
       const res = await createUser({
         id: studentId.trim(),
         name: formattedName,
+        password: password.trim(),
         nickname: nickname.trim(),
         phone: phone.trim(),
         lineId: lineId.trim(),
@@ -137,6 +144,21 @@ export default function RegisterPage() {
                 required
               />
             </div>
+          </div>
+
+          <div className="input-group" style={{ margin: 0 }}>
+            <label htmlFor="password">ตั้งรหัสผ่าน <span style={{color: 'red'}}>*</span></label>
+            <input 
+              type="password" 
+              id="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field" 
+              placeholder="สำหรับเข้าสู่ระบบ (อย่างน้อย 6 ตัวอักษร)"
+              disabled={loading}
+              required
+              minLength={6}
+            />
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>

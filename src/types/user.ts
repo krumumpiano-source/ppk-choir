@@ -36,6 +36,7 @@ export interface User {
   room?: string;
   section?: string;
   createdAt?: string | Date;
+  password?: string;
 }
 
 export interface AuditionRecord {
