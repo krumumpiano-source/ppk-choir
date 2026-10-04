@@ -86,8 +86,12 @@ export default function AdminSessionsPage() {
 
   async function loadData() {
     setLoading(true);
-    const data = await getAllSessions();
-    setSessions(data);
+    try {
+      const data = await getAllSessions();
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setSessions([]);
+    }
     setLoading(false);
   }
 
@@ -171,7 +175,9 @@ export default function AdminSessionsPage() {
     if (session.isRecurring) {
       const currentDay = now.getDay();
       const currentTime = now.toTimeString().slice(0, 5);
-      const isDayMatch = session.daysOfWeek ? session.daysOfWeek.includes(currentDay) : session.dayOfWeek === currentDay; // Backwards compatibility just in case
+      const isDayMatch = Array.isArray(session.daysOfWeek) && session.daysOfWeek.length > 0 
+        ? session.daysOfWeek.includes(currentDay) 
+        : session.dayOfWeek === currentDay; 
       return isDayMatch && 
              currentTime >= (session.recurringStartTime || '') && 
              currentTime <= (session.recurringEndTime || '');
@@ -361,7 +367,7 @@ export default function AdminSessionsPage() {
               </tr>
             </thead>
             <tbody>
-              {sessions.length === 0 ? (
+              {!Array.isArray(sessions) || sessions.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     ยังไม่มีกิจกรรมที่สร้างไว้
@@ -387,12 +393,12 @@ export default function AdminSessionsPage() {
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{session.type}</span>
                       </td>
                       <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem' }}>
-                        {session.targetGroups?.join(', ') || 'All'}
+                        {Array.isArray(session.targetGroups) ? session.targetGroups.join(', ') : 'All'}
                       </td>
                       <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                         {session.isRecurring ? (
                           <>
-                            ทุกวัน{session.daysOfWeek ? session.daysOfWeek.map(getDayName).join(', ') : getDayName(session.dayOfWeek ?? 1)} <br/>
+                            ทุกวัน{Array.isArray(session.daysOfWeek) && session.daysOfWeek.length > 0 ? session.daysOfWeek.map(getDayName).join(', ') : getDayName(session.dayOfWeek ?? 1)} <br/>
                             {session.recurringStartTime} ถึง {session.recurringEndTime}
                           </>
                         ) : (
