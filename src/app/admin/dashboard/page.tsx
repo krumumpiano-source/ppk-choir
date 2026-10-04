@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Clock, FileAudio, LogOut, Settings, ClipboardCheck, LineChart, Users } from 'lucide-react';
+import { LayoutDashboard, Clock, FileAudio, LogOut, Settings, ClipboardCheck, LineChart, Users, MapPin } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AdminDashboard() {
@@ -48,6 +48,19 @@ export default function AdminDashboard() {
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
             เพิ่ม ลบ หรือแก้ไขข้อมูลนักเรียน และกำหนดบทบาท (Role) ของแต่ละคน
+          </p>
+        </Link>
+
+        <Link href="/admin/tracking" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer', background: 'rgba(255, 60, 60, 0.05)', border: '1px solid rgba(255, 60, 60, 0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'rgba(255, 71, 87, 0.1)', padding: '0.8rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="animate-pulse" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--danger)', position: 'absolute', transform: 'translate(-10px, -10px)' }}></div>
+              <MapPin size={28} color="var(--danger)" />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--danger)' }}>เรดาร์ติดตาม (Live Map)</h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            ดูแผนที่ตำแหน่งของนักเรียนแบบเรียลไทม์ (Real-time GPS Tracking) เพื่อดูแลความปลอดภัย
           </p>
         </Link>
 
