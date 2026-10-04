@@ -27,7 +27,7 @@ export default function RegisterPage() {
   const [advisorName, setAdvisorName] = useState('');
   
   const [room, setRoom] = useState('');
-  const [voiceType, setVoiceType] = useState<VoiceType>('Soprano 1');
+  const [voiceType, setVoiceType] = useState<VoiceType | ''>('');
   const [bandPosition, setBandPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,8 +46,8 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentId.trim() || !password.trim() || !studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นอีเมลผู้ปกครอง)');
+    if (!studentId.trim() || !password.trim() || !studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim() || !voiceType) {
+      toast.error('กรุณากรอกข้อมูลและเลือกแนวเสียงให้ครบถ้วน');
       return;
     }
 
@@ -360,7 +360,9 @@ export default function RegisterPage() {
                 value={voiceType} 
                 onChange={(e) => setVoiceType(e.target.value as VoiceType)}
                 style={{ appearance: 'auto' }}
+                required
               >
+                <option value="" disabled>-- กรุณาเลือก --</option>
                 <option value="Soprano 1">Soprano 1</option>
                 <option value="Soprano 2">Soprano 2</option>
                 <option value="Alto 1">Alto 1</option>
