@@ -24,6 +24,16 @@ export const metadata: Metadata = {
   },
 };
 
+import type { Viewport } from 'next';
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Prevents zooming on iOS on input focus
+  themeColor: "#1a1a3e",
+};
+
 import Sidebar from '@/components/Sidebar';
 
 export default function RootLayout({

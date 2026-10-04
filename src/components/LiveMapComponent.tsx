@@ -22,7 +22,7 @@ interface LiveMapComponentProps {
 
 export default function LiveMapComponent({ center, students }: LiveMapComponentProps) {
   return (
-    <MapContainer center={[center.lat, center.lng]} zoom={16} scrollWheelZoom={true} style={{ height: '400px', width: '100%', borderRadius: '8px', zIndex: 1 }}>
+    <MapContainer center={[center.lat, center.lng]} zoom={16} scrollWheelZoom={true} style={{ height: '50vh', minHeight: '300px', maxHeight: '500px', width: '100%', borderRadius: '8px', zIndex: 1 }}>
       <TileLayer
         attribution='&copy; Google Maps'
         url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
