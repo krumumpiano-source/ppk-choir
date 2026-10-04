@@ -82,8 +82,11 @@ export default function VoiceAllocationPage() {
   };
 
   const runAllocationEngine = (studentList: any[], currentRatios: Record<string, number>) => {
-    // Filter students with valid auditions or registered voiceTypes
-    const auditioned = studentList.filter((s) => s.audition || (s.voiceType && s.voiceType !== 'All' && s.voiceType !== 'Unassigned' && s.voiceType !== '')).map((s) => {
+    // Filter students with valid auditions or registered voiceTypes, EXCLUDING Instrumentalists
+    const auditioned = studentList.filter((s) => 
+      (s.audition || (s.voiceType && s.voiceType !== 'All' && s.voiceType !== 'Unassigned' && s.voiceType !== '')) &&
+      s.voiceType !== 'นักดนตรี (Instrumentalist)'
+    ).map((s) => {
       let lowestNote = 'C4';
       let highestNote = 'C5';
       
