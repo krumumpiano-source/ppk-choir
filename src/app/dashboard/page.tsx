@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut } from 'lucide-react';
+import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut, Settings } from 'lucide-react';
 import { getStudentStats, StudentStats } from '../../lib/services/gamification';
 import { getStudentPractices, PracticeRecord } from '../../lib/services/practice';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -60,16 +60,22 @@ export default function DashboardPage() {
       {/* Header Profile */}
       <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2rem', marginBottom: '2rem', position: 'relative' }}>
         
-        <button onClick={handleLogout} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <LogOut size={18} />
-          <span style={{ fontSize: '0.9rem' }}>ออกจากระบบ</span>
-        </button>
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '1rem' }}>
+          <Link href="/profile" style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
+            <Settings size={18} />
+            <span style={{ fontSize: '0.9rem' }}>แก้ไขข้อมูลส่วนตัว</span>
+          </Link>
+          <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <LogOut size={18} />
+            <span style={{ fontSize: '0.9rem' }}>ออกจากระบบ</span>
+          </button>
+        </div>
 
         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(230, 185, 128, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <UserIcon size={40} color="var(--accent-primary)" />
         </div>
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <h1 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem' }}>{user.name} (รหัส: {user.id})</h1>
+        <div style={{ flex: 1, minWidth: '200px', marginTop: '1rem' }}>
+          <h1 style={{ margin: '0 0 0.5rem 0', fontSize: '1.8rem' }}>{user.name} (รหัส: {user.studentId})</h1>
           <p style={{ margin: 0, color: 'var(--text-secondary)' }}>แนวเสียง: {user.voiceType}</p>
         </div>
         <div style={{ display: 'flex', gap: '1.5rem', textAlign: 'center' }}>
