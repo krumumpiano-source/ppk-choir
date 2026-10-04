@@ -69,7 +69,7 @@ export default function CheckInPage() {
           }
         }
         
-        const isTargetValid = session.targetGroups?.includes('All') || session.targetGroups?.includes(user.voiceType);
+        const isTargetValid = session.targetGroups?.includes('All') || session.targetGroups?.includes(user.voiceType) || (user.bandPosition && session.targetGroups?.includes(user.bandPosition));
         return isTimeValid && isTargetValid && session.location;
       });
 

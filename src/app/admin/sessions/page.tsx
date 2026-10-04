@@ -42,7 +42,7 @@ function CoordsInput({ lat, lng, onChange }: { lat: number, lng: number, onChang
 
 const GROUP_PRESETS: { label: string; groups: string[] }[] = [
   { label: 'ประสานเสียง', groups: ['Soprano 1', 'Soprano 2', 'Alto 1', 'Alto 2', 'Tenor 1', 'Tenor 2', 'Baritone', 'Bass'] },
-  { label: 'วงสตริง', groups: ['Violin 1', 'Violin 2', 'Viola', 'Cello', 'Double Bass', 'Piano'] },
+  { label: 'วงสตริง', groups: ['เปียโน', 'กลอง', 'เบส', 'กีต้าร์', 'คีย์บอร์ด', 'นักร้องนำ'] },
 ];
 
 export default function AdminSessionsPage() {
