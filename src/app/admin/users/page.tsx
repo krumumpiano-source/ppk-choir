@@ -9,6 +9,39 @@ import { VoiceType } from '@/lib/services/library';
 
 import { toast } from 'react-hot-toast';
 
+function getDriveImageUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  }
+  return url;
+}
+
+const Avatar = ({ src, alt, size = 40 }: { src?: string, alt: string, size?: number }) => {
+  const [error, setError] = useState(false);
+  
+  const driveSrc = getDriveImageUrl(src);
+  
+  if (!driveSrc || error) {
+    return (
+      <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <UserIcon size={size / 2} color="var(--text-secondary)" />
+      </div>
+    );
+  }
+  
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img 
+      src={driveSrc} 
+      alt={alt} 
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }}
+      onError={() => setError(true)}
+    />
+  );
+};
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,14 +251,7 @@ export default function AdminUsersPage() {
                   {filteredUsers.map(u => (
                     <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ padding: '1rem' }}>
-                        {u.photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={u.photoUrl} alt={u.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <UserIcon size={20} color="var(--text-secondary)" />
-                          </div>
-                        )}
+                        <Avatar src={u.photoUrl} alt={u.name} size={40} />
                       </td>
                       <td style={{ padding: '1rem' }}>{u.studentId || u.id}</td>
                       <td style={{ padding: '1rem' }}>{u.name}</td>
@@ -325,14 +351,7 @@ export default function AdminUsersPage() {
             </button>
             
             <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              {selectedUser.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={selectedUser.photoUrl} alt={selectedUser.name} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <UserIcon size={30} color="var(--text-secondary)" />
-                </div>
-              )}
+              <Avatar src={selectedUser.photoUrl} alt={selectedUser.name} size={60} />
               <div>
                 <div style={{ fontSize: '1.5rem' }}>{selectedUser.name} {selectedUser.nickname ? `(${selectedUser.nickname})` : ''}</div>
                 <div style={{ fontSize: '1rem', color: 'var(--accent-primary)' }}>{selectedUser.voiceType} • รหัส: {selectedUser.studentId || selectedUser.id}</div>
