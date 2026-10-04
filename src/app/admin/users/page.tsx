@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, UserPlus, Trash2, Loader2, Save, Check, X, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Users, UserPlus, Trash2, Loader2, Save, Check, X, User as UserIcon, Search, Filter, Eye } from 'lucide-react';
 import { getAllUsers, createUser, deleteUser, updateUserStatus } from '@/lib/services/users';
 import { User, UserRole } from '@/types/user';
 import { VoiceType } from '@/lib/services/library';
@@ -13,6 +13,13 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // Filter and Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterVoiceType, setFilterVoiceType] = useState('All');
+  
+  // Modal State
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
   // Form State
   const [newId, setNewId] = useState('');
   const [newName, setNewName] = useState('');
@@ -81,8 +88,17 @@ export default function AdminUsersPage() {
     }
   };
 
+  const filteredUsers = users.filter(u => {
+    const matchSearch = (u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         u.id?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         u.studentId?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         u.nickname?.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchVoice = filterVoiceType === 'All' ? true : u.voiceType === filterVoiceType;
+    return matchSearch && matchVoice;
+  });
+
   return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
       
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
         <Link href="/admin/dashboard" style={{ color: 'var(--text-secondary)' }}>
@@ -92,7 +108,7 @@ export default function AdminUsersPage() {
         <h1 style={{ margin: 0, fontSize: '2rem' }}>จัดการผู้ใช้งาน</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '2rem', alignItems: 'start' }}>
         
         {/* Form Add User */}
         <div className="glass-panel animate-fade-in">
@@ -141,7 +157,42 @@ export default function AdminUsersPage() {
 
         {/* User List */}
         <div className="glass-panel animate-fade-in delay-1">
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>รายชื่อผู้ใช้ทั้งหมด ({users.length})</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <h2 style={{ fontSize: '1.2rem', margin: 0 }}>รายชื่อผู้ใช้ทั้งหมด ({filteredUsers.length})</h2>
+            
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className="input-group" style={{ margin: 0, position: 'relative' }}>
+                <Search size={18} color="var(--text-secondary)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="ค้นหาชื่อ, รหัส, ชื่อเล่น..." 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{ paddingLeft: '35px', width: '220px', margin: 0 }}
+                />
+              </div>
+              <div className="input-group" style={{ margin: 0, position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Filter size={18} color="var(--text-secondary)" />
+                <select 
+                  className="input-field" 
+                  value={filterVoiceType} 
+                  onChange={e => setFilterVoiceType(e.target.value)}
+                  style={{ appearance: 'auto', margin: 0, width: '130px' }}
+                >
+                  <option value="All">ทุกพาร์ท</option>
+                  <option value="Soprano 1">Soprano 1</option>
+                  <option value="Soprano 2">Soprano 2</option>
+                  <option value="Alto 1">Alto 1</option>
+                  <option value="Alto 2">Alto 2</option>
+                  <option value="Tenor 1">Tenor 1</option>
+                  <option value="Tenor 2">Tenor 2</option>
+                  <option value="Baritone">Baritone</option>
+                  <option value="Bass">Bass</option>
+                </select>
+              </div>
+            </div>
+          </div>
           
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
@@ -149,20 +200,22 @@ export default function AdminUsersPage() {
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                     <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>รูป</th>
                     <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ID</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ชื่อ</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ชื่อ-สกุล</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ชื่อเล่น</th>
                     <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>พาร์ท</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>การติดต่อ</th>
                     <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>บทบาท</th>
                     <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>สถานะ</th>
                     <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'right' }}>จัดการ</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map(u => (
+                  {filteredUsers.map(u => (
                     <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ padding: '1rem' }}>
                         {u.photoUrl ? (
@@ -174,28 +227,40 @@ export default function AdminUsersPage() {
                           </div>
                         )}
                       </td>
-                      <td style={{ padding: '1rem' }}>{u.id}</td>
+                      <td style={{ padding: '1rem' }}>{u.studentId || u.id}</td>
                       <td style={{ padding: '1rem' }}>{u.name}</td>
+                      <td style={{ padding: '1rem' }}>{u.nickname || '-'}</td>
                       <td style={{ padding: '1rem' }}>{u.voiceType}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
+                          {u.phone && <span>📞 {u.phone}</span>}
+                          {u.lineId && <span>💬 {u.lineId}</span>}
+                          {!u.phone && !u.lineId && <span style={{ color: 'var(--text-secondary)' }}>-</span>}
+                        </div>
+                      </td>
                       <td style={{ padding: '1rem' }}>
                         <span style={{ 
                           padding: '0.2rem 0.6rem', 
                           borderRadius: '4px', 
                           fontSize: '0.8rem',
                           background: u.role === 'admin' ? 'rgba(255, 71, 87, 0.1)' : u.role === 'section_leader' ? 'rgba(255, 159, 67, 0.1)' : 'rgba(46, 213, 115, 0.1)',
-                          color: u.role === 'admin' ? 'var(--danger)' : u.role === 'section_leader' ? '#ff9f43' : 'var(--success)'
+                          color: u.role === 'admin' ? 'var(--danger)' : u.role === 'section_leader' ? '#ff9f43' : 'var(--success)',
+                          whiteSpace: 'nowrap'
                         }}>
-                          {u.role}
+                          {u.role === 'section_leader' ? 'Section Leader' : u.role}
                         </span>
                       </td>
                       <td style={{ padding: '1rem' }}>
-                        {u.status === 'pending' && <span style={{ color: '#feca57', fontSize: '0.85rem' }}>รออนุมัติ</span>}
-                        {u.status === 'approved' && <span style={{ color: 'var(--success)', fontSize: '0.85rem' }}>อนุมัติแล้ว</span>}
-                        {u.status === 'rejected' && <span style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>ไม่อนุมัติ</span>}
-                        {!u.status && <span style={{ color: 'var(--success)', fontSize: '0.85rem' }}>อนุมัติแล้ว</span>}
+                        {u.status === 'pending' && <span style={{ color: '#feca57', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>รออนุมัติ</span>}
+                        {u.status === 'approved' && <span style={{ color: 'var(--success)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>อนุมัติแล้ว</span>}
+                        {u.status === 'rejected' && <span style={{ color: 'var(--danger)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>ไม่อนุมัติ</span>}
+                        {!u.status && <span style={{ color: 'var(--success)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>อนุมัติแล้ว</span>}
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button onClick={() => setSelectedUser(u)} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer' }} title="ดูรายละเอียด">
+                            <Eye size={18} />
+                          </button>
                           {(!u.status || u.status === 'pending') && (
                             <button onClick={() => handleStatusChange(u.id, 'approved')} style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer' }} title="อนุมัติ">
                               <Check size={18} />
@@ -213,9 +278,9 @@ export default function AdminUsersPage() {
                       </td>
                     </tr>
                   ))}
-                  {users.length === 0 && (
+                  {filteredUsers.length === 0 && (
                      <tr>
-                        <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>ไม่มีข้อมูลผู้ใช้งาน</td>
+                        <td colSpan={9} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>ไม่มีข้อมูลผู้ใช้งานที่ตรงกับการค้นหา</td>
                      </tr>
                   )}
                 </tbody>
@@ -224,6 +289,84 @@ export default function AdminUsersPage() {
           )}
         </div>
       </div>
+
+      {/* User Details Modal */}
+      {selectedUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }} onClick={() => setSelectedUser(null)}>
+          <div 
+            className="glass-panel" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '600px', 
+              maxHeight: '90vh', 
+              overflowY: 'auto',
+              position: 'relative'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setSelectedUser(null)}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+            >
+              <X size={24} />
+            </button>
+            
+            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {selectedUser.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={selectedUser.photoUrl} alt={selectedUser.name} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <UserIcon size={30} color="var(--text-secondary)" />
+                </div>
+              )}
+              <div>
+                <div style={{ fontSize: '1.5rem' }}>{selectedUser.name} {selectedUser.nickname ? `(${selectedUser.nickname})` : ''}</div>
+                <div style={{ fontSize: '1rem', color: 'var(--accent-primary)' }}>{selectedUser.voiceType} • รหัส: {selectedUser.studentId || selectedUser.id}</div>
+              </div>
+            </h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '2rem' }}>
+              <div>
+                <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>ข้อมูลส่วนตัว</h3>
+                <p><strong>เบอร์โทรศัพท์:</strong> {selectedUser.phone || '-'}</p>
+                <p><strong>Line ID:</strong> {selectedUser.lineId || '-'}</p>
+                <p><strong>อีเมล:</strong> {selectedUser.email || '-'}</p>
+                <p><strong>ที่อยู่:</strong> {selectedUser.address || '-'}</p>
+                <p><strong>ครูที่ปรึกษา:</strong> {selectedUser.advisorName || '-'}</p>
+                {selectedUser.bandPosition && <p><strong>ตำแหน่งในวง:</strong> {selectedUser.bandPosition}</p>}
+                {selectedUser.room && <p><strong>ห้อง:</strong> {selectedUser.room}</p>}
+                {selectedUser.createdAt && <p><strong>วันที่สมัคร:</strong> {new Date(selectedUser.createdAt).toLocaleDateString('th-TH')}</p>}
+              </div>
+              
+              <div>
+                <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>ข้อมูลติดต่อฉุกเฉิน (ผู้ปกครอง)</h3>
+                <p><strong>ชื่อผู้ปกครอง:</strong> {selectedUser.parentName || '-'}</p>
+                <p><strong>เบอร์โทร:</strong> {selectedUser.parentPhone || '-'}</p>
+                <p><strong>Line ID:</strong> {selectedUser.parentLineId || '-'}</p>
+                <p><strong>อีเมลผู้ปกครอง:</strong> {selectedUser.parentEmail || '-'}</p>
+              </div>
+            </div>
+            
+            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setSelectedUser(null)} className="btn-secondary">ปิดหน้าต่าง</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
