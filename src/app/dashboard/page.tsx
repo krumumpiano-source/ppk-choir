@@ -19,6 +19,9 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
+    } else if (user && !user.photoUrl && !user.profileUrl) {
+      toast.error('กรุณาตั้งรหัสผ่านใหม่และใส่รูปโปรไฟล์ก่อนเข้าใช้งานระบบ', { duration: 5000, id: 'setup-toast' });
+      router.push('/profile?setup=true');
     }
   }, [user, authLoading, router]);
 

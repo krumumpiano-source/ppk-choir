@@ -112,7 +112,7 @@ export default function RegisterPage() {
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="photoUrl">ลิ้งค์รูปโปรไฟล์ (Google Drive)</label>
+            <label htmlFor="photoUrl">ลิงก์รูปโปรไฟล์ (Google Drive) <span style={{color: 'red'}}>*</span></label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <LinkIcon size={18} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)' }} />
               <input 
@@ -124,8 +124,12 @@ export default function RegisterPage() {
                 placeholder="วางลิ้งค์รูปภาพจาก Google Drive"
                 style={{ width: '100%', paddingLeft: '2.8rem' }}
                 disabled={loading}
+                required
               />
             </div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginTop: '4px', display: 'block' }}>
+              ⚠️ สำคัญ: ต้องตั้งค่าแชร์ไฟล์เป็น "ทุกคนที่มีลิงก์ (Anyone with the link)" เท่านั้น รูปจึงจะแสดง
+            </span>
           </div>
           
           <div className="input-group" style={{ margin: 0 }}>

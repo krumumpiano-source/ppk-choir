@@ -30,8 +30,15 @@ export default function ProfilePage() {
   const [bandPosition, setBandPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSetup, setIsSetup] = useState(false);
 
   const BAND_POSITIONS = ['เปียโน', 'กลอง', 'เบส', 'กีต้าร์', 'คีย์บอร์ด', 'นักร้องนำ'];
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsSetup(window.location.search.includes('setup=true'));
+    }
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -169,12 +176,17 @@ export default function ProfilePage() {
               <input type="text" value={user.studentId} disabled style={{ background: 'rgba(0,0,0,0.2)', opacity: 0.7 }} />
             </div>
             <div className="input-group" style={{ flex: 1 }}>
-              <label>เปลี่ยนรหัสผ่าน (เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)</label>
+              <label>
+                ตั้งรหัสผ่านใหม่ 
+                {isSetup ? <span style={{color: 'red'}}> * (บังคับตั้งครั้งแรก)</span> : ' (เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)'}
+              </label>
               <input 
                 type="password" 
                 placeholder="••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required={isSetup}
+                minLength={6}
               />
             </div>
           </div>
@@ -351,13 +363,17 @@ export default function ProfilePage() {
           </div>
 
           <div className="input-group">
-            <label>ลิงก์รูปโปรไฟล์ (Google Drive Link / URL - ข้ามได้ถ้ายังไม่มี)</label>
+            <label>ลิงก์รูปโปรไฟล์ (Google Drive) <span style={{color: 'red'}}>*</span></label>
             <input 
               type="url" 
               placeholder="https://..."
               value={photoUrl}
               onChange={(e) => setPhotoUrl(e.target.value)}
+              required
             />
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginTop: '4px', display: 'block' }}>
+              ⚠️ สำคัญ: ต้องตั้งค่าแชร์ไฟล์เป็น "ทุกคนที่มีลิงก์ (Anyone with the link)" เท่านั้น รูปจึงจะแสดง
+            </span>
           </div>
 
           <button 
