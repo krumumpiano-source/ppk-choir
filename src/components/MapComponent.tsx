@@ -72,9 +72,9 @@ export default function MapComponent({ lat, lng, radius, trackingRadius, onLocat
         url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
       />
       <LocationMarker lat={lat} lng={lng} onLocationChange={onLocationChange} />
-      <Circle center={[lat, lng]} radius={radius} pathOptions={{ color: 'var(--accent-primary)', fillColor: 'var(--accent-primary)', fillOpacity: 0.2 }} />
+      <Circle center={[lat, lng]} radius={radius} pathOptions={{ color: '#ffb142', fillColor: '#ffb142', fillOpacity: 0.4, weight: 3 }} />
       {trackingRadius && trackingRadius > radius && (
-        <Circle center={[lat, lng]} radius={trackingRadius} pathOptions={{ color: 'var(--success)', fillColor: 'var(--success)', fillOpacity: 0.1, dashArray: '5, 10' }} />
+        <Circle center={[lat, lng]} radius={trackingRadius} pathOptions={{ color: '#2ed573', fillColor: '#2ed573', fillOpacity: 0.15, weight: 3, dashArray: '8, 8' }} />
       )}
     </MapContainer>
   );
