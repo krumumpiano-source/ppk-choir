@@ -27,21 +27,30 @@ import toast from 'react-hot-toast';
 const VOICE_PARTS = Object.keys(VOICE_PART_SPECS);
 
 const CHOIR_FORMAT_TEMPLATES: Record<string, Record<string, number>> = {
-  'SSAATTBB (8 แนว)': {
+  'SSAATTBB (8 แนว - วงผสมมาตรฐาน)': {
     'Soprano 1': 15, 'Soprano 2': 15, 'Alto 1': 15, 'Alto 2': 15, 
     'Tenor 1': 10, 'Tenor 2': 10, 'Baritone': 10, 'Bass': 10
   },
-  'SATB (4 แนว)': {
+  'SATB (4 แนว - วงผสม)': {
     'Soprano': 30, 'Alto': 30, 'Tenor': 20, 'Bass': 20
   },
-  'SSAB (4 แนว)': {
+  'SSAB (4 แนว - วงผสม)': {
     'Soprano 1': 30, 'Soprano 2': 25, 'Alto': 25, 'Baritone': 20
   },
-  'SSAA (4 แนว)': {
+  'SAB (3 แนว - วงผสม)': {
+    'Soprano': 40, 'Alto': 30, 'Baritone': 30
+  },
+  'SSAA (4 แนว - หญิงล้วน)': {
     'Soprano 1': 25, 'Soprano 2': 25, 'Alto 1': 25, 'Alto 2': 25
   },
-  'SAB (3 แนว)': {
-    'Soprano': 40, 'Alto': 30, 'Baritone': 30
+  'SSA (3 แนว - หญิงล้วน)': {
+    'Soprano 1': 35, 'Soprano 2': 35, 'Alto': 30
+  },
+  'TTBB (4 แนว - ชายล้วน)': {
+    'Tenor 1': 25, 'Tenor 2': 25, 'Baritone': 25, 'Bass': 25
+  },
+  'TBB (3 แนว - ชายล้วน)': {
+    'Tenor': 35, 'Baritone': 35, 'Bass': 30
   }
 };
 
@@ -51,6 +60,7 @@ export default function VoiceAllocationPage() {
   const [loading, setLoading] = useState(true);
   const [savingRatios, setSavingRatios] = useState(false);
   const [confirmingAssignments, setConfirmingAssignments] = useState(false);
+  const [showAllParts, setShowAllParts] = useState(false);
 
   // Target ratios (percentages)
   const [ratios, setRatios] = useState<Record<string, number>>({
@@ -294,18 +304,18 @@ export default function VoiceAllocationPage() {
                 border: '1px solid var(--accent-primary)',
               }}
             >
-              <option value="">-- เลือกรูปแบบวงด่วน --</option>
+              <option value="">-- เลือกรูปแบบวงด่วน (Templates) --</option>
               {Object.keys(CHOIR_FORMAT_TEMPLATES).map(fmt => (
                 <option key={fmt} value={fmt}>{fmt}</option>
               ))}
             </select>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-              * เลือกเพื่อตั้งค่าสัดส่วนอัตโนมัติ (จะซ่อนแนวเสียงที่ไม่ได้ใช้ออกไป)
+              * เลือกเพื่อตั้งค่าสัดส่วนอัตโนมัติ (จะซ่อนแนวเสียงที่ไม่ได้ใช้ออกไป) หรือกรอกตัวเลขเองเพื่อดีไซน์วง
             </span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
-            {VOICE_PARTS.filter(p => ratios[p] !== undefined && ratios[p] > 0).map((part) => (
+            {VOICE_PARTS.filter(p => showAllParts || (ratios[p] !== undefined && ratios[p] > 0)).map((part) => (
               <div key={part} style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>{part}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
@@ -333,6 +343,29 @@ export default function VoiceAllocationPage() {
                 </div>
               </div>
             ))}
+            
+            {!showAllParts && (
+              <div 
+                onClick={() => setShowAllParts(true)}
+                style={{ 
+                  background: 'rgba(255,255,255,0.02)', 
+                  border: '1px dashed rgba(255,255,255,0.2)', 
+                  borderRadius: '10px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  cursor: 'pointer',
+                  padding: '1rem',
+                  color: 'var(--text-secondary)',
+                  fontSize: '0.9rem',
+                  minHeight: '100px'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+              >
+                + แสดงแนวเสียงทั้งหมดเพื่อดีไซน์เอง
+              </div>
+            )}
           </div>
         </div>
 
