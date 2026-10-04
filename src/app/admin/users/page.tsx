@@ -224,6 +224,23 @@ export default function AdminUsersPage() {
                   <option value="Bass">Bass</option>
                 </select>
               </div>
+              <button 
+                className="btn-secondary"
+                style={{ margin: 0, padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                onClick={async () => {
+                  if(confirm('ระบบจะปรับคำนำหน้าให้เป็นมาตรฐานเดียวกันทั้งหมด (นาย, นางสาว, ด.ช., ด.ญ.) ยืนยันหรือไม่?')) {
+                    const res = await fetch('/api/admin/clean-names', { method: 'POST' });
+                    if(res.ok) {
+                      toast.success('ทำความสะอาดคำนำหน้าสำเร็จ!');
+                      loadUsers();
+                    } else {
+                      toast.error('เกิดข้อผิดพลาด');
+                    }
+                  }
+                }}
+              >
+                🧹 จัดระเบียบคำนำหน้า
+              </button>
             </div>
           </div>
           

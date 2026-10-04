@@ -1,0 +1,10 @@
+UPDATE users SET name = REPLACE(name, 'นาย ', 'นาย');
+UPDATE users SET name = REPLACE(name, 'นางสาว ', 'นางสาว');
+UPDATE users SET name = REPLACE(name, 'เด็กชาย ', 'ด.ช.');
+UPDATE users SET name = REPLACE(name, 'เด็กหญิง ', 'ด.ญ.');
+UPDATE users SET name = REPLACE(name, 'ด.ช. ', 'ด.ช.');
+UPDATE users SET name = REPLACE(name, 'ด.ญ. ', 'ด.ญ.');
+UPDATE users SET name = REPLACE(name, 'น.ส. ', 'นางสาว');
+UPDATE users SET name = REPLACE(name, 'น.ส.', 'นางสาว');
+UPDATE users SET name = REPLACE(name, 'เด็กชาย', 'ด.ช.');
+UPDATE users SET name = REPLACE(name, 'เด็กหญิง', 'ด.ญ.');
