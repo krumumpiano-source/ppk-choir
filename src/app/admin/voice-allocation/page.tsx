@@ -111,10 +111,12 @@ export default function VoiceAllocationPage() {
     const results = smartAllocateVoiceParts(auditioned, currentRatios);
     setAllocatedStudents(results);
 
-    // Initialize manual assignments state
+    // Initialize manual assignments state to the student's CURRENT voice type (what they applied with)
     const initialMap: Record<string, string> = {};
     results.forEach((res) => {
-      initialMap[res.studentId] = res.assignedVoicePart;
+      // Find the original student to get their current voice type
+      const originalStudent = studentList.find(s => s.id === res.studentId);
+      initialMap[res.studentId] = originalStudent?.voiceType || res.topSuggestedPart;
     });
     setManualAssignments(initialMap);
   };
@@ -387,9 +389,12 @@ export default function VoiceAllocationPage() {
                 </thead>
                 <tbody>
                   {allocatedStudents.map((st) => {
-                    const currentAssigned = manualAssignments[st.studentId] || st.assignedVoicePart;
-                    const isOverridden = currentAssigned !== st.topSuggestedPart;
                     const originalStudent = students.find(s => s.id === st.studentId);
+                    const originalVoice = originalStudent?.voiceType;
+                    const currentAssigned = manualAssignments[st.studentId] || originalVoice || st.topSuggestedPart;
+                    
+                    // It is overridden if the current assigned part is different from what they originally applied with
+                    const isOverridden = currentAssigned !== originalVoice;
                     const displayName = originalStudent?.nickname ? `${st.studentName} (${originalStudent.nickname})` : st.studentName;
 
                     return (
