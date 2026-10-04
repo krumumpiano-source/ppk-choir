@@ -39,7 +39,7 @@ export default function AdminDashboard() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         
-        <Link href="/admin/users" className="glass-panel animate-fade-in" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid var(--accent-primary)' }}>
+        <Link href="/admin/users" className="glass-panel animate-fade-in" style={{ display: 'block', textDecoration: 'none', border: '1px solid var(--accent-primary)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'var(--accent-primary)', padding: '0.8rem', borderRadius: '12px' }}>
               <Users size={28} color="#000" />
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
-        <Link href="/admin/tracking" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer', background: 'rgba(255, 60, 60, 0.05)', border: '1px solid rgba(255, 60, 60, 0.3)' }}>
+        <Link href="/admin/tracking" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', background: 'rgba(255, 60, 60, 0.05)', border: '1px solid rgba(255, 60, 60, 0.3)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(255, 71, 87, 0.1)', padding: '0.8rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div className="animate-pulse" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--danger)', position: 'absolute', transform: 'translate(-10px, -10px)' }}></div>
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
-        <Link href="/admin/sessions" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer' }}>
+        <Link href="/admin/sessions" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
               <Clock size={28} color="var(--accent-primary)" />
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
-        <Link href="/admin/reports" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer' }}>
+        <Link href="/admin/reports" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(46, 213, 115, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
               <FileAudio size={28} color="var(--success)" />
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
-        <Link href="/admin/library" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer' }}>
+        <Link href="/admin/library" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
               <FileAudio size={28} color="var(--accent-primary)" />
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
           </p>
         </Link>
         
-        <Link href="/admin/assess" className="glass-panel animate-fade-in delay-2" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer' }}>
+        <Link href="/admin/assess" className="glass-panel animate-fade-in delay-2" style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
               <ClipboardCheck size={28} color="var(--accent-primary)" />
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
-        <Link href="/admin/analytics" className="glass-panel animate-fade-in delay-3" style={{ display: 'block', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer' }}>
+        <Link href="/admin/analytics" className="glass-panel animate-fade-in delay-3" style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
               <LineChart size={28} color="var(--accent-primary)" />
