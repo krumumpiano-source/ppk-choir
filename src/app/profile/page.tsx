@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const [advisorName, setAdvisorName] = useState('');
   
   const [room, setRoom] = useState('');
-  const [voiceType, setVoiceType] = useState<VoiceType | 'นักดนตรี (Instrumentalist)'>('Soprano 1');
+  const [voiceType, setVoiceType] = useState<VoiceType | 'นักดนตรี (Instrumentalist)' | ''>('');
   const [bandPosition, setBandPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -77,7 +77,7 @@ export default function ProfilePage() {
       setAddress(user.address || '');
       setAdvisorName(user.advisorName || '');
       setRoom(user.section || user.room || '');
-      setVoiceType((user.voiceType as VoiceType) || 'Soprano 1');
+      setVoiceType((user.voiceType as VoiceType) || '');
       setBandPosition(user.bandPosition || '');
       setPhotoUrl(user.profileUrl || user.photoUrl || '');
     }
@@ -89,6 +89,16 @@ export default function ProfilePage() {
     
     if (!studentName.trim() || !nickname.trim() || !phone.trim() || !lineId.trim() || !parentName.trim() || !parentPhone.trim() || !parentLineId.trim() || !address.trim() || !advisorName.trim() || !room.trim()) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง (ยกเว้นอีเมลผู้ปกครอง)');
+      return;
+    }
+
+    if (!voiceType) {
+      toast.error('กรุณาเลือกแนวเสียง หรือเลือก "นักดนตรี" หากเล่นดนตรีอย่างเดียว');
+      return;
+    }
+
+    if (voiceType === 'นักดนตรี (Instrumentalist)' && !bandPosition) {
+      toast.error('กรุณาเลือกตำแหน่งเครื่องดนตรี');
       return;
     }
 
@@ -257,9 +267,10 @@ export default function ProfilePage() {
           </div>
 
           <div className="input-group">
-            <label>แนวเสียงปัจจุบันที่ต้องการออดิชัน</label>
+            <label>แนวเสียง / ตำแหน่งในวง (นักเรียนวงสตริงให้เลือก "นักดนตรี")</label>
             <select 
               value={voiceType} 
+              required
               onChange={(e) => {
                 setVoiceType(e.target.value as any);
                 if (e.target.value !== 'นักดนตรี (Instrumentalist)') {
@@ -267,6 +278,7 @@ export default function ProfilePage() {
                 }
               }}
             >
+              <option value="">-- เลือกแนวเสียง / นักดนตรี --</option>
               <optgroup label="Soprano (เสียงสูงหญิง)">
                 <option value="Soprano 1">Soprano 1</option>
                 <option value="Soprano 2">Soprano 2</option>
