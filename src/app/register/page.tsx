@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const router = useRouter();
   
   const [studentId, setStudentId] = useState('');
+  const [namePrefix, setNamePrefix] = useState('นาย');
   const [studentName, setStudentName] = useState('');
   const [nickname, setNickname] = useState('');
   const [phone, setPhone] = useState('');
@@ -42,9 +43,11 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      const formattedName = `${namePrefix}${studentName.trim()}`;
+      
       const res = await createUser({
         id: studentId.trim(),
-        name: studentName.trim(),
+        name: formattedName,
         nickname: nickname.trim(),
         phone: phone.trim(),
         lineId: lineId.trim(),
@@ -134,17 +137,32 @@ export default function RegisterPage() {
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
-            <label htmlFor="studentName">ชื่อ-สกุล <span style={{color: 'red'}}>*</span></label>
-            <input 
-              type="text" 
-              id="studentName" 
-              value={studentName}
-              onChange={(e) => setStudentName(e.target.value)}
-              className="input-field" 
-              placeholder="เช่น สมชาย ใจดี"
-              disabled={loading}
-              required
-            />
+            <label htmlFor="studentName">ชื่อ-สกุล (ไม่ต้องใส่คำนำหน้า) <span style={{color: 'red'}}>*</span></label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <select 
+                value={namePrefix}
+                onChange={(e) => setNamePrefix(e.target.value)}
+                className="input-field"
+                style={{ width: '120px', appearance: 'auto' }}
+                disabled={loading}
+              >
+                <option value="นาย">นาย</option>
+                <option value="นางสาว">นางสาว</option>
+                <option value="ด.ช.">ด.ช.</option>
+                <option value="ด.ญ.">ด.ญ.</option>
+              </select>
+              <input 
+                type="text" 
+                id="studentName" 
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                className="input-field" 
+                placeholder="เช่น สมชาย ใจดี"
+                style={{ flex: 1 }}
+                disabled={loading}
+                required
+              />
+            </div>
           </div>
 
           <div className="input-group" style={{ margin: 0 }}>
