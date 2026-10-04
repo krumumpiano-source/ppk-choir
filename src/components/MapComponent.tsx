@@ -67,8 +67,8 @@ export default function MapComponent({ lat, lng, radius, onLocationChange }: Map
       style={{ height: '100%', width: '100%', borderRadius: '8px', zIndex: 1 }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; Google Maps'
+        url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
       />
       <LocationMarker lat={lat} lng={lng} onLocationChange={onLocationChange} />
       <Circle center={[lat, lng]} radius={radius} pathOptions={{ color: 'var(--accent-primary)', fillColor: 'var(--accent-primary)', fillOpacity: 0.2 }} />
