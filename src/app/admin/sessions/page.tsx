@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Power, Loader2, MapPin, Save, Plus, Trash2, Calendar, Users } from 'lucide-react';
+import { ArrowLeft, Clock, Power, Loader2, MapPin, Save, Plus, Trash2, Calendar, Users, Edit } from 'lucide-react';
 import { getAllSessions, createScheduledSession, updateScheduledSession, deleteScheduledSession, ScheduledSession } from '@/lib/services/checkin';
 import MapSelector from '@/components/MapSelector';
 import ThaiDatePicker from '@/components/ThaiDatePicker';
@@ -53,7 +53,9 @@ export default function AdminSessionsPage() {
 
   // Form State
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [editId, setEditId] = useState<string | null>(null);
+
+  const defaultFormData = {
     name: '',
     type: 'practice',
     targetGroups: ['All'],
@@ -65,7 +67,50 @@ export default function AdminSessionsPage() {
     endDate: '',
     endTime: '',
     daysOfWeek: [1] // 1=Monday
-  });
+  };
+
+  const [formData, setFormData] = useState(defaultFormData);
+
+  const handleEdit = (session: ScheduledSession) => {
+    setEditId(session.id || null);
+    
+    // Parse times
+    let stTime = '';
+    let enTime = '';
+    let stDate = '';
+    let enDate = '';
+
+    if (session.isRecurring) {
+      stTime = session.recurringStartTime || '';
+      enTime = session.recurringEndTime || '';
+    } else {
+      if (session.startTime) {
+        const sd = session.startTime.toDate ? session.startTime.toDate() : new Date(session.startTime);
+        stDate = sd.toISOString().split('T')[0];
+        stTime = sd.toTimeString().slice(0, 5);
+      }
+      if (session.endTime) {
+        const ed = session.endTime.toDate ? session.endTime.toDate() : new Date(session.endTime);
+        enDate = ed.toISOString().split('T')[0];
+        enTime = ed.toTimeString().slice(0, 5);
+      }
+    }
+
+    setFormData({
+      name: session.name,
+      type: session.type,
+      targetGroups: session.targetGroups || ['All'],
+      lat: session.location?.lat || 19.17029465512379,
+      lng: session.location?.lng || 99.91028862524004,
+      radius: session.location?.radius || 50,
+      startDate: stDate,
+      startTime: stTime,
+      endDate: enDate,
+      endTime: enTime,
+      daysOfWeek: session.daysOfWeek || [session.dayOfWeek || 1]
+    });
+    setShowForm(true);
+  };
 
   useEffect(() => {
     loadData();
@@ -143,11 +188,15 @@ export default function AdminSessionsPage() {
       sessionData.endTime = new Date(`${formData.endDate}T${formData.endTime}`);
     }
 
-    const res = await createScheduledSession(sessionData);
+    const res = editId 
+      ? await updateScheduledSession(editId, sessionData)
+      : await createScheduledSession(sessionData);
 
     if (res.success) {
       alert('บันทึกกิจกรรมสำเร็จ');
       setShowForm(false);
+      setEditId(null);
+      setFormData(defaultFormData);
       loadData();
     } else {
       alert('เกิดข้อผิดพลาดในการบันทึก');
@@ -365,7 +414,11 @@ export default function AdminSessionsPage() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-            <button className="btn-secondary" onClick={() => setShowForm(false)}>ยกเลิก</button>
+            <button className="btn-secondary" onClick={() => {
+              setShowForm(false);
+              setEditId(null);
+              setFormData(defaultFormData);
+            }}>ยกเลิก</button>
             <button className="btn-primary" onClick={handleCreate} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />} บันทึกกิจกรรม
             </button>
@@ -432,6 +485,20 @@ export default function AdminSessionsPage() {
                       </td>
                       <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <button 
+                            onClick={() => {
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                              handleEdit(session);
+                            }}
+                            style={{ 
+                              padding: '0.5rem', borderRadius: '8px', cursor: 'pointer',
+                              background: 'rgba(255, 255, 255, 0.1)', border: 'none',
+                              color: 'var(--text-primary)'
+                            }}
+                            title="แก้ไขกิจกรรม"
+                          >
+                            <Edit size={18} />
+                          </button>
                           <Link
                             href={`/admin/sessions/${session.id}`}
                             style={{ 
