@@ -393,6 +393,11 @@ export default function VoiceAllocationPage() {
                       <tr key={st.studentId} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s ease' }}>
                         <td style={{ padding: '0.85rem 1rem' }}>
                           <div style={{ fontWeight: 'bold' }}>{displayName}</div>
+                          {originalStudent?.bandPosition && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', marginTop: '0.2rem' }}>
+                              🎸 {originalStudent.bandPosition}
+                            </div>
+                          )}
                         </td>
 
                         <td style={{ padding: '0.85rem 1rem' }}>

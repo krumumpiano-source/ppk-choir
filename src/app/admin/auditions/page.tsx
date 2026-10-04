@@ -233,7 +233,7 @@ export default function AuditionsPage() {
                       <div>
                         <div style={{ fontWeight: 'bold' }}>{s.name} {s.nickname ? `(${s.nickname})` : ''}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          รหัส: {s.studentId || '-'} | แนวเดิม: {s.voiceType || 'ยังไม่ได้กำหนด'}
+                          รหัส: {s.studentId || '-'} | แนวเดิม: {s.voiceType || 'ยังไม่ได้กำหนด'} {s.bandPosition ? `| ตำแหน่ง: ${s.bandPosition}` : ''}
                         </div>
                       </div>
 

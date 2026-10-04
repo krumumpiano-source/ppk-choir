@@ -18,6 +18,7 @@ export async function GET() {
         u.role,
         u.section,
         u.profileUrl,
+        u.bandPosition,
         a.id as auditionId,
         a.lowestNote,
         a.highestNote,
@@ -42,6 +43,7 @@ export async function GET() {
       role: row.role,
       section: row.section || 'ไม่ระบุ',
       profileUrl: row.profileUrl,
+      bandPosition: row.bandPosition || '',
       audition: row.auditionId ? {
         id: row.auditionId,
         lowestNote: row.lowestNote,
