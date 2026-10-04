@@ -40,7 +40,13 @@ function CoordsInput({ lat, lng, onChange }: { lat: number, lng: number, onChang
   );
 }
 
+const GROUP_PRESETS: { label: string; groups: string[] }[] = [
+  { label: 'ประสานเสียง', groups: ['Soprano 1', 'Soprano 2', 'Alto 1', 'Alto 2', 'Tenor 1', 'Tenor 2', 'Baritone', 'Bass'] },
+  { label: 'วงสตริง', groups: ['Violin 1', 'Violin 2', 'Viola', 'Cello', 'Double Bass', 'Piano'] },
+];
+
 export default function AdminSessionsPage() {
+  const [customGroup, setCustomGroup] = useState('');
   const [sessions, setSessions] = useState<ScheduledSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -230,8 +236,16 @@ export default function AdminSessionsPage() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>กลุ่มเป้าหมายที่ต้องเช็คชื่อ</label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+              {GROUP_PRESETS.map(p => (
+                <button key={p.label} type="button" className="btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}
+                  onClick={() => setFormData(prev => ({ ...prev, targetGroups: [...p.groups] }))}>
+                  เลือกทั้งหมด: {p.label}
+                </button>
+              ))}
+            </div>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {['All', 'Soprano 1', 'Soprano 2', 'Alto 1', 'Alto 2', 'Tenor 1', 'Tenor 2', 'Baritone', 'Bass'].map(g => (
+              {Array.from(new Set(['All', ...GROUP_PRESETS.flatMap(p => p.groups), ...formData.targetGroups])).map(g => (
                 <button 
                   key={g}
                   onClick={() => handleTargetChange(g)}
@@ -245,6 +259,15 @@ export default function AdminSessionsPage() {
                   {g === 'All' ? 'ทุกคน (รวมวง)' : g}
                 </button>
               ))}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <input type="text" className="input-field" value={customGroup} onChange={e => setCustomGroup(e.target.value)} placeholder="เพิ่มกลุ่มเอง เช่น Flute, Harp" style={{ maxWidth: '260px' }} />
+              <button type="button" className="btn-secondary" onClick={() => {
+                const v = customGroup.trim();
+                if (!v) return;
+                setFormData(prev => ({ ...prev, targetGroups: [...prev.targetGroups.filter(t => t !== 'All' && t !== v), v] }));
+                setCustomGroup('');
+              }}>เพิ่ม</button>
             </div>
           </div>
 
