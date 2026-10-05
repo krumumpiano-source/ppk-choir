@@ -33,6 +33,7 @@ export interface User {
   role: UserRole;
   status?: UserStatus;
   photoUrl?: string;
+  profileUrl?: string;
   room?: string;
   section?: string;
   createdAt?: string | Date;

@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'verify', studentId, phone })
       });
-      const data = await res.json();
+      const data = await res.json() as any;
       
       if (res.ok && data.success) {
         setStep(2);
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'reset', studentId, phone, newPassword })
       });
-      const data = await res.json();
+      const data = await res.json() as any;
       
       if (res.ok && data.success) {
         setStep(3);

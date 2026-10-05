@@ -66,8 +66,9 @@ function MapBoundsFitter({ lat, lng, radius, trackingRadius }: { lat: number, ln
   useEffect(() => {
     const maxRadius = trackingRadius && trackingRadius > radius ? trackingRadius : radius;
     if (maxRadius > 0 && lat && lng) {
-      const circle = L.circle([lat, lng], { radius: maxRadius });
-      map.fitBounds(circle.getBounds(), { padding: [30, 30] });
+      // Circle.getBounds() throws when the circle isn't on a map; compute directly
+      const bounds = L.latLng(lat, lng).toBounds(maxRadius * 2);
+      map.fitBounds(bounds, { padding: [30, 30] });
     }
   }, [lat, lng, radius, trackingRadius, map]);
   

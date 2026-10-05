@@ -177,8 +177,28 @@ export default function CheckInPage() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
+    // Sample GPS up to 12s (stop early at <=15m) and keep the most accurate fix
+    const MAX_ACCURACY_M = 50;
+    let best: GeolocationPosition | null = null;
+    let finished = false;
+    let watchId = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const onDone = async (position: GeolocationPosition | null) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      navigator.geolocation.clearWatch(watchId);
+      if (!position) {
+        setStatus('error');
+        setErrorMessage('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาตให้เว็บเข้าถึง GPS ของคุณ');
+        return;
+      }
+      if (position.coords.accuracy > MAX_ACCURACY_M) {
+        setStatus('error');
+        setErrorMessage(`สัญญาณ GPS ไม่แม่นยำพอ (คลาดเคลื่อน ~${Math.round(position.coords.accuracy)} เมตร) กรุณาเดินไปใกล้หน้าต่างหรือที่โล่ง เปิด GPS โหมดความแม่นยำสูง แล้วลองใหม่`);
+        return;
+      }
+      {
         const { latitude, longitude } = position.coords;
         setLocation({ lat: latitude, lng: longitude });
         const targetLoc = selectedSession.location!;
@@ -208,12 +228,16 @@ export default function CheckInPage() {
           setStatus('error');
           setErrorMessage('ไม่พบข้อมูลผู้ใช้งาน');
         }
+      }
+    };
+    timer = setTimeout(() => onDone(best), 12000);
+    watchId = navigator.geolocation.watchPosition(
+      (p) => {
+        if (!best || p.coords.accuracy < best.coords.accuracy) best = p;
+        if (p.coords.accuracy <= 15) onDone(p);
       },
-      () => {
-        setStatus('error');
-        setErrorMessage('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาตให้เว็บเข้าถึง GPS ของคุณ');
-      },
-      { enableHighAccuracy: true }
+      () => onDone(best),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
     );
   };
 
@@ -406,8 +430,8 @@ export default function CheckInPage() {
             <button
               onClick={initiateCheckIn}
               className="btn-primary"
-              disabled={status === 'locating' || !selectedSession}
-              style={{ width: '100%', marginTop: '0.5rem', opacity: (status === 'locating' || !selectedSession) ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+              disabled={!selectedSession}
+              style={{ width: '100%', marginTop: '0.5rem', opacity: !selectedSession ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
             >
               <MapPin size={20} />
               {status === 'failed' || status === 'error' ? 'ลองเช็คชื่อใหม่อีกครั้ง' : 'กดเพื่อเช็คชื่อเข้ากิจกรรม'}

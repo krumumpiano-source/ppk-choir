@@ -40,7 +40,7 @@ export default function ChangePasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword })
       });
-      const data = await res.json();
+      const data = await res.json() as any;
       
       if (res.ok && data.success) {
         toast.success('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว!');

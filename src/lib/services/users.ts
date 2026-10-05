@@ -12,7 +12,7 @@ export async function getAllUsers(): Promise<User[]> {
   }
 }
 
-export async function createUser(user: User): Promise<{ success: boolean; error?: string }> {
+export async function createUser(user: Partial<User> & Pick<User, 'id' | 'name' | 'role'>): Promise<{ success: boolean; error?: string }> {
   try {
     const res = await fetch('/api/users', {
       method: 'POST',
