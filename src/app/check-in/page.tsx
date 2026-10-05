@@ -97,8 +97,13 @@ export default function CheckInPage() {
         let isTimeValid = false;
 
         if (session.isRecurring) {
-          const currentDay = now.getDay();
-          const currentTime = now.toTimeString().slice(0, 5);
+          // Convert to Thailand time (UTC+7) explicitly to avoid device timezone issues
+          const thaiTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+          const currentDay = thaiTime.getUTCDay();
+          const currentHour = thaiTime.getUTCHours().toString().padStart(2, '0');
+          const currentMinute = thaiTime.getUTCMinutes().toString().padStart(2, '0');
+          const currentTime = `${currentHour}:${currentMinute}`;
+          
           const isDayMatch = session.daysOfWeek ? session.daysOfWeek.includes(currentDay) : session.dayOfWeek === currentDay;
           if (isDayMatch && currentTime >= (session.recurringStartTime || '') && currentTime <= (session.recurringEndTime || '')) {
             isTimeValid = true;
@@ -111,7 +116,7 @@ export default function CheckInPage() {
           }
         }
         
-        const isTargetValid = session.targetGroups?.includes('All') || session.targetGroups?.includes(user.voiceType) || (user.bandPosition && session.targetGroups?.includes(user.bandPosition));
+        const isTargetValid = !session.targetGroups || session.targetGroups.length === 0 || session.targetGroups.includes('All') || session.targetGroups.includes(user.voiceType) || (user.bandPosition && session.targetGroups.includes(user.bandPosition));
         return isTimeValid && isTargetValid && session.location;
       });
 

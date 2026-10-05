@@ -50,7 +50,7 @@ export async function updateCheckInSettings(settings: typeof DEFAULT_CHECKIN_SET
 
 export async function getAllSessions(): Promise<ScheduledSession[]> {
   try {
-    const res = await fetch('/api/checkin/sessions');
+    const res = await fetch('/api/checkin/sessions', { cache: 'no-store' });
     if (!res.ok) return [];
     const data = (await res.json()) as any;
     return data.sessions;
@@ -62,7 +62,7 @@ export async function getAllSessions(): Promise<ScheduledSession[]> {
 
 export async function getActiveSessions(): Promise<{sessions: ScheduledSession[], serverTime: string}> {
   try {
-    const res = await fetch('/api/checkin/sessions?active=true');
+    const res = await fetch('/api/checkin/sessions?active=true', { cache: 'no-store' });
     if (!res.ok) return { sessions: [], serverTime: new Date().toISOString() };
     const data = (await res.json()) as any;
     return { 
@@ -166,7 +166,7 @@ export async function saveCheckIn(data: CheckInRecord) {
 
 export async function getSessionCheckIns(sessionId: string): Promise<CheckInRecord[]> {
   try {
-    const res = await fetch(`/api/checkin?sessionId=${sessionId}`);
+    const res = await fetch(`/api/checkin?sessionId=${sessionId}`, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = (await res.json()) as any;
     return data.checkins;
