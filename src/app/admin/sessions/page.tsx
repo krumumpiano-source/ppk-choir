@@ -169,6 +169,7 @@ export default function AdminSessionsPage() {
     if (!formData.name.trim()) return alert('กรุณากรอกชื่อกิจกรรม');
     if (!formData.startTime || !formData.endTime) return alert('กรุณากรอกเวลาให้ครบถ้วน');
     if (formData.type !== 'practice' && (!formData.startDate || !formData.endDate)) return alert('กรุณาเลือกวันที่');
+    if (!formData.radius || formData.radius < 1) return alert('กรุณากรอกรัศมีเช็คชื่อ (เมตร)');
 
     setSaving(true);
     let sessionData: Omit<ScheduledSession, 'id' | 'createdAt'> = {
@@ -402,12 +403,12 @@ export default function AdminSessionsPage() {
               </div>
               <div className="input-group">
                 <label>รัศมีเช็คชื่อเข้า (เมตร)</label>
-                <input type="number" className="input-field" value={formData.radius} onChange={e => setFormData({...formData, radius: parseInt(e.target.value) || 50})} />
+                <input type="number" className="input-field" value={formData.radius || ''} onChange={e => setFormData({...formData, radius: parseInt(e.target.value) || 0})} />
                 <small style={{ color: 'var(--text-secondary)' }}>ระยะที่อนุญาตให้กดเช็คชื่อได้ (เช่น 50m)</small>
               </div>
               <div className="input-group" style={{ marginTop: '1rem' }}>
                 <label>รัศมีพื้นที่ปลอดภัย (เมตร)</label>
-                <input type="number" className="input-field" value={formData.trackingRadius} onChange={e => setFormData({...formData, trackingRadius: parseInt(e.target.value) || 500})} />
+                <input type="number" className="input-field" value={formData.trackingRadius || ''} onChange={e => setFormData({...formData, trackingRadius: parseInt(e.target.value) || 0})} />
                 <small style={{ color: 'var(--text-secondary)' }}>ระยะที่อนุญาตให้อยู่ระหว่างกิจกรรม (เช่น 500m เพื่อให้อยู่ในโรงเรียนได้)</small>
               </div>
             </div>

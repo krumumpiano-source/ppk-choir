@@ -61,8 +61,26 @@ export async function PATCH(request: Request) {
     const id = url.searchParams.get('id');
     const db = getDb();
     
-    if (body.isActive !== undefined) {
-      await db.prepare('UPDATE sessions SET isActive = ? WHERE id = ?').bind(body.isActive ? 1 : 0, id).run();
+    if (!id) return NextResponse.json({ error: 'missing id' }, { status: 400 });
+
+    const sets: string[] = [];
+    const vals: any[] = [];
+    const add = (col: string, val: any) => { sets.push(`${col} = ?`); vals.push(val); };
+
+    if (body.name !== undefined) add('name', body.name);
+    if (body.type !== undefined) add('type', body.type);
+    if (body.targetGroups !== undefined) add('targetGroups', JSON.stringify(body.targetGroups || []));
+    if (body.location !== undefined) add('location', body.location ? JSON.stringify(body.location) : null);
+    if (body.startTime !== undefined) add('startTime', body.startTime || null);
+    if (body.endTime !== undefined) add('endTime', body.endTime || null);
+    if (body.isActive !== undefined) add('isActive', body.isActive ? 1 : 0);
+    if (body.isRecurring !== undefined) add('isRecurring', body.isRecurring ? 1 : 0);
+    if (body.daysOfWeek !== undefined) add('daysOfWeek', JSON.stringify(body.daysOfWeek || []));
+    if (body.recurringStartTime !== undefined) add('recurringStartTime', body.recurringStartTime || null);
+    if (body.recurringEndTime !== undefined) add('recurringEndTime', body.recurringEndTime || null);
+
+    if (sets.length > 0) {
+      await db.prepare(`UPDATE sessions SET ${sets.join(', ')} WHERE id = ?`).bind(...vals, id).run();
     }
     
     return NextResponse.json({ success: true });
