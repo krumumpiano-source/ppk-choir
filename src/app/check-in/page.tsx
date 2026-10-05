@@ -327,12 +327,23 @@ export default function CheckInPage() {
               มีกิจกรรมที่คุณสามารถเช็คชื่อได้ ({availableSessions.length} กิจกรรม)
             </div>
           ) : (
-            <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(255, 71, 87, 0.1)', color: 'var(--danger)', borderRadius: '8px', fontSize: '0.9rem' }}>
-              ขณะนี้ไม่มีกิจกรรมที่เปิดรับการเช็คชื่อสำหรับคุณ
-              <br/>
-              <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                (คุณลงทะเบียนเป็น: {user.voiceType || 'ไม่ระบุ'}{user.bandPosition ? ` / ${user.bandPosition}` : ''})
-              </span>
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255, 71, 87, 0.1)', color: 'var(--danger)', borderRadius: '8px', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
+              <div>
+                ขณะนี้ไม่มีกิจกรรมที่เปิดรับการเช็คชื่อสำหรับคุณ
+                <br/>
+                <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                  (คุณลงทะเบียนเป็น: {user.voiceType || 'ไม่ระบุ'}{user.bandPosition ? ` / ${user.bandPosition}` : ''})
+                </span>
+              </div>
+              <button 
+                onClick={() => window.location.href = window.location.pathname + '?update=' + Date.now()}
+                style={{
+                  background: 'var(--danger)', color: 'white', border: 'none', padding: '0.5rem 1rem', 
+                  borderRadius: '20px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
+                }}
+              >
+                <span>ไม่เห็นกิจกรรม? กดเพื่อรีเฟรชหน้าต่างใหม่</span>
+              </button>
             </div>
           )}
         </div>
