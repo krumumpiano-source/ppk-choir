@@ -86,10 +86,14 @@ export default function CheckInPage() {
   useEffect(() => {
     async function checkSessions() {
       if (!user) return;
-      const sessions = await getActiveSessions();
+      const { sessions, serverTime } = await getActiveSessions();
+      
+      const serverDate = new Date(serverTime);
+      const clientDate = new Date();
+      const timeDelta = serverDate.getTime() - clientDate.getTime();
       
       const eligibleSessions = sessions.filter(session => {
-        const now = new Date();
+        const now = new Date(Date.now() + timeDelta);
         let isTimeValid = false;
 
         if (session.isRecurring) {
@@ -320,6 +324,10 @@ export default function CheckInPage() {
           ) : (
             <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(255, 71, 87, 0.1)', color: 'var(--danger)', borderRadius: '8px', fontSize: '0.9rem' }}>
               ขณะนี้ไม่มีกิจกรรมที่เปิดรับการเช็คชื่อสำหรับคุณ
+              <br/>
+              <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                (คุณลงทะเบียนเป็น: {user.voiceType || 'ไม่ระบุ'}{user.bandPosition ? ` / ${user.bandPosition}` : ''})
+              </span>
             </div>
           )}
         </div>

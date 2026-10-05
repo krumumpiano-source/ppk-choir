@@ -60,15 +60,18 @@ export async function getAllSessions(): Promise<ScheduledSession[]> {
   }
 }
 
-export async function getActiveSessions(): Promise<ScheduledSession[]> {
+export async function getActiveSessions(): Promise<{sessions: ScheduledSession[], serverTime: string}> {
   try {
     const res = await fetch('/api/checkin/sessions?active=true');
-    if (!res.ok) return [];
+    if (!res.ok) return { sessions: [], serverTime: new Date().toISOString() };
     const data = (await res.json()) as any;
-    return data.sessions;
+    return { 
+      sessions: data.sessions || [], 
+      serverTime: data.serverTime || new Date().toISOString() 
+    };
   } catch (error) {
     console.error('Error getting active sessions:', error);
-    return [];
+    return { sessions: [], serverTime: new Date().toISOString() };
   }
 }
 
@@ -118,7 +121,7 @@ export async function deleteScheduledSession(id: string) {
 
 export async function getActiveSession() {
   try {
-    const sessions = await getActiveSessions();
+    const { sessions } = await getActiveSessions();
     if (sessions.length > 0) {
       return sessions[0];
     }

@@ -35,7 +35,7 @@ export default function LiveTrackingPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const sessions = await getActiveSessions();
+        const { sessions } = await getActiveSessions();
         setActiveSessions(sessions);
         
         let students: any[] = [];

@@ -23,7 +23,10 @@ export async function GET(request: Request) {
       daysOfWeek: r.daysOfWeek ? JSON.parse(r.daysOfWeek) : []
     }));
     
-    return NextResponse.json({ sessions });
+    return NextResponse.json({ 
+      sessions,
+      serverTime: new Date().toISOString()
+    });
   } catch (error: any) {
     console.error('API Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
