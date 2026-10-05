@@ -25,6 +25,8 @@ const redIcon = typeof window !== 'undefined' ? new L.Icon({
   shadowSize: [41, 41]
 }) : undefined;
 
+const defaultIcon = typeof window !== 'undefined' ? new L.Icon.Default() : undefined;
+
 interface LiveMapComponentProps {
   center: { lat: number; lng: number };
   students: { id: string; name: string; lat: number; lng: number; lastUpdate: string; phone?: string; lineId?: string; isOutOfBounds?: boolean }[];
@@ -41,7 +43,7 @@ export default function LiveMapComponent({ center, students }: LiveMapComponentP
         <Marker 
           key={s.id} 
           position={[s.lat, s.lng]} 
-          {...(s.isOutOfBounds && redIcon ? { icon: redIcon } : {})}
+          icon={s.isOutOfBounds && redIcon ? redIcon : defaultIcon}
         >
           <Popup>
             <div style={{ padding: '0.5rem', fontFamily: 'var(--font-body)' }}>
