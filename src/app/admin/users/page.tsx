@@ -135,7 +135,7 @@ export default function AdminUsersPage() {
   });
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+    <div style={{ padding: '2rem', maxWidth: '1600px', width: '100%', margin: '0 auto', position: 'relative' }}>
       
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
         <Link href="/admin/dashboard" style={{ color: 'var(--text-secondary)' }}>
@@ -145,10 +145,10 @@ export default function AdminUsersPage() {
         <h1 style={{ margin: 0, fontSize: '2rem' }}>จัดการผู้ใช้งาน</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
         
         {/* Form Add User */}
-        <div className="glass-panel animate-fade-in">
+        <div className="glass-panel animate-fade-in" style={{ flex: '1 1 320px', maxWidth: '500px' }}>
           <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <UserPlus size={20} color="var(--accent-primary)" />
             เพิ่มผู้ใช้งานใหม่
@@ -194,7 +194,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* User List */}
-        <div className="glass-panel animate-fade-in delay-1">
+        <div className="glass-panel animate-fade-in delay-1" style={{ flex: '3 1 800px', width: '100%', overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <h2 style={{ fontSize: '1.2rem', margin: 0 }}>รายชื่อผู้ใช้ทั้งหมด ({filteredUsers.length})</h2>
             
@@ -231,7 +231,7 @@ export default function AdminUsersPage() {
               </div>
               <button 
                 className="btn-secondary"
-                style={{ margin: 0, padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                style={{ margin: 0, padding: '0.5rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
                 onClick={async () => {
                   if(confirm('ระบบจะปรับคำนำหน้าให้เป็นมาตรฐานเดียวกันทั้งหมด (นาย, นางสาว, ด.ช., ด.ญ.) ยืนยันหรือไม่?')) {
                     const res = await fetch('/api/admin/clean-names', { method: 'POST' });
@@ -254,19 +254,19 @@ export default function AdminUsersPage() {
               <Loader2 size={32} className="animate-spin" color="var(--accent-primary)" />
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '900px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>รูป</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ID</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ชื่อ-สกุล</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>ชื่อเล่น</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>พาร์ท</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>การติดต่อ</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>บทบาท</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>สถานะ</th>
-                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'right' }}>จัดการ</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>รูป</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ID</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อ-สกุล</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อเล่น</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>พาร์ท</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>การติดต่อ</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>บทบาท</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>สถานะ</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'right', whiteSpace: 'nowrap' }}>จัดการ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -275,18 +275,18 @@ export default function AdminUsersPage() {
                       <td style={{ padding: '1rem' }}>
                         <Avatar src={u.photoUrl} alt={u.name} size={40} />
                       </td>
-                      <td style={{ padding: '1rem' }}>{u.studentId || u.id}</td>
-                      <td style={{ padding: '1rem' }}>{u.name}</td>
-                      <td style={{ padding: '1rem' }}>{u.nickname || '-'}</td>
-                      <td style={{ padding: '1rem' }}>{u.voiceType}</td>
-                      <td style={{ padding: '1rem' }}>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.studentId || u.id}</td>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.name}</td>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.nickname || '-'}</td>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.voiceType}</td>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
                           {u.phone && <span>📞 {u.phone}</span>}
                           {u.lineId && <span>💬 {u.lineId}</span>}
                           {!u.phone && !u.lineId && <span style={{ color: 'var(--text-secondary)' }}>-</span>}
                         </div>
                       </td>
-                      <td style={{ padding: '1rem' }}>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
                         <span style={{ 
                           padding: '0.2rem 0.6rem', 
                           borderRadius: '4px', 

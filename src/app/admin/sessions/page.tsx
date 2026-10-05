@@ -251,9 +251,8 @@ export default function AdminSessionsPage() {
     return ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'][day];
   };
 
-  return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+    <div style={{ padding: '2rem', maxWidth: '1600px', width: '100%', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Link href="/admin/dashboard" style={{ color: 'var(--text-secondary)' }}>
             <ArrowLeft size={24} />
@@ -261,7 +260,7 @@ export default function AdminSessionsPage() {
           <Calendar size={32} color="var(--accent-primary)" />
           <h1 style={{ margin: 0, fontSize: '2rem' }}>ปฏิทินเช็คชื่อ (Sessions)</h1>
         </div>
-        <button className="btn-primary" onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <button className="btn-primary" onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
           <Plus size={20} /> สร้างกิจกรรมใหม่
         </button>
       </div>
@@ -270,7 +269,7 @@ export default function AdminSessionsPage() {
         <div className="glass-panel animate-fade-in" style={{ padding: '2rem', marginBottom: '2rem', border: '1px solid var(--accent-primary)' }}>
           <h2 style={{ marginTop: 0, marginBottom: '1.5rem', color: 'var(--accent-primary)' }}>รายละเอียดกิจกรรม</h2>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
             <div className="input-group" style={{ marginBottom: 0 }}>
               <label>ชื่อกิจกรรม</label>
               <input type="text" className="input-field" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="เช่น ซ้อมย่อยเย็นวันศุกร์" />
@@ -290,7 +289,7 @@ export default function AdminSessionsPage() {
             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>กลุ่มเป้าหมายที่ต้องเช็คชื่อ</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
               {GROUP_PRESETS.map(p => (
-                <button key={p.label} type="button" className="btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}
+                <button key={p.label} type="button" className="btn-secondary" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                   onClick={() => setFormData(prev => ({ ...prev, targetGroups: [...p.groups] }))}>
                   เลือกทั้งหมด: {p.label}
                 </button>
@@ -305,16 +304,17 @@ export default function AdminSessionsPage() {
                     padding: '0.5rem 1rem', borderRadius: '50px', border: '1px solid var(--accent-primary)',
                     background: formData.targetGroups.includes(g) ? 'var(--accent-primary)' : 'transparent',
                     color: formData.targetGroups.includes(g) ? '#000' : 'var(--text-primary)',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {g === 'All' ? 'ทุกคน (รวมวง)' : g}
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <input type="text" className="input-field" value={customGroup} onChange={e => setCustomGroup(e.target.value)} placeholder="เพิ่มกลุ่มเอง เช่น Flute, Harp" style={{ maxWidth: '260px' }} />
-              <button type="button" className="btn-secondary" onClick={() => {
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+              <input type="text" className="input-field" value={customGroup} onChange={e => setCustomGroup(e.target.value)} placeholder="เพิ่มกลุ่มเอง เช่น Flute, Harp" style={{ maxWidth: '260px', flex: '1 1 200px' }} />
+              <button type="button" className="btn-secondary" style={{ whiteSpace: 'nowrap' }} onClick={() => {
                 const v = customGroup.trim();
                 if (!v) return;
                 setFormData(prev => ({ ...prev, targetGroups: [...prev.targetGroups.filter(t => t !== 'All' && t !== v), v] }));
@@ -391,8 +391,8 @@ export default function AdminSessionsPage() {
             <MapPin size={20} color="var(--accent-primary)" /> เลือกพิกัดสถานที่
           </h3>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-            <div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div style={{ flex: '1 1 300px' }}>
               <div className="input-group">
                 <label>พิกัด (ละติจูด, ลองจิจูด)</label>
                 <CoordsInput 
@@ -412,7 +412,7 @@ export default function AdminSessionsPage() {
                 <small style={{ color: 'var(--text-secondary)' }}>ระยะที่อนุญาตให้อยู่ระหว่างกิจกรรม (เช่น 500m เพื่อให้อยู่ในโรงเรียนได้)</small>
               </div>
             </div>
-            <div style={{ height: '300px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ flex: '2 1 400px', height: '300px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
               <MapSelector 
                 lat={formData.lat} 
                 lng={formData.lng} 
@@ -441,15 +441,15 @@ export default function AdminSessionsPage() {
           <Loader2 size={48} className="animate-spin" color="var(--accent-primary)" />
         </div>
       ) : (
-        <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="glass-panel" style={{ padding: '0', overflowX: 'auto', width: '100%' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
             <thead>
               <tr style={{ background: 'rgba(0,0,0,0.4)' }}>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>สถานะ</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>ชื่อกิจกรรม</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>เป้าหมาย</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>เวลา (เริ่ม - จบ)</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', textAlign: 'right' }}>จัดการ</th>
+                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>สถานะ</th>
+                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อกิจกรรม</th>
+                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เป้าหมาย</th>
+                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เวลา (เริ่ม - จบ)</th>
+                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', textAlign: 'right', whiteSpace: 'nowrap' }}>จัดการ</th>
               </tr>
             </thead>
             <tbody>
