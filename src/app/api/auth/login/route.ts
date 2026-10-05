@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       email: user.email, 
       role: user.role, 
       voiceType: user.voiceType, 
+      bandPosition: user.bandPosition,
       section: user.section,
       room: user.section,
       profileUrl: user.profileUrl

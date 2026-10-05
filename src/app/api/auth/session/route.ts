@@ -22,7 +22,7 @@ export async function GET() {
     
     // Optionally fetch latest user data from DB to ensure it's up to date
     const db = getDb();
-    const user = await db.prepare('SELECT id, studentId, name, email, role, voiceType, section, profileUrl FROM users WHERE id = ?').bind(payload.id).first<any>();
+    const user = await db.prepare('SELECT id, studentId, name, email, role, voiceType, bandPosition, section, profileUrl FROM users WHERE id = ?').bind(payload.id).first<any>();
     
     if (!user) {
       return NextResponse.json({ user: null });
