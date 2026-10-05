@@ -25,7 +25,7 @@ const redIcon = typeof window !== 'undefined' ? new L.Icon({
   shadowSize: [41, 41]
 }) : undefined;
 
-const defaultIcon = typeof window !== 'undefined' ? new L.Icon.Default() : undefined;
+
 
 interface LiveMapComponentProps {
   center: { lat: number; lng: number };
@@ -39,12 +39,8 @@ export default function LiveMapComponent({ center, students }: LiveMapComponentP
         attribution='&copy; Google Maps'
         url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
       />
-      {students.map(s => (
-        <Marker 
-          key={s.id} 
-          position={[s.lat, s.lng]} 
-          icon={s.isOutOfBounds && redIcon ? redIcon : defaultIcon}
-        >
+      {students.map(s => {
+        const popupContent = (
           <Popup>
             <div style={{ padding: '0.5rem', fontFamily: 'var(--font-body)' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#1a1a24', fontSize: '1.1rem' }}>{s.name}</h4>
@@ -78,8 +74,22 @@ export default function LiveMapComponent({ center, students }: LiveMapComponentP
               </div>
             </div>
           </Popup>
-        </Marker>
-      ))}
+        );
+
+        if (s.isOutOfBounds && redIcon) {
+          return (
+            <Marker key={`${s.id}-out`} position={[s.lat, s.lng]} icon={redIcon}>
+              {popupContent}
+            </Marker>
+          );
+        } else {
+          return (
+            <Marker key={`${s.id}-in`} position={[s.lat, s.lng]}>
+              {popupContent}
+            </Marker>
+          );
+        }
+      })}
     </MapContainer>
   );
 }

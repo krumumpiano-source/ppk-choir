@@ -23,7 +23,6 @@ function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2
   return R * c;
 }
 
-export const runtime = 'edge';
 
 export default function LiveTrackingPage() {
   const { user } = useAuth();
