@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
       const payload = await verifyToken(tokenCookie.value);
       if (payload) {
         if ((payload as any).role === 'admin') isAdmin = true;
-        if ((payload as any).role === 'student') isStudent = true;
+        if ((payload as any).role === 'student' || (payload as any).role === 'section_leader') isStudent = true;
       }
     } catch (e) {
       // invalid token
