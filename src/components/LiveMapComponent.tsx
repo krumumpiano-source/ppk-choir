@@ -38,7 +38,11 @@ export default function LiveMapComponent({ center, students }: LiveMapComponentP
         url="https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}"
       />
       {students.map(s => (
-        <Marker key={s.id} position={[s.lat, s.lng]} icon={s.isOutOfBounds && redIcon ? redIcon : undefined}>
+        <Marker 
+          key={s.id} 
+          position={[s.lat, s.lng]} 
+          {...(s.isOutOfBounds && redIcon ? { icon: redIcon } : {})}
+        >
           <Popup>
             <div style={{ padding: '0.5rem', fontFamily: 'var(--font-body)' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#1a1a24', fontSize: '1.1rem' }}>{s.name}</h4>
