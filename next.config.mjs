@@ -5,6 +5,9 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  env: {
+    NEXT_PUBLIC_APP_BUILD_ID: Date.now().toString(),
   }
 };
 
