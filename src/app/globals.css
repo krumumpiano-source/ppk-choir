@@ -347,4 +347,50 @@ body:has(.sidebar) .app-container {
   .btn-primary, .btn-secondary {
     padding: 0.8rem 1.2rem !important;
   }
+
+  /* Collapse fixed multi-column inline grids into a single column */
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="grid-template-columns: 1fr 2fr"],
+  [style*="grid-template-columns: 1fr 3fr"],
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns:1fr 2fr"],
+  [style*="grid-template-columns:1fr 3fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* auto-fit grids with wide minimums must never exceed the screen */
+  [style*="minmax(320px"], [style*="minmax(280px"], [style*="minmax(220px"] {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)) !important;
+  }
+
+  /* Page wrappers with large inline padding */
+  [style*="padding: 2rem"] {
+    padding: 1rem !important;
+  }
+
+  /* Wide tables scroll inside their own box instead of widening the page */
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
+
+/* Prevent flex children (main content) from overflowing the viewport */
+.app-container {
+  min-width: 0;
+}
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+}
+
+.leaflet-container {
+  max-width: 100%;
+}
+
