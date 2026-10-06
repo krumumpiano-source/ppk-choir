@@ -83,7 +83,7 @@ export default function ReportsPage() {
         csvContent += `"${row.name}","${row.count}"\n`;
       });
     } else {
-      csvContent += "รหัสกิจกรรม,จำนวนคนเข้าเรียน\n";
+      csvContent += "ชื่อกิจกรรม,จำนวนคนเข้าเรียน\n";
       getFilteredAndGroupedData().forEach((row: any) => {
         csvContent += `"${row.name}","${row.count}"\n`;
       });
@@ -132,7 +132,7 @@ export default function ReportsPage() {
         grouped[key].count += 1;
       } else if (groupBy === 'session') {
         key = item.sessionId || 'ไม่ระบุ';
-        if (!grouped[key]) grouped[key] = { name: key, count: 0 };
+        if (!grouped[key]) grouped[key] = { name: item.sessionName || key, count: 0 };
         grouped[key].count += 1;
       }
     });
@@ -252,7 +252,7 @@ export default function ReportsPage() {
                   )}
                   {groupBy === 'session' && (
                     <>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>รหัสกิจกรรม</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>ชื่อกิจกรรม</th>
                       <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>ยอดผู้เข้าร่วม (คน)</th>
                     </>
                   )}
