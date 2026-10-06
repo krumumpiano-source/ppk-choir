@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       if (!existing.checkoutTime) {
         // They are checked in, but not checked out. So this scan means Check-Out!
         await db.prepare('UPDATE checkins SET checkoutTime = ? WHERE id = ?').bind(timestamp, existing.id).run();
-        return NextResponse.json({ success: true, action: 'checkout', timestamp });
+        return NextResponse.json({ success: true, action: 'checkout', timestamp, studentName: student.name });
       } else {
         // Already checked out
         return NextResponse.json({ error: 'นักเรียนคนนี้เช็คชื่อเข้าและออกไปแล้ว' }, { status: 400 });
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       scannerLat, scannerLng, scannerLat, scannerLng, 'scanner', room
     ).run();
 
-    return NextResponse.json({ success: true, action: 'checkin', timestamp });
+    return NextResponse.json({ success: true, action: 'checkin', timestamp, studentName: student.name });
   } catch (error: any) {
     return serverError(error);
   }

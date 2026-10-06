@@ -227,14 +227,9 @@ export default function CheckInPage() {
 
   if (!user) return null;
 
-  const qrData = JSON.stringify({
-    type: 'CHOIR_CHECKIN',
-    id: user.id,
-    sid: user.studentId,
-    name: user.name,
-    room: user.room || '-',
-    session: selectedSession?.id
-  });
+  // Optimize QR density: Use a compact format instead of JSON
+  // Format: CHK|<userId>|<sessionId>
+  const qrData = `CHK|${user.id}|${selectedSession?.id}`;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>

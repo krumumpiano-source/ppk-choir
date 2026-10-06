@@ -25,7 +25,20 @@ export default function ScannerPage() {
     setIsProcessing(true);
     
     try {
-      const data = JSON.parse(text);
+      let data: any = {};
+      if (text.startsWith('CHK|')) {
+        const parts = text.split('|');
+        if (parts.length >= 3) {
+          data = { type: 'CHOIR_CHECKIN', id: parts[1], session: parts[2] };
+        }
+      } else {
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error('QR Code ไม่ถูกต้อง');
+        }
+      }
+
       if (data.type !== 'CHOIR_CHECKIN' || !data.id || !data.session) {
         throw new Error('QR Code ไม่ถูกต้องสำหรับระบบนี้');
       }
@@ -56,7 +69,7 @@ export default function ScannerPage() {
       const resultData = await res.json();
       
       if (res.ok && resultData.success) {
-        setScanResult({ success: true, name: data.name || data.sid, action: resultData.action });
+        setScanResult({ success: true, name: resultData.studentName || data.name || data.sid || 'ไม่ทราบชื่อ', action: resultData.action });
         // Play success beep
         const audio = new Audio('/success.mp3');
         audio.play().catch(e => {}); // ignore error if browser blocks autoplay
