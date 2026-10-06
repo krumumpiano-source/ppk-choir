@@ -124,7 +124,7 @@ export default function PracticePage() {
              </div>
              <div>
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'block' }}>รหัสนักเรียน</span>
-                <strong>{user.id}</strong>
+                <strong>{user.studentId || '-'}</strong>
              </div>
              <div>
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'block' }}>แนวเสียง</span>
