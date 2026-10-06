@@ -57,12 +57,14 @@ export async function POST(request: Request) {
     // actualStudentId refers to the human readable ID like '35282'
     const actualStudentId = student.studentId || '';
 
+    const locationObj = { lat: scannerLat, lng: scannerLng };
+
     await db.prepare(`
-      INSERT INTO checkins (id, studentId, studentName, actualStudentId, sessionId, timestamp, lat, lng, liveLat, liveLng, devicePlatform, room)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO checkins (id, studentId, studentName, sessionId, timestamp, location, liveLat, liveLng, devicePlatform, room)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      id, studentId, studentName || student.name, actualStudentId, sessionId, timestamp,
-      scannerLat, scannerLng, scannerLat, scannerLng, 'scanner', room
+      id, studentId, studentName || student.name, sessionId, timestamp,
+      JSON.stringify(locationObj), scannerLat, scannerLng, 'scanner', room
     ).run();
 
     return NextResponse.json({ success: true, action: 'checkin', timestamp, studentName: student.name });
