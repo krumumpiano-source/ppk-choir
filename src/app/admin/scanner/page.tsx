@@ -104,18 +104,17 @@ export default function ScannerPage() {
       <div style={{ width: '100%', maxWidth: '400px', position: 'relative', overflow: 'hidden', borderRadius: '16px', background: '#000', border: '4px solid rgba(255,255,255,0.1)' }}>
         
         {/* React QR Scanner */}
-        {!isProcessing && (
-          <Scanner 
-            onScan={(detectedCodes) => {
-              if (detectedCodes && detectedCodes.length > 0) {
-                handleScan(detectedCodes[0].rawValue);
-              }
-            }}
-            onError={(error) => console.log(error?.message)}
-            allowMultiple={false}
-            scanDelay={1000}
-          />
-        )}
+        <Scanner 
+          onScan={(detectedCodes) => {
+            if (!isProcessing && detectedCodes && detectedCodes.length > 0) {
+              handleScan(detectedCodes[0].rawValue);
+            }
+          }}
+          onError={(error) => console.log(error?.message)}
+          allowMultiple={true}
+          scanDelay={1000}
+          paused={isProcessing}
+        />
         
         {/* Processing / Result Overlay */}
         {(isProcessing || scanResult) && (

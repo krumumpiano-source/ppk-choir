@@ -33,9 +33,14 @@ export default function CheckInPage() {
           const res = await fetch(`/api/checkin?studentId=${user.id}&sessionId=${selectedSession.id}`);
           if (res.ok) {
             const data = await res.json();
-            if (data.checkin && !data.checkin.checkoutTime) {
-              setCheckinTime(data.checkin.timestamp);
-              setStatus('already_in');
+            if (data.checkin) {
+              if (data.checkin.checkoutTime) {
+                setCheckoutTime(data.checkin.checkoutTime);
+                setStatus('checked_out');
+              } else {
+                setCheckinTime(data.checkin.timestamp);
+                setStatus('already_in');
+              }
             }
           }
         } catch (e) {}
