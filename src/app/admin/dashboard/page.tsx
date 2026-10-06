@@ -139,6 +139,18 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
+        <Link href="/admin/consents" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', border: '1px solid var(--success)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'rgba(46, 213, 115, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
+              <Users size={28} color="var(--success)" />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--success)' }}>ใบขออนุญาตผู้ปกครอง</h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            ดูสถานะและรวบรวมใบขออนุญาตผู้ปกครองสำหรับการซ้อมช่วงปิดเทอม
+          </p>
+        </Link>
+
         <Link href="/admin/sessions" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>

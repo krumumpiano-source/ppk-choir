@@ -112,3 +112,15 @@ CREATE TABLE IF NOT EXISTS auditions (
 );
 
 
+
+
+-- consents table
+CREATE TABLE IF NOT EXISTS consents (
+  id TEXT PRIMARY KEY,
+  studentId TEXT NOT NULL UNIQUE,
+  isAllowed BOOLEAN NOT NULL,
+  parentName TEXT NOT NULL,
+  signatureData TEXT NOT NULL,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
+);
