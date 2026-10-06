@@ -93,11 +93,14 @@ export default function ScannerPage() {
         {/* React QR Scanner */}
         {!isProcessing && (
           <Scanner 
-            onResult={(text) => handleScan(text)}
-            onError={(error) => console.log(error?.message)}
-            options={{
-              delayBetweenScanAttempts: 1000,
+            onScan={(detectedCodes) => {
+              if (detectedCodes && detectedCodes.length > 0) {
+                handleScan(detectedCodes[0].rawValue);
+              }
             }}
+            onError={(error) => console.log(error?.message)}
+            allowMultiple={false}
+            scanDelay={1000}
           />
         )}
         
