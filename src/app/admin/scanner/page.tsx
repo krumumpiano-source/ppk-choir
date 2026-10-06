@@ -13,6 +13,17 @@ export default function ScannerPage() {
   
   const [scanResult, setScanResult] = useState<{success: boolean, name?: string, error?: string, action?: 'checkin' | 'checkout'} | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cachedLocation, setCachedLocation] = useState<{lat: number, lng: number} | null>(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => setCachedLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {},
+        { timeout: 5000 }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== 'admin' && user.role !== 'section_leader'))) {
@@ -43,17 +54,8 @@ export default function ScannerPage() {
         throw new Error('QR Code ไม่ถูกต้องสำหรับระบบนี้');
       }
 
-      // Try to get teacher's GPS to attach to the scan (optional, but good for validation)
-      let lat = 0, lng = 0;
-      try {
-        if (navigator.geolocation) {
-          const pos = await new Promise<GeolocationPosition>((resolve, reject) => 
-            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 })
-          );
-          lat = pos.coords.latitude;
-          lng = pos.coords.longitude;
-        }
-      } catch(e) {}
+      let lat = cachedLocation?.lat || 0;
+      let lng = cachedLocation?.lng || 0;
 
       const res = await fetch('/api/checkin/scan', {
         method: 'POST',
@@ -81,11 +83,11 @@ export default function ScannerPage() {
       setScanResult({ success: false, error: e.message || 'QR Code ไม่ถูกต้อง หรืออ่านไม่ได้' });
     }
 
-    // Reset after 3 seconds
+    // Reset quickly so they can scan the next person (1.2 seconds)
     setTimeout(() => {
       setScanResult(null);
       setIsProcessing(false);
-    }, 3000);
+    }, 1200);
   };
 
   if (loading || !user) return <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="animate-spin" size={48} /></div>;
