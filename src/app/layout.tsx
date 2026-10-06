@@ -4,7 +4,6 @@ import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import InstallPrompt from "@/components/InstallPrompt";
-import VersionChecker from "@/components/VersionChecker";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
 const notoSansThai = Noto_Sans_Thai({ subsets: ["thai"], variable: "--font-thai" });
@@ -58,7 +57,6 @@ export default function RootLayout({
           <main className="app-container">
             {children}
           </main>
-          <VersionChecker />
           <Toaster 
             position="top-center"
             toastOptions={{
