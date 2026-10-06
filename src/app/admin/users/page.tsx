@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, UserPlus, Trash2, Loader2, Save, Check, X, User as UserIcon, Search, Filter, Eye } from 'lucide-react';
+import { ArrowLeft, Users, UserPlus, Trash2, Loader2, Save, Check, X, User as UserIcon, Search, Filter, Eye, Key } from 'lucide-react';
 import { getAllUsers, createUser, deleteUser, updateUserStatus } from '@/lib/services/users';
 import { User, UserRole } from '@/types/user';
 import { VoiceType } from '@/lib/services/library';
@@ -112,6 +112,26 @@ export default function AdminUsersPage() {
         loadUsers();
       } else {
         toast.error(`เกิดข้อผิดพลาดในการลบผู้ใช้`);
+      }
+    }
+  };
+
+  const handleResetPassword = async (id: string, newPassword: string) => {
+    if (confirm(`คุณต้องการรีเซ็ตรหัสผ่านของผู้ใช้นี้เป็น "${newPassword}" หรือไม่?`)) {
+      try {
+        const res = await fetch(`/api/users/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: newPassword })
+        });
+        const data = await res.json() as any;
+        if (res.ok && data.success) {
+          toast.success('รีเซ็ตรหัสผ่านสำเร็จ!');
+        } else {
+          toast.error(data.error || 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน');
+        }
+      } catch (err) {
+        toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อ');
       }
     }
   };
@@ -321,7 +341,10 @@ export default function AdminUsersPage() {
                               <X size={18} />
                             </button>
                           )}
-                          <button onClick={() => handleDelete(u.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', marginLeft: '0.5rem' }} title="ลบ">
+                          <button onClick={() => handleResetPassword(u.id, u.studentId || '123456')} style={{ background: 'none', border: 'none', color: '#feca57', cursor: 'pointer', marginLeft: '0.2rem' }} title="รีเซ็ตรหัสผ่านเป็นรหัสประจำตัวนักเรียน">
+                            <Key size={18} />
+                          </button>
+                          <button onClick={() => handleDelete(u.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', marginLeft: '0.2rem' }} title="ลบ">
                             <Trash2 size={18} />
                           </button>
                         </div>

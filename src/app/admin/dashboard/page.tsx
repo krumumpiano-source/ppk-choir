@@ -10,9 +10,15 @@ export default function AdminDashboard() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
 
+  const [stats, setStats] = useState<any>(null);
+
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
       router.push('/login');
+    } else if (user?.role === 'admin') {
+      fetch('/api/admin/stats').then(r => r.json()).then(data => {
+        if (!data.error) setStats(data);
+      }).catch(() => {});
     }
   }, [user, loading, router]);
 
@@ -36,6 +42,63 @@ export default function AdminDashboard() {
           ออกจากระบบ
         </button>
       </div>
+
+      {stats && (
+        <div className="animate-fade-in" style={{ marginBottom: '3rem' }}>
+          {/* Top Stat Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid var(--accent-primary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>นักเรียนทั้งหมด</span>
+              <span style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{stats.totalStudents}</span>
+            </div>
+            <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid var(--success)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เช็คชื่อวันนี้ (คน)</span>
+              <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--success)' }}>{stats.checkinsToday}</span>
+            </div>
+            <div className="glass-panel" style={{ padding: '1.5rem', borderLeft: '4px solid #feca57', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>สัดส่วน ม.ต้น : ม.ปลาย</span>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
+                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#feca57' }}>{stats.middleSchool}</span>
+                <span style={{ fontSize: '1.5rem', paddingBottom: '0.3rem', color: 'var(--text-secondary)' }}>:</span>
+                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ff9f43' }}>{stats.highSchool}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Voice Type Chart (CSS Bars) */}
+          <div className="glass-panel" style={{ padding: '2rem' }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={20} color="var(--accent-primary)" />
+              สัดส่วนแนวเสียงในวง (Voice Types)
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {stats.voiceTypes && stats.voiceTypes.sort((a:any, b:any) => b.count - a.count).map((v: any) => {
+                const percentage = Math.round((v.count / stats.totalStudents) * 100) || 0;
+                // Generate a consistent color based on voice type name
+                const colorHash = v.voiceType.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+                const hue = (colorHash * 137.508) % 360;
+                const color = `hsl(${hue}, 70%, 60%)`;
+                
+                return (
+                  <div key={v.voiceType}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem', fontSize: '0.9rem' }}>
+                      <span>{v.voiceType}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{v.count} คน ({percentage}%)</span>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${percentage}%`, height: '100%', background: color, transition: 'width 1s ease-out' }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(!stats.voiceTypes || stats.voiceTypes.length === 0) && (
+                <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem' }}>ยังไม่มีข้อมูลนักเรียน</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         
