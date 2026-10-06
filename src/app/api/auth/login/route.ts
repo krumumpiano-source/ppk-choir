@@ -56,7 +56,13 @@ export async function POST(request: Request) {
       profileUrl: user.profileUrl
     };
     
-    const token = await signToken(payload);
+    // Only sign essential fields to keep the cookie size small
+    const tokenPayload = {
+      id: user.id,
+      role: user.role
+    };
+    
+    const token = await signToken(tokenPayload);
 
     const cookieStore = await cookies();
     cookieStore.set('token', token, {
