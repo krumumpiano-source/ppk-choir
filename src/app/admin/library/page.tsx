@@ -104,7 +104,7 @@ export default function AdminLibraryPage() {
           <div className="input-group">
             <label>ลิงก์ Google Drive (ไฟล์เสียงหรือวิดีโอ)</label>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
-              อย่าลืมตั้งค่าสิทธิ์ไฟล์เป็น "Anyone with the link (ทุกคนที่มีลิงก์)" ก่อนนำมาแปะ
+              อย่าลืมตั้งค่าสิทธิ์ไฟล์เป็น &quot;Anyone with the link (ทุกคนที่มีลิงก์)&quot; ก่อนนำมาแปะ
             </p>
             <input 
               type="url" 

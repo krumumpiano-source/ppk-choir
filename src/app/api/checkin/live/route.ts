@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { verifyToken } from '@/lib/jwt';
+import { cookies } from 'next/headers';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
 // Update live location
 export async function PUT(request: Request) {
   try {
+    const auth = await requireRole();
+    if (auth.error) return auth.error;
+
     const body = await request.json() as any;
-    const { studentId, sessionId, lat, lng } = body;
+    const { sessionId, lat, lng } = body;
     const db = getDb();
+    const isAdminUser = auth.user.role === 'admin';
+    const studentId = isAdminUser && body.studentId ? body.studentId : auth.user.id;
     
     if (!studentId || !sessionId || lat === undefined || lng === undefined) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -20,7 +28,6 @@ export async function PUT(request: Request) {
     
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }

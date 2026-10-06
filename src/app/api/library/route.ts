@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
   try {
+    const auth = await requireRole();
+    if (auth.error) return auth.error;
     const url = new URL(request.url);
     const voiceType = url.searchParams.get('voiceType') || 'All';
     const db = getDb();
@@ -18,14 +21,18 @@ export async function GET(request: Request) {
     
     return NextResponse.json({ items: result.results });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
+    if (!body.title || !body.fileUrl) {
+      return NextResponse.json({ error: 'กรุณาระบุชื่อและลิงก์ไฟล์' }, { status: 400 });
+    }
     const { title, voiceType, fileUrl } = body;
     const db = getDb();
     
@@ -36,7 +43,6 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }

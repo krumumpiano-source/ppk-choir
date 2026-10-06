@@ -64,16 +64,17 @@ export default function AdminUsersPage() {
   const [newRole, setNewRole] = useState<UserRole>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   async function loadUsers() {
     setLoading(true);
     const data = await getAllUsers();
     setUsers(data);
     setLoading(false);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUsers();
+  }, []);
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,11 +236,12 @@ export default function AdminUsersPage() {
                 onClick={async () => {
                   if(confirm('ระบบจะปรับคำนำหน้าให้เป็นมาตรฐานเดียวกันทั้งหมด (นาย, นางสาว, ด.ช., ด.ญ.) ยืนยันหรือไม่?')) {
                     const res = await fetch('/api/admin/clean-names', { method: 'POST' });
+                    const data = await res.json().catch(() => ({})) as any;
                     if(res.ok) {
                       toast.success('ทำความสะอาดคำนำหน้าสำเร็จ!');
                       loadUsers();
                     } else {
-                      toast.error('เกิดข้อผิดพลาด');
+                      toast.error(data.error || 'เกิดข้อผิดพลาด');
                     }
                   }
                 }}

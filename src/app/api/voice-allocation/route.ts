@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
@@ -16,6 +17,8 @@ const DEFAULT_TARGET_RATIOS: Record<string, number> = {
 
 export async function GET() {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const db = getDb();
     
     // Fetch target ratios settings
@@ -32,13 +35,14 @@ export async function GET() {
 
     return NextResponse.json({ ratios });
   } catch (error: any) {
-    console.error('GET Voice Allocation Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'GET Voice Allocation Error:');
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
     const { action, ratios, assignments } = body;
     const db = getDb();
@@ -55,18 +59,18 @@ export async function POST(request: Request) {
     }
 
     if (action === 'confirm_assignments' && Array.isArray(assignments)) {
-      // Batch update user voice parts
-      for (const item of assignments) {
-        if (item.userId && item.voiceType) {
-          await db.prepare('UPDATE users SET voiceType = ? WHERE id = ?').bind(item.voiceType, item.userId).run();
-        }
+      // Atomic batch update of user voice parts (chunks of 50 for D1 limits)
+      const stmts = assignments
+        .filter((item: any) => item.userId && item.voiceType)
+        .map((item: any) => db.prepare('UPDATE users SET voiceType = ? WHERE id = ?').bind(item.voiceType, item.userId));
+      for (let i = 0; i < stmts.length; i += 50) {
+        await db.batch(stmts.slice(i, i + 50));
       }
-      return NextResponse.json({ success: true, message: `อัปเดตแนวเสียงของนักเรียน ${assignments.length} คนเรียบร้อยแล้ว` });
+      return NextResponse.json({ success: true, message: `อัปเดตแนวเสียงของนักเรียน ${stmts.length} คนเรียบร้อยแล้ว` });
     }
 
     return NextResponse.json({ error: 'Action ไม่ถูกต้อง' }, { status: 400 });
   } catch (error: any) {
-    console.error('POST Voice Allocation Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'POST Voice Allocation Error:');
   }
 }

@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
   const publicApiPaths = [
     '/api/auth', // login, session
     '/api/users', // POST สำหรับลงทะเบียนต้องเปิด public, แต่ GET ควรปิด (เช็คภายใน Route อีกที)
+    '/api/version', // ใช้เช็คเวอร์ชันแอป ไม่มีข้อมูลสำคัญ
   ];
 
   const isPublicApi = publicApiPaths.some(path => pathname.startsWith(path));

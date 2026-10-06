@@ -157,7 +157,8 @@ export default function ProfilePage() {
         toast.success('อัปเดตข้อมูลส่วนตัวเรียบร้อยแล้ว!');
         // Refresh page or trigger context update
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          router.push('/dashboard');
+          router.refresh();
         }, 1500);
       } else {
         toast.error(data.error || 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
@@ -267,7 +268,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="input-group">
-            <label>แนวเสียง / ตำแหน่งในวง (นักเรียนวงสตริงให้เลือก "นักดนตรี")</label>
+            <label>แนวเสียง / ตำแหน่งในวง (นักเรียนวงสตริงให้เลือก &quot;นักดนตรี&quot;)</label>
             <select 
               value={voiceType} 
               required

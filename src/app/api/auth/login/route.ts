@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { verifyPassword, signToken } from '@/lib/jwt';
+import { verifyPassword, signToken, hashPassword, needsRehash } from '@/lib/jwt';
+import { serverError } from '@/lib/auth-guard';
 import { cookies } from 'next/headers';
 
 export const runtime = 'edge';
@@ -24,6 +25,15 @@ export async function POST(request: Request) {
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
       return NextResponse.json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }, { status: 401 });
+    }
+
+    if (needsRehash(user.passwordHash)) {
+      try {
+        const upgraded = await hashPassword(password);
+        await db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').bind(upgraded, user.id).run();
+      } catch (e) {
+        console.error('Password rehash failed:', e);
+      }
     }
 
     if (user.status === 'pending') {
@@ -59,7 +69,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, user: payload });
   } catch (error: any) {
-    console.error('Login error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Login error:');
   }
 }

@@ -135,7 +135,7 @@ export default function PracticePage() {
           <div>
             <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem' }}>1. อัปโหลดผลงาน (Google Drive Link)</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-              อัดวิดีโอหรือเสียงร้องของคุณ อัปโหลดลง Google Drive ตั้งค่าเป็น "Anyone with the link" แล้วนำลิงก์มาวางที่นี่
+              อัดวิดีโอหรือเสียงร้องของคุณ อัปโหลดลง Google Drive ตั้งค่าเป็น &quot;Anyone with the link&quot; แล้วนำลิงก์มาวางที่นี่
             </p>
             <input 
               type="url" 

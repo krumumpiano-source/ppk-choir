@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -57,20 +58,48 @@ export default function SessionCheckinsPage({ params }: { params: { id: string }
         </div>
       </div>
 
-      {!loading && checkins.filter(c => !c.checkoutTime && (c.liveLat || c.location)).length > 0 && (
+      {/* eslint-disable-next-line react-hooks/purity */}
+      {!loading && checkins.filter(c => {
+        if (c.checkoutTime) return false;
+        if (!c.liveLat && !c.location) return false;
+        
+        // Handle SQLite CURRENT_TIMESTAMP which is 'YYYY-MM-DD HH:MM:SS' in UTC
+        let timeStr = c.timestamp;
+        if (timeStr && !timeStr.includes('T')) {
+          timeStr = timeStr.replace(' ', 'T') + 'Z';
+        }
+        
+        const pinTime = new Date(timeStr).getTime();
+        // Only show pins from the last 6 hours
+        return (Date.now() - pinTime) < 6 * 60 * 60 * 1000;
+      }).length > 0 && (
         <div className="glass-panel" style={{ padding: '1rem', marginBottom: '2rem' }}>
           <h2 style={{ marginTop: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
             <MapPin /> แผนที่ตำแหน่งนักเรียน (Real-time)
           </h2>
           <div style={{ position: 'relative', zIndex: 1 }}>
+            {/* eslint-disable-next-line react-hooks/purity */}
             <LiveMapComponent 
               center={checkins[0]?.location || { lat: 19.170294, lng: 99.910288 }} 
-              students={checkins.filter(c => !c.checkoutTime && (c.liveLat || c.location)).map(c => ({
+              students={checkins.filter(c => {
+                if (c.checkoutTime) return false;
+                if (!c.liveLat && !c.location) return false;
+                
+                let timeStr = c.timestamp;
+                if (timeStr && !timeStr.includes('T')) {
+                  timeStr = timeStr.replace(' ', 'T') + 'Z';
+                }
+                
+                const pinTime = new Date(timeStr).getTime();
+                return (Date.now() - pinTime) < 6 * 60 * 60 * 1000;
+              }).map(c => ({
                 id: c.studentId,
                 name: c.studentName,
                 lat: c.liveLat || c.location?.lat || 19.170294,
                 lng: c.liveLng || c.location?.lng || 99.910288,
-                lastUpdate: c.lastLocationUpdate || c.timestamp
+                lastUpdate: c.lastLocationUpdate || c.timestamp,
+                phone: c.phone,
+                lineId: c.lineId
               }))} 
             />
           </div>

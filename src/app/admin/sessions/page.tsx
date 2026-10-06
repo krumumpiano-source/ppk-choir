@@ -15,8 +15,10 @@ function CoordsInput({ lat, lng, onChange }: { lat: number, lng: number, onChang
     const currentLat = parseFloat(parts[0] || '');
     const currentLng = parseFloat(parts[1] || '');
     if (Math.abs(currentLat - lat) > 0.000001 || Math.abs(currentLng - lng) > 0.000001 || isNaN(currentLat) || isNaN(currentLng)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVal(`${lat}, ${lng}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lat, lng]);
 
   return (
@@ -114,7 +116,19 @@ export default function AdminSessionsPage() {
     setShowForm(true);
   };
 
+  async function loadData() {
+    setLoading(true);
+    try {
+      const data = await getAllSessions();
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setSessions([]);
+    }
+    setLoading(false);
+  }
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
     
     // Set default dates to today/now
@@ -136,17 +150,6 @@ export default function AdminSessionsPage() {
       endTime: later.toTimeString().slice(0, 5)
     }));
   }, []);
-
-  async function loadData() {
-    setLoading(true);
-    try {
-      const data = await getAllSessions();
-      setSessions(Array.isArray(data) ? data : []);
-    } catch (e) {
-      setSessions([]);
-    }
-    setLoading(false);
-  }
 
   const handleTargetChange = (val: string) => {
     if (val === 'All') {

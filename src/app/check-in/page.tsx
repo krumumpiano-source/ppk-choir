@@ -43,10 +43,16 @@ export default function CheckInPage() {
 
   // Live Location Tracking
   useEffect(() => {
+    let lastUpdateTime = 0;
     if (status === 'already_in' && !checkoutTime && selectedSession?.id && user?.id) {
       if (navigator.geolocation) {
         watchIdRef.current = navigator.geolocation.watchPosition(
           async (position) => {
+            const now = Date.now();
+            // Throttle updates to at most once every 15 seconds to prevent D1 database locks (SQLITE_BUSY)
+            if (now - lastUpdateTime < 15000) return;
+            lastUpdateTime = now;
+
             const { latitude, longitude } = position.coords;
             try {
               await fetch('/api/checkin/live', {
@@ -104,7 +110,7 @@ export default function CheckInPage() {
           const currentMinute = thaiTime.getUTCMinutes().toString().padStart(2, '0');
           const currentTime = `${currentHour}:${currentMinute}`;
           
-          const isDayMatch = session.daysOfWeek ? session.daysOfWeek.includes(currentDay) : session.dayOfWeek === currentDay;
+          const isDayMatch = (session.daysOfWeek && session.daysOfWeek.length > 0) ? session.daysOfWeek.includes(currentDay) : session.dayOfWeek === currentDay;
           if (isDayMatch && currentTime >= (session.recurringStartTime || '') && currentTime <= (session.recurringEndTime || '')) {
             isTimeValid = true;
           }
@@ -135,7 +141,7 @@ export default function CheckInPage() {
 
   async function checkExistingCheckin(studentId: string, sessionId: string) {
     try {
-      const res = await fetch(`/api/checkin?studentId=${studentId}&sessionId=${sessionId}`);
+      const res = await fetch(`/api/checkin?studentId=${studentId}&sessionId=${sessionId}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json() as any;
         if (data.checkin) {

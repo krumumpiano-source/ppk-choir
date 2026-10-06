@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
   try {
+    const auth = await requireRole();
+    if (auth.error) return auth.error;
     const url = new URL(request.url);
     const studentId = url.searchParams.get('studentId');
     const db = getDb();
@@ -18,15 +21,23 @@ export async function GET(request: Request) {
     
     return NextResponse.json({ practices: result.results });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireRole();
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
-    const { studentId, studentName, voiceType, audioUrl, reflection } = body;
+    // Non-admins can only submit for themselves; identity comes from the session
+    const isAdminUser = auth.user.role === 'admin';
+    const studentId = isAdminUser && body.studentId ? body.studentId : auth.user.id;
+    const studentName = isAdminUser && body.studentName ? body.studentName : (auth.user.name || body.studentName);
+    const { voiceType, audioUrl, reflection } = body;
+    if (!audioUrl) {
+      return NextResponse.json({ error: 'ไม่พบไฟล์เสียง' }, { status: 400 });
+    }
     const db = getDb();
     
     const id = crypto.randomUUID();
@@ -36,7 +47,6 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }

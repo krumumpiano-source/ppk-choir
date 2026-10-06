@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
 
 export default function VersionChecker() {
   const [hasUpdate, setHasUpdate] = useState(false);
+  const [newVersion, setNewVersion] = useState<string | null>(null);
 
   useEffect(() => {
     // Check version every 5 minutes and when window regains focus
@@ -12,11 +13,22 @@ export default function VersionChecker() {
       try {
         const res = await fetch(`/api/version?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()) as { version?: string };
           const currentVersion = process.env.NEXT_PUBLIC_APP_BUILD_ID;
           
-          if (data.version && currentVersion && data.version !== currentVersion && currentVersion !== 'unknown') {
-            setHasUpdate(true);
+          if (
+            data.version && 
+            currentVersion && 
+            data.version !== currentVersion && 
+            currentVersion !== 'unknown' &&
+            data.version !== 'unknown'
+          ) {
+            // เช็คว่าเคยกดปิดเวอร์ชันนี้ไปแล้วหรือยังใน session นี้
+            const ignoredVersion = sessionStorage.getItem('ignored_version');
+            if (ignoredVersion !== data.version) {
+              setNewVersion(data.version);
+              setHasUpdate(true);
+            }
           }
         }
       } catch (e) {
@@ -47,6 +59,20 @@ export default function VersionChecker() {
 
   if (!hasUpdate) return null;
 
+  const handleUpdate = () => {
+    if (newVersion) {
+      sessionStorage.setItem('ignored_version', newVersion);
+    }
+    window.location.href = window.location.pathname + '?update=' + Date.now();
+  };
+
+  const handleClose = () => {
+    if (newVersion) {
+      sessionStorage.setItem('ignored_version', newVersion);
+    }
+    setHasUpdate(false);
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -55,7 +81,7 @@ export default function VersionChecker() {
       transform: 'translateX(-50%)',
       backgroundColor: 'var(--accent-primary)',
       color: '#000',
-      padding: '12px 20px',
+      padding: '12px 12px 12px 20px',
       borderRadius: '30px',
       display: 'flex',
       alignItems: 'center',
@@ -75,7 +101,7 @@ export default function VersionChecker() {
         <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>กรุณาอัปเดตเพื่อให้ทำงานได้สมบูรณ์</span>
       </div>
       <button 
-        onClick={() => window.location.href = window.location.pathname + '?update=' + Date.now()}
+        onClick={handleUpdate}
         style={{
           background: '#000',
           color: '#fff',
@@ -87,10 +113,30 @@ export default function VersionChecker() {
           alignItems: 'center',
           gap: '6px',
           fontWeight: 'bold',
-          marginLeft: '10px'
+          marginLeft: '5px'
         }}
       >
         <RefreshCw size={16} /> อัปเดตทันที
+      </button>
+      <button
+        onClick={handleClose}
+        style={{
+          background: 'transparent',
+          color: '#000',
+          border: 'none',
+          padding: '4px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.6,
+          transition: 'opacity 0.2s'
+        }}
+        onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+        onMouseOut={(e) => e.currentTarget.style.opacity = '0.6'}
+        title="ปิดการแจ้งเตือน"
+      >
+        <X size={18} />
       </button>
     </div>
   );

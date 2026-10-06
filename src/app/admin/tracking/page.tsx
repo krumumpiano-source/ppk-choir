@@ -43,7 +43,17 @@ export default function LiveTrackingPage() {
         for (const session of sessions) {
           if (session.id) {
             const checkins = await getSessionCheckIns(session.id);
-            const active = checkins.filter(c => !c.checkoutTime && (c.liveLat || c.location));
+            const now = Date.now();
+            const active = checkins.filter(c => {
+              if (c.checkoutTime) return false;
+              if (!c.liveLat && !c.location) return false;
+              
+              // Filter out check-ins that are older than 12 hours (stuck pins from previous days)
+              const checkinTime = new Date(c.timestamp).getTime();
+              if (now - checkinTime > 12 * 60 * 60 * 1000) return false;
+              
+              return true;
+            });
             
             for (const c of active) {
               const lat = c.liveLat || c.location?.lat || 19.170294;

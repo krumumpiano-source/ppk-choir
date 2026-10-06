@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
   try {
+    const auth = await requireRole();
+    if (auth.error) return auth.error;
     const url = new URL(request.url);
     const studentId = url.searchParams.get('studentId');
+    
     if (!studentId) {
       return NextResponse.json({ error: 'Missing studentId' }, { status: 400 });
+    }
+    
+    if (auth.user.role !== 'admin' && auth.user.id !== studentId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     
     const db = getDb();
@@ -20,15 +28,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ stats: { studentId, streak: 0, lastPracticeDate: '', badges: [] } });
     }
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireRole();
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
-    const { studentId, action, badgeId } = body;
+    const isAdminUser = auth.user.role === 'admin';
+    const studentId = isAdminUser && body.studentId ? body.studentId : auth.user.id;
+    const { action, badgeId } = body;
+    
+    if (!studentId) {
+      return NextResponse.json({ error: 'Missing studentId' }, { status: 400 });
+    }
     const db = getDb();
     
     // Fetch current stats
@@ -54,7 +69,7 @@ export async function POST(request: Request) {
       } else {
         const lastDate = new Date(stats.lastPracticeDate);
         const currentDate = new Date(today);
-        const diffDays = Math.ceil(Math.abs(currentDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.round(Math.abs(currentDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
         if (diffDays === 1) newStreak += 1;
         else if (diffDays > 1) newStreak = 1;
       }
@@ -66,6 +81,9 @@ export async function POST(request: Request) {
       
       return NextResponse.json({ success: true, stats: { studentId, streak: newStreak, lastPracticeDate: today, badges: badgesArray } });
     } else if (action === 'award_badge' && badgeId) {
+      if (auth.user.role !== 'admin') {
+        return NextResponse.json({ error: 'Forbidden: Only admins can award badges' }, { status: 403 });
+      }
       if (!badgesArray.includes(badgeId)) {
         badgesArray.push(badgeId);
         await db.prepare('UPDATE gamification SET badges = ? WHERE studentId = ?').bind(JSON.stringify(badgesArray), studentId).run();

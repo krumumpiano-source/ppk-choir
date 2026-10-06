@@ -14,21 +14,39 @@ export async function POST() {
 
     const db = getDb();
     
-    // Using batch for D1 to execute all updates efficiently
-    await db.batch([
-      db.prepare("UPDATE users SET name = REPLACE(name, 'นาย ', 'นาย')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'นางสาว ', 'นางสาว')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'เด็กชาย ', 'ด.ช.')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'เด็กหญิง ', 'ด.ญ.')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'ด.ช. ', 'ด.ช.')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'ด.ญ. ', 'ด.ญ.')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'น.ส. ', 'นางสาว')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'น.ส.', 'นางสาว')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'เด็กชาย', 'ด.ช.')"),
-      db.prepare("UPDATE users SET name = REPLACE(name, 'เด็กหญิง', 'ด.ญ.')")
-    ]);
+    // Fetch all users to process prefixes safely in JS
+    const { results: users } = await db.prepare("SELECT id, name FROM users").all();
+    
+    const updates = [];
+    
+    for (const user of users) {
+      if (!user.name) continue;
+      
+      const originalName = String(user.name);
+      let newName = originalName.trim();
+      
+      // Clean up common prefixes accurately using Regex at the beginning of the string
+      newName = newName.replace(/^(นาย|นางสาว|เด็กชาย|เด็กหญิง|ด\.ช\.|ด\.ญ\.|น\.ส\.|นส\.)\s*/, (match) => {
+        const prefix = match.trim();
+        if (prefix === 'เด็กชาย') return 'ด.ช.';
+        if (prefix === 'เด็กหญิง') return 'ด.ญ.';
+        if (prefix === 'น.ส.' || prefix === 'นส.') return 'นางสาว';
+        return prefix;
+      });
 
-    return NextResponse.json({ success: true, message: "Cleaned up name prefixes successfully." });
+      if (newName !== originalName) {
+        updates.push(db.prepare("UPDATE users SET name = ? WHERE id = ?").bind(newName, user.id));
+      }
+    }
+    
+    if (updates.length > 0) {
+      // D1 batch limits may apply, execute in chunks of 50 to be safe
+      for (let i = 0; i < updates.length; i += 50) {
+        await db.batch(updates.slice(i, i + 50));
+      }
+    }
+
+    return NextResponse.json({ success: true, message: `Cleaned up name prefixes successfully for ${updates.length} users.` });
   } catch (error: any) {
     console.error('API Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -14,6 +14,7 @@ export default function InstallPrompt() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          (window.navigator as any).standalone === true;
     if (isStandalone) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInstalled(true);
       return;
     }
@@ -107,7 +108,7 @@ export default function InstallPrompt() {
           </p>
           <p style={{ margin: '0.25rem 0 0.8rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4 }}>
             {isIOS
-              ? <>แตะ <Share size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> ด้านล่าง แล้วเลือก <strong style={{color: '#e6b980'}}>"เพิ่มไปยังหน้าจอโฮม"</strong></>
+              ? <>แตะ <Share size={12} style={{ display: 'inline', verticalAlign: 'middle' }} /> ด้านล่าง แล้วเลือก <strong style={{color: '#e6b980'}}>&quot;เพิ่มไปยังหน้าจอโฮม&quot;</strong></>
               : 'เพิ่มลงหน้าจอหลัก เปิดได้เร็ว ใช้งานเหมือนแอปปกติ'
             }
           </p>

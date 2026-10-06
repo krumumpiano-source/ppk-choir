@@ -20,16 +20,6 @@ export default function AdminAssessPage() {
   const [assessments, setAssessments] = useState<Record<string, RubricScore>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/login');
-      return;
-    }
-    if (user?.role === 'admin') {
-      loadData();
-    }
-  }, [user, authLoading, router]);
-
   async function loadData() {
     setLoading(true);
     const data = await getPendingAssessments();
@@ -44,6 +34,17 @@ export default function AdminAssessPage() {
     
     setLoading(false);
   }
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/login');
+      return;
+    }
+    if (user?.role === 'admin') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadData();
+    }
+  }, [user, authLoading, router]);
 
   const handleScoreChange = (recordId: string, field: keyof RubricScore, value: any) => {
     setAssessments(prev => ({

@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
 export async function GET() {
   try {
+    const auth = await requireRole(['admin', 'section_leader']);
+    if (auth.error) return auth.error;
     const db = getDb();
     
     // Fetch users along with their latest audition record if exists
@@ -58,15 +61,18 @@ export async function GET() {
 
     return NextResponse.json({ students });
   } catch (error: any) {
-    console.error('GET Auditions API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'GET Auditions API Error:');
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireRole(['admin', 'section_leader']);
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
-    const { studentId, lowestNote, highestNote, timbreQuality, pitchAccuracy, notes, auditedBy } = body;
+    const { studentId, lowestNote, highestNote, timbreQuality, pitchAccuracy, notes } = body;
+    // Auditor identity comes from the session, not the request body
+    const auditedBy = auth.user.name || (auth.user.role === 'admin' ? 'Admin' : 'Section Leader');
 
     if (!studentId || !lowestNote || !highestNote) {
       return NextResponse.json({ error: 'กรุณาระบุข้อมูลคีย์ต่ำสุดและคีย์สูงสุดให้ครบถ้วน' }, { status: 400 });
@@ -89,7 +95,7 @@ export async function POST(request: Request) {
         timbreQuality || 'Medium',
         pitchAccuracy || 5,
         notes || '',
-        auditedBy || 'Section Leader',
+        auditedBy,
         studentId
       ).run();
     } else {
@@ -106,13 +112,12 @@ export async function POST(request: Request) {
         timbreQuality || 'Medium',
         pitchAccuracy || 5,
         notes || '',
-        auditedBy || 'Section Leader'
+        auditedBy
       ).run();
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('POST Auditions API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'POST Auditions API Error:');
   }
 }

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { VoiceType } from '@/lib/services/library';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
 export async function GET() {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const db = getDb();
     const result = await db.prepare('SELECT * FROM practices').all<any>();
     
@@ -87,7 +90,6 @@ export async function GET() {
     
     return NextResponse.json({ totalPractices, assessedPractices, voiceStats, insights, suggestedResearch });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }

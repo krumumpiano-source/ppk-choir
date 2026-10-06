@@ -81,6 +81,7 @@ export default function VoiceAllocationPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -454,7 +455,7 @@ export default function VoiceAllocationPage() {
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
               <AlertTriangle size={48} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
               <p>ยังไม่มีนักเรียนได้รับการคัดและทดสอบช่วงเสียง</p>
-              <p style={{ fontSize: '0.85rem' }}>โปรดให้หัวหน้าแนวหรือหัวหน้าวงทดสอบคัดเสียงในหน้า "คัดเลือกช่วงเสียง" ก่อน</p>
+              <p style={{ fontSize: '0.85rem' }}>โปรดให้หัวหน้าแนวหรือหัวหน้าวงทดสอบคัดเสียงในหน้า &quot;คัดเลือกช่วงเสียง&quot; ก่อน</p>
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>

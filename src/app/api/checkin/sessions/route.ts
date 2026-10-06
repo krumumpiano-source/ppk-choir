@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
+
+function safeParse(value: any, fallback: any) {
+  if (!value) return fallback;
+  try { return JSON.parse(value); } catch { return fallback; }
+}
 
 export async function GET(request: Request) {
   try {
@@ -18,9 +24,9 @@ export async function GET(request: Request) {
     
     const sessions = result.results.map((r: any) => ({
       ...r,
-      targetGroups: r.targetGroups ? JSON.parse(r.targetGroups) : [],
-      location: r.location ? JSON.parse(r.location) : null,
-      daysOfWeek: r.daysOfWeek ? JSON.parse(r.daysOfWeek) : []
+      targetGroups: safeParse(r.targetGroups, []),
+      location: safeParse(r.location, null),
+      daysOfWeek: safeParse(r.daysOfWeek, [])
     }));
     
     return NextResponse.json({ 
@@ -28,13 +34,14 @@ export async function GET(request: Request) {
       serverTime: new Date().toISOString()
     });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
     const db = getDb();
     const id = crypto.randomUUID();
@@ -52,13 +59,14 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
 export async function PATCH(request: Request) {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const body = await request.json() as any;
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
@@ -88,13 +96,14 @@ export async function PATCH(request: Request) {
     
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
 export async function DELETE(request: Request) {
   try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const db = getDb();
@@ -102,7 +111,6 @@ export async function DELETE(request: Request) {
     
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }

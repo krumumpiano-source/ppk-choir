@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { hashPassword, verifyToken } from '@/lib/jwt';
 
+import { serverError, getSessionUser, isAdmin } from '@/lib/auth-guard';
 import { cookies } from 'next/headers';
 
 export const runtime = 'edge';
@@ -40,8 +41,7 @@ export async function GET() {
     
     return NextResponse.json({ users });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }
 
@@ -65,9 +65,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'รหัสนักเรียนนี้ลงทะเบียนไว้แล้ว' }, { status: 400 });
     }
 
+    // Only admins may choose the initial status; public registrations are always pending
+    const caller = await getSessionUser();
+    const finalStatus = caller && isAdmin(caller) && ['pending', 'approved', 'rejected'].includes(status) ? status : 'pending';
+
+    const rawPassword = body.password || studentId;
+    if (body.password && String(body.password).length < 6) {
+      return NextResponse.json({ error: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร' }, { status: 400 });
+    }
+
     // Set email and password for student login
     const email = `${studentId}@ppk-choir.app`;
-    const passwordHash = await hashPassword(body.password || studentId);
+    const passwordHash = await hashPassword(String(rawPassword));
     
     const id = crypto.randomUUID();
     await db.prepare(
@@ -79,13 +88,12 @@ export async function POST(request: Request) {
     ).bind(
       id, studentId, name, nickname, email, phone, lineId,
       parentName, parentPhone, parentLineId, parentEmail || '', address, advisorName,
-      passwordHash, role || 'student', voiceType || 'All', bandPosition || '',
-      section || '', status || 'approved', profileUrl || ''
+      passwordHash, 'student', voiceType || 'All', bandPosition || '',
+      section || '', finalStatus, profileUrl || ''
     ).run();
     
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error);
   }
 }

@@ -15,17 +15,6 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/login');
-      return;
-    }
-    
-    if (user?.role === 'admin') {
-      loadData();
-    }
-  }, [user, authLoading, router]);
-
   async function loadData() {
     setLoading(true);
     const result = await getAnalyticsData();
@@ -33,27 +22,41 @@ export default function AnalyticsPage() {
     setLoading(false);
   }
 
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/login');
+      return;
+    }
+    
+    if (user?.role === 'admin') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadData();
+    }
+  }, [user, authLoading, router]);
+
   const handleExport = () => {
     if (!data) return;
     
-    let report = `รายงานสถิติ PPK CHOIR (สำหรับ PLC / งานวิจัย คศ.4)\n`;
-    report += `วันที่รายงาน: ${new Date().toLocaleDateString('th-TH')}\n\n`;
-    report += `[ ภาพรวมการส่งงาน ]\n`;
-    report += `- งานที่ส่งทั้งหมด: ${data.totalPractices} ชิ้น\n`;
-    report += `- งานที่ได้รับการประเมินแล้ว: ${data.assessedPractices} ชิ้น\n\n`;
+    const reportLines = [
+      `รายงานสถิติ PPK CHOIR (สำหรับ PLC / งานวิจัย คศ.4)`,
+      `วันที่รายงาน: ${new Date().toLocaleDateString('th-TH')}`,
+      ``,
+      `[ ภาพรวมการส่งงาน ]`,
+      `- งานที่ส่งทั้งหมด: ${data.totalPractices} ชิ้น`,
+      `- งานที่ได้รับการประเมินแล้ว: ${data.assessedPractices} ชิ้น`,
+      ``,
+      `[ สถิติรายแนวเสียง (เต็ม 5 คะแนน) ]`,
+      ...data.voiceStats.map(v => `• ${v.voiceType}: ค่าเฉลี่ยรวม ${v.overallAvg} (Pitch: ${v.avgPitch}, Rhythm: ${v.avgRhythm}, Technique: ${v.avgTechnique})`),
+      ``,
+      `[ AI Insights (ผลการวิเคราะห์ปัญหา) ]`,
+      ...data.insights.map(msg => `- ${msg}`),
+      ``,
+      `[ หัวข้อวิจัยที่แนะนำ (Action Research) ]`,
+      ...data.suggestedResearch.map(msg => `- ${msg}`)
+    ];
     
-    report += `[ สถิติรายแนวเสียง (เต็ม 5 คะแนน) ]\n`;
-    data.voiceStats.forEach(v => {
-      report += `• ${v.voiceType}: ค่าเฉลี่ยรวม ${v.overallAvg} (Pitch: ${v.avgPitch}, Rhythm: ${v.avgRhythm}, Technique: ${v.avgTechnique})\n`;
-    });
-    
-    report += `\n[ AI Insights (ผลการวิเคราะห์ปัญหา) ]\n`;
-    data.insights.forEach(msg => report += `- ${msg}\n`);
-    
-    report += `\n[ หัวข้อวิจัยที่แนะนำ (Action Research) ]\n`;
-    data.suggestedResearch.forEach(msg => report += `- ${msg}\n`);
-
-    navigator.clipboard.writeText(report);
+    const reportText = reportLines.join('\n');
+    navigator.clipboard.writeText(reportText);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   };

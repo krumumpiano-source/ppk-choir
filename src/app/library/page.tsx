@@ -22,6 +22,7 @@ export default function LibraryPage() {
   // Set default tab based on user's voiceType
   useEffect(() => {
     if (user?.voiceType) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(user.voiceType as VoiceType);
     }
   }, [user]);

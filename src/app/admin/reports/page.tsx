@@ -7,6 +7,30 @@ import { ArrowLeft, Download, Loader2, Search, Filter } from 'lucide-react';
 import { getCheckInReports, ReportPeriod } from '@/lib/services/reports';
 import { useAuth } from '@/components/providers/AuthProvider';
 
+const splitThaiName = (fullName: string) => {
+  let prefix = '';
+  let first = '';
+  let last = '';
+  if (!fullName) return { prefix, first, last };
+  let str = fullName.trim();
+  const prefixes = ['เด็กหญิง', 'เด็กชาย', 'ด.ช.', 'ด.ญ.', 'นาย', 'นางสาว', 'ด.ช', 'ด.ญ', 'ดช.', 'ดญ.'];
+  for (const p of prefixes) {
+    if (str.startsWith(p)) {
+      prefix = p;
+      str = str.substring(p.length).trim();
+      break;
+    }
+  }
+  const parts = str.split(/\s+/);
+  if (parts.length >= 2) {
+    first = parts[0];
+    last = parts.slice(1).join(' ');
+  } else {
+    first = parts[0] || '';
+  }
+  return { prefix, first, last };
+};
+
 export default function ReportsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -17,17 +41,6 @@ export default function ReportsPage() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/login');
-      return;
-    }
-    
-    if (user?.role === 'admin') {
-      loadData(period);
-    }
-  }, [user, authLoading, router, period]);
-
   async function loadData(selectedPeriod: ReportPeriod) {
     setLoading(true);
     const result = await getCheckInReports(selectedPeriod);
@@ -35,20 +48,34 @@ export default function ReportsPage() {
     setLoading(false);
   }
 
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/login');
+      return;
+    }
+    
+    if (user?.role === 'admin') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadData(period);
+    }
+  }, [user, authLoading, router, period]);
+
   const exportCSV = () => {
     if (data.length === 0) return;
     
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
     
     if (groupBy === 'raw') {
-      csvContent += "วันที่และเวลา,รหัสนักเรียน,ชื่อ-สกุล,ห้อง,รหัสกิจกรรม,เวลาที่ออก\n";
+      csvContent += "คำนำหน้า,ชื่อ,นามสกุล,ชื่อเล่น,เลขประจำตัวนักเรียน,ชั้น,แนวเสียง,เวลา\n";
       getFilteredAndGroupedData().forEach((row: any) => {
-        csvContent += `"${new Date(row.timestamp).toLocaleString('th-TH')}","${row.studentId}","${row.studentName}","${row.room || '-'}","${row.sessionId}","${row.checkoutTime ? new Date(row.checkoutTime).toLocaleString('th-TH') : '-'}"\n`;
+        const nameData = splitThaiName(row.userFullName || row.studentName);
+        csvContent += `"${nameData.prefix}","${nameData.first}","${nameData.last}","${row.userNickname || '-'}","${row.studentId}","${row.userSection || row.room || '-'}","${row.studentVoiceType || '-'}","${new Date(row.timestamp).toLocaleString('th-TH')}"\n`;
       });
     } else if (groupBy === 'student') {
-      csvContent += "รหัสนักเรียน,ชื่อ-สกุล,จำนวนครั้งที่เข้าเรียน\n";
+      csvContent += "คำนำหน้า,ชื่อ,นามสกุล,ชื่อเล่น,เลขประจำตัวนักเรียน,ชั้น,แนวเสียง,จำนวนครั้งที่เข้าเรียน\n";
       getFilteredAndGroupedData().forEach((row: any) => {
-        csvContent += `"${row.id}","${row.name}","${row.count}"\n`;
+        const nameData = splitThaiName(row.name);
+        csvContent += `"${nameData.prefix}","${nameData.first}","${nameData.last}","${row.nickname || '-'}","${row.id}","${row.section || '-'}","${row.voiceType || '-'}","${row.count}"\n`;
       });
     } else if (groupBy === 'room') {
       csvContent += "ห้อง,จำนวนครั้งเช็คชื่อทั้งหมด\n";
@@ -90,7 +117,14 @@ export default function ReportsPage() {
       let key = '';
       if (groupBy === 'student') {
         key = item.studentId;
-        if (!grouped[key]) grouped[key] = { id: item.studentId, name: item.studentName, count: 0 };
+        if (!grouped[key]) grouped[key] = { 
+          id: item.studentId, 
+          name: item.userFullName || item.studentName,
+          nickname: item.userNickname,
+          section: item.userSection || item.room,
+          voiceType: item.studentVoiceType,
+          count: 0 
+        };
         grouped[key].count += 1;
       } else if (groupBy === 'room') {
         key = item.room || 'ไม่ระบุ';
@@ -188,18 +222,26 @@ export default function ReportsPage() {
                 <tr style={{ background: 'rgba(0,0,0,0.4)' }}>
                   {groupBy === 'raw' && (
                     <>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>วัน/เวลา</th>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>รหัสนักเรียน</th>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>ชื่อ-สกุล</th>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>ห้อง</th>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>เวลาออก</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>คำนำหน้า</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อ</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>นามสกุล</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อเล่น</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เลขประจำตัวนักเรียน</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชั้น</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>แนวเสียง</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เวลา</th>
                     </>
                   )}
                   {groupBy === 'student' && (
                     <>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>รหัสนักเรียน</th>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>ชื่อ-สกุล</th>
-                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)' }}>จำนวนครั้งที่เข้าร่วม (ครั้ง)</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>คำนำหน้า</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อ</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>นามสกุล</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อเล่น</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เลขประจำตัวนักเรียน</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชั้น</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>แนวเสียง</th>
+                      <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>จำนวนครั้งที่เข้าร่วม</th>
                     </>
                   )}
                   {groupBy === 'room' && (
@@ -226,22 +268,36 @@ export default function ReportsPage() {
                 ) : (
                   processedData.map((row: any, i: number) => (
                     <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      {groupBy === 'raw' && (
-                        <>
-                          <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{new Date(row.timestamp).toLocaleString('th-TH')}</td>
-                          <td style={{ padding: '1rem 1.2rem' }}>{row.studentId}</td>
-                          <td style={{ padding: '1rem 1.2rem' }}>{row.studentName}</td>
-                          <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.room || '-'}</td>
-                          <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.checkoutTime ? new Date(row.checkoutTime).toLocaleTimeString('th-TH') : '-'}</td>
-                        </>
-                      )}
-                      {groupBy === 'student' && (
-                        <>
-                          <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.id}</td>
-                          <td style={{ padding: '1rem 1.2rem' }}><strong>{row.name}</strong></td>
-                          <td style={{ padding: '1rem 1.2rem', color: 'var(--success)', fontWeight: 'bold' }}>{row.count}</td>
-                        </>
-                      )}
+                      {groupBy === 'raw' && (() => {
+                        const nameData = splitThaiName(row.userFullName || row.studentName);
+                        return (
+                          <>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{nameData.prefix}</td>
+                            <td style={{ padding: '1rem 1.2rem' }}>{nameData.first}</td>
+                            <td style={{ padding: '1rem 1.2rem' }}>{nameData.last}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.userNickname || '-'}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.studentId}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.userSection || row.room || '-'}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.studentVoiceType || '-'}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{new Date(row.timestamp).toLocaleString('th-TH')}</td>
+                          </>
+                        );
+                      })()}
+                      {groupBy === 'student' && (() => {
+                        const nameData = splitThaiName(row.name);
+                        return (
+                          <>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{nameData.prefix}</td>
+                            <td style={{ padding: '1rem 1.2rem' }}>{nameData.first}</td>
+                            <td style={{ padding: '1rem 1.2rem' }}>{nameData.last}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.nickname || '-'}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.id}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.section || '-'}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.voiceType || '-'}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--success)', fontWeight: 'bold' }}>{row.count}</td>
+                          </>
+                        );
+                      })()}
                       {groupBy === 'room' && (
                         <>
                           <td style={{ padding: '1rem 1.2rem' }}><strong>{row.name}</strong></td>
