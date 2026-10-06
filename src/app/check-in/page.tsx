@@ -288,7 +288,7 @@ export default function CheckInPage() {
                 style={{ width: '100%', marginTop: '1rem', opacity: !selectedSession ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               >
                 <QrCode size={20} />
-                สร้าง QR Code เช็คชื่อ
+                สร้าง QR Code เช็คชื่อเข้า
               </button>
             </div>
           )}

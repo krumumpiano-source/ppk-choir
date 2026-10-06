@@ -153,8 +153,8 @@ export default function ScannerPage() {
         )}
       </div>
 
-      <p style={{ marginTop: '2rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-        ให้หัวหน้าพาร์ทหรือผู้ดูแลระบบนำกล้องไปจ่อที่ QR Code บนจอมือถือของนักเรียนเพื่อเช็คชื่อเข้าซ้อม
+      <p style={{ marginTop: '2rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5' }}>
+        ให้หัวหน้าพาร์ทหรือผู้ดูแลระบบนำกล้องไปจ่อที่ QR Code บนจอมือถือของนักเรียนเพื่อ <strong>เช็คชื่อเข้าซ้อม</strong> หรือ <strong>เช็คชื่อออก (กลับบ้าน)</strong>
       </p>
 
     </div>
