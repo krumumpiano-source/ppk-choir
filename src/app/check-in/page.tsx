@@ -277,7 +277,7 @@ export default function CheckInPage() {
                   }}
                 >
                   <strong style={{ display: 'block', color: 'var(--text-primary)' }}>{session.name}</strong>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ให้หัวหน้าพาร์ทสแกนเพื่อเช็คชื่อ</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ให้คุณครูหรือหัวหน้าพาร์ทสแกนเพื่อเช็คชื่อ</span>
                 </div>
               ))}
               
@@ -295,12 +295,12 @@ export default function CheckInPage() {
 
           {status === 'showing_qr' && selectedSession && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', width: '100%' }}>
-              <h3 style={{ color: 'var(--accent-primary)', textAlign: 'center' }}>ยื่น QR Code ให้หัวหน้าพาร์ทสแกน</h3>
+              <h3 style={{ color: 'var(--accent-primary)', textAlign: 'center' }}>ยื่น QR Code ให้คุณครูหรือหัวหน้าพาร์ทสแกน</h3>
               <div style={{ background: 'white', padding: '1rem', borderRadius: '12px' }}>
                 <QRCodeSVG value={qrData} size={250} level="M" includeMargin={true} />
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center' }}>
-                หน้าต่างนี้จะปิดอัตโนมัติเมื่อหัวหน้าพาร์ทสแกนสำเร็จ
+                หน้าต่างนี้จะปิดอัตโนมัติเมื่อทำการสแกนสำเร็จ
               </p>
               <div className="animate-pulse" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
                 <Loader2 size={16} className="animate-spin" />
