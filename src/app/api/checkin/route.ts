@@ -77,7 +77,14 @@ export async function POST(request: Request) {
     const isAdminUser = auth.user.role === 'admin';
     const studentId = isAdminUser && body.studentId ? body.studentId : auth.user.id;
     const studentName = isAdminUser && body.studentName ? body.studentName : (auth.user.name || body.studentName);
-    const { location, devicePlatform, room, sessionId } = body;
+    let { location, devicePlatform, room, sessionId } = body;
+    if (room) {
+      let r = room.trim();
+      const match = r.match(/^(?:ม\.|ม\.?\s*)?([1-6])\s*\/\s*([1-9][0-9]?)$/);
+      if (match) {
+        room = `ม.${match[1]}/${match[2]}`;
+      }
+    }
     
     if (sessionId) {
       const existing = await db.prepare(`

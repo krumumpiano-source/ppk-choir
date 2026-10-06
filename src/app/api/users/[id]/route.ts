@@ -62,6 +62,14 @@ export async function PUT(request: Request, context: Ctx) {
 
     const body = await request.json() as any;
     const db = getDb();
+    
+    if (body.section) {
+      let section = body.section.trim();
+      const sectionMatch = section.match(/^(?:ม\.|ม\.?\s*)?([1-6])\s*\/\s*([1-9][0-9]?)$/);
+      if (sectionMatch) {
+        body.section = `ม.${sectionMatch[1]}/${sectionMatch[2]}`;
+      }
+    }
 
     const updateFields: string[] = [];
     const values: any[] = [];

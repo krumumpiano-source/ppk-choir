@@ -50,7 +50,11 @@ export async function POST(request: Request) {
     const body = await request.json() as any;
     const studentId = body.studentId || body.id;
     const { name, role, voiceType, status, nickname, phone, lineId, parentName, parentPhone, parentLineId, parentEmail, address, advisorName, bandPosition } = body;
-    const section = body.section || body.room;
+    let section = body.section || body.room || '';
+    const sectionMatch = section.match(/^(?:ม\.|ม\.?\s*)?([1-6])\s*\/\s*([1-9][0-9]?)$/);
+    if (sectionMatch) {
+      section = `ม.${sectionMatch[1]}/${sectionMatch[2]}`;
+    }
     const profileUrl = body.profileUrl || body.photoUrl;
     
     if (!studentId || !name || !nickname || !phone || !lineId || !parentName || !parentPhone || !parentLineId || !address || !advisorName) {
