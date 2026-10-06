@@ -329,18 +329,16 @@ export default function CheckInPage() {
               )}
 
               <button
-                onClick={handleCheckOut}
-                disabled={checkoutLoading}
+                onClick={() => setStatus('showing_qr')}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                  padding: '1rem', borderRadius: '8px', cursor: checkoutLoading ? 'not-allowed' : 'pointer',
-                  background: 'rgba(255, 71, 87, 0.15)', border: '1px solid var(--danger)',
-                  color: 'var(--danger)', fontSize: '1rem', fontWeight: 600, transition: 'all 0.2s',
-                  opacity: checkoutLoading ? 0.6 : 1
+                  padding: '1rem', borderRadius: '8px', cursor: 'pointer',
+                  background: 'var(--accent-primary)', border: 'none',
+                  color: '#fff', fontSize: '1rem', fontWeight: 600, transition: 'all 0.2s'
                 }}
               >
-                {checkoutLoading ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
-                {checkoutLoading ? 'กำลังบันทึก...' : 'เช็คชื่อออก (เมื่อกลับบ้าน)'}
+                <QrCode size={20} />
+                แสดง QR Code สแกนออก (เมื่อกลับบ้าน)
               </button>
             </div>
           )}

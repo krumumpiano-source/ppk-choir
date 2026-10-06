@@ -32,15 +32,22 @@ export async function POST(request: Request) {
     }
 
     // Check if already checked in
-    const existing = await db.prepare('SELECT id, checkoutTime FROM checkins WHERE studentId = ? AND sessionId = ?').bind(studentId, sessionId).first<{id: string, checkoutTime: string | null}>();
+    const existing = await db.prepare('SELECT id, timestamp, checkoutTime FROM checkins WHERE studentId = ? AND sessionId = ?').bind(studentId, sessionId).first<{id: string, timestamp: string, checkoutTime: string | null}>();
     
     const timestamp = new Date().toISOString();
 
     if (existing) {
       if (!existing.checkoutTime) {
+        // Prevent accidental double scans instantly. Require at least 2 minutes (120000ms) between check-in and check-out.
+        const checkinTimeMs = new Date(existing.timestamp).getTime();
+        const nowMs = new Date(timestamp).getTime();
+        if (nowMs - checkinTimeMs < 2 * 60 * 1000) {
+          return NextResponse.json({ error: 'เพิ่งเช็คชื่อเข้าเมื่อสักครู่ (ป้องกันการสแกนซ้ำ)' }, { status: 400 });
+        }
+        
         // They are checked in, but not checked out. So this scan means Check-Out!
         await db.prepare('UPDATE checkins SET checkoutTime = ? WHERE id = ?').bind(timestamp, existing.id).run();
-        return NextResponse.json({ success: true, action: 'checkout', timestamp, studentName: student.name });
+        return NextResponse.json({ success: true, action: 'checkout', timestamp, studentName: studentName || student.name });
       } else {
         // Already checked out
         return NextResponse.json({ error: 'นักเรียนคนนี้เช็คชื่อเข้าและออกไปแล้ว' }, { status: 400 });
