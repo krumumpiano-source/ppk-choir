@@ -114,8 +114,7 @@ export default function ScannerPage() {
           }}
           onError={(error) => console.log(error?.message)}
           allowMultiple={true}
-          scanDelay={1000}
-          paused={isProcessing}
+          scanDelay={1200}
         />
         
         {/* Processing / Result Overlay */}
