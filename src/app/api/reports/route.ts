@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const sqliteStartDate = startDate.toISOString().replace('T', ' ').slice(0, 19);
     const sqliteEndDate = endDate.toISOString().replace('T', ' ').slice(0, 19);
     
-    const result = await db.prepare('SELECT checkins.*, users.voiceType as studentVoiceType, users.nickname as userNickname, users.name as userFullName, users.section as userSection FROM checkins LEFT JOIN users ON checkins.studentId = users.id WHERE checkins.timestamp >= ? AND checkins.timestamp <= ? ORDER BY checkins.timestamp DESC').bind(sqliteStartDate, sqliteEndDate).all<any>();
+    const result = await db.prepare('SELECT checkins.*, users.voiceType as studentVoiceType, users.nickname as userNickname, users.name as userFullName, users.section as userSection, users.studentId as actualStudentId FROM checkins LEFT JOIN users ON checkins.studentId = users.id WHERE checkins.timestamp >= ? AND checkins.timestamp <= ? ORDER BY checkins.timestamp DESC').bind(sqliteStartDate, sqliteEndDate).all<any>();
     
     const flatData = result.results.map((c: any) => ({
       ...c,

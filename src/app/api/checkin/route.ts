@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     }
 
     const result = await db.prepare(`
-      SELECT checkins.*, users.phone, users.lineId 
+      SELECT checkins.*, users.phone, users.lineId, users.studentId as actualStudentId
       FROM checkins 
       LEFT JOIN users ON checkins.studentId = users.id 
       WHERE sessionId = ? ORDER BY timestamp DESC

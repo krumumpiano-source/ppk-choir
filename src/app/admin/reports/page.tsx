@@ -69,7 +69,7 @@ export default function ReportsPage() {
       csvContent += "คำนำหน้า,ชื่อ,นามสกุล,ชื่อเล่น,เลขประจำตัวนักเรียน,ชั้น,แนวเสียง,เวลา\n";
       getFilteredAndGroupedData().forEach((row: any) => {
         const nameData = splitThaiName(row.userFullName || row.studentName);
-        csvContent += `"${nameData.prefix}","${nameData.first}","${nameData.last}","${row.userNickname || '-'}","${row.studentId}","${row.userSection || row.room || '-'}","${row.studentVoiceType || '-'}","${new Date(row.timestamp).toLocaleString('th-TH')}"\n`;
+        csvContent += `"${nameData.prefix}","${nameData.first}","${nameData.last}","${row.userNickname || '-'}","${row.actualStudentId || row.studentId}","${row.userSection || row.room || '-'}","${row.studentVoiceType || '-'}","${new Date(row.timestamp).toLocaleString('th-TH')}"\n`;
       });
     } else if (groupBy === 'student') {
       csvContent += "คำนำหน้า,ชื่อ,นามสกุล,ชื่อเล่น,เลขประจำตัวนักเรียน,ชั้น,แนวเสียง,จำนวนครั้งที่เข้าเรียน\n";
@@ -118,7 +118,7 @@ export default function ReportsPage() {
       if (groupBy === 'student') {
         key = item.studentId;
         if (!grouped[key]) grouped[key] = { 
-          id: item.studentId, 
+          id: item.actualStudentId || item.studentId, 
           name: item.userFullName || item.studentName,
           nickname: item.userNickname,
           section: item.userSection || item.room,
@@ -276,7 +276,7 @@ export default function ReportsPage() {
                             <td style={{ padding: '1rem 1.2rem' }}>{nameData.first}</td>
                             <td style={{ padding: '1rem 1.2rem' }}>{nameData.last}</td>
                             <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.userNickname || '-'}</td>
-                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.studentId}</td>
+                            <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.actualStudentId || row.studentId}</td>
                             <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.userSection || row.room || '-'}</td>
                             <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{row.studentVoiceType || '-'}</td>
                             <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{new Date(row.timestamp).toLocaleString('th-TH')}</td>

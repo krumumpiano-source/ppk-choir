@@ -109,7 +109,7 @@ export default function AdminAssessPage() {
             <div key={work.id} className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
                 <div>
-                  <h2 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)' }}>{work.studentName} ({work.studentId})</h2>
+                  <h2 style={{ margin: '0 0 0.5rem 0', color: 'var(--accent-primary)' }}>{work.studentName} ({work.actualStudentId || work.studentId})</h2>
                   <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.8rem', borderRadius: '50px', fontSize: '0.9rem' }}>
                     {work.voiceType}
                   </span>

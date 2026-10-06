@@ -11,6 +11,7 @@ export interface PracticeRecord {
   id?: string;
   studentId: string;
   studentName: string;
+  actualStudentId?: string;
   voiceType: VoiceType;
   audioUrl: string;
   reflection: string;       

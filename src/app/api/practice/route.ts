@@ -14,9 +14,9 @@ export async function GET(request: Request) {
     
     let result;
     if (studentId) {
-      result = await db.prepare('SELECT * FROM practices WHERE studentId = ? ORDER BY timestamp DESC').bind(studentId).all<any>();
+      result = await db.prepare('SELECT practices.*, users.studentId as actualStudentId FROM practices LEFT JOIN users ON practices.studentId = users.id WHERE practices.studentId = ? ORDER BY timestamp DESC').bind(studentId).all<any>();
     } else {
-      result = await db.prepare('SELECT * FROM practices ORDER BY timestamp DESC').all<any>();
+      result = await db.prepare('SELECT practices.*, users.studentId as actualStudentId FROM practices LEFT JOIN users ON practices.studentId = users.id ORDER BY timestamp DESC').all<any>();
     }
     
     return NextResponse.json({ practices: result.results });

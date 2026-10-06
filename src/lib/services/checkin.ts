@@ -13,6 +13,7 @@ export interface CheckInRecord {
   lastLocationUpdate?: any;
   phone?: string;
   lineId?: string;
+  actualStudentId?: string;
 }
 
 export interface ScheduledSession {

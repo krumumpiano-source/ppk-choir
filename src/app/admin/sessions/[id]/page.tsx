@@ -132,7 +132,7 @@ export default function SessionCheckinsPage({ params }: { params: { id: string }
               ) : (
                 checkins.map((record) => (
                   <tr key={record.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{record.studentId}</td>
+                    <td style={{ padding: '1rem 1.2rem', color: 'var(--text-secondary)' }}>{record.actualStudentId || record.studentId}</td>
                     <td style={{ padding: '1rem 1.2rem' }}>
                       <strong style={{ color: 'var(--text-primary)' }}>{record.studentName}</strong>
                     </td>
