@@ -195,64 +195,93 @@ export default function CheckInPage() {
     // Sample GPS up to 12s (stop early at <=15m) and keep the most accurate fix
     const MAX_ACCURACY_M = 50;
     let best: GeolocationPosition | null = null;
-    let finished = false;
     let watchId = 0;
-    let timer: ReturnType<typeof setTimeout>;
-    const onDone = async (position: GeolocationPosition | null) => {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timer);
-      navigator.geolocation.clearWatch(watchId);
-      if (!position) {
-        setStatus('error');
-        setErrorMessage('ไม่สามารถดึงตำแหน่งได้ กรุณาอนุญาตให้เว็บเข้าถึง GPS ของคุณ');
-        return;
-      }
+    let firstFixTime = 0;
+    let checkInterval: ReturnType<typeof setInterval>;
+    
+    const stopLocating = () => {
+      clearInterval(checkInterval);
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
+
+    const processPosition = async (position: GeolocationPosition) => {
+      stopLocating();
+      
       if (position.coords.accuracy > MAX_ACCURACY_M) {
         setStatus('error');
         setErrorMessage(`สัญญาณ GPS ไม่แม่นยำพอ (คลาดเคลื่อน ~${Math.round(position.coords.accuracy)} เมตร) กรุณาเดินไปใกล้หน้าต่างหรือที่โล่ง เปิด GPS โหมดความแม่นยำสูง แล้วลองใหม่`);
         return;
       }
-      {
-        const { latitude, longitude } = position.coords;
-        setLocation({ lat: latitude, lng: longitude });
-        const targetLoc = selectedSession.location!;
-        const dist = getDistanceFromLatLonInM(latitude, longitude, targetLoc.lat, targetLoc.lng);
-        setDistance(dist);
-        const isSuccess = dist <= targetLoc.radius;
-        
-        if (user && isSuccess) {
-          const res = await saveCheckIn({
-            studentId: user.id,
-            studentName: user.name,
-            location: { lat: latitude, lng: longitude },
-            devicePlatform: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
-            room: user.room || 'ไม่ระบุห้อง',
-            sessionId: selectedSession.id
-          });
-          if (res.success) {
-            setCheckinTime(new Date().toISOString());
-            setStatus('already_in');
-          } else {
-            setStatus('error');
-            setErrorMessage(typeof res.error === 'string' ? res.error : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-          }
-        } else if (!isSuccess) {
-          setStatus('failed');
+      
+      const { latitude, longitude } = position.coords;
+      setLocation({ lat: latitude, lng: longitude });
+      const targetLoc = selectedSession.location!;
+      const dist = getDistanceFromLatLonInM(latitude, longitude, targetLoc.lat, targetLoc.lng);
+      setDistance(dist);
+      const isSuccess = dist <= targetLoc.radius;
+      
+      if (user && isSuccess) {
+        const res = await saveCheckIn({
+          studentId: user.id,
+          studentName: user.name,
+          location: { lat: latitude, lng: longitude },
+          devicePlatform: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
+          room: user.room || 'ไม่ระบุห้อง',
+          sessionId: selectedSession.id
+        });
+        if (res.success) {
+          setCheckinTime(new Date().toISOString());
+          setStatus('already_in');
         } else {
           setStatus('error');
-          setErrorMessage('ไม่พบข้อมูลผู้ใช้งาน');
+          setErrorMessage(typeof res.error === 'string' ? res.error : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
         }
+      } else if (!isSuccess) {
+        setStatus('failed');
+      } else {
+        setStatus('error');
+        setErrorMessage('ไม่พบข้อมูลผู้ใช้งาน');
       }
     };
-    timer = setTimeout(() => onDone(best), 12000);
+
+    const handleError = (error: GeolocationPositionError) => {
+      stopLocating();
+      setStatus('error');
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          setErrorMessage('กรุณาอนุญาตให้เว็บเข้าถึง GPS ของคุณ (คุณอาจต้องไปตั้งค่าในเบราว์เซอร์เพื่อเปิดการเข้าถึงตำแหน่ง)');
+          break;
+        case error.POSITION_UNAVAILABLE:
+          setErrorMessage('ไม่สามารถระบุตำแหน่งของคุณได้ในขณะนี้ กรุณาลองใหม่');
+          break;
+        case error.TIMEOUT:
+          setErrorMessage('ใช้เวลานานเกินไปในการดึงตำแหน่ง (Timeout) กรุณาลองอีกครั้งในที่ที่รับสัญญาณ GPS ได้ดี');
+          break;
+        default:
+          setErrorMessage('เกิดข้อผิดพลาดในการระบุตำแหน่ง: ' + error.message);
+      }
+    };
+
+    // Keep checking if we have spent too much time *after* getting the first fix
+    checkInterval = setInterval(() => {
+      if (firstFixTime > 0 && Date.now() - firstFixTime > 12000) {
+        // 12 seconds have passed since we got the first inaccurate location
+        if (best) processPosition(best);
+      }
+    }, 1000);
+
     watchId = navigator.geolocation.watchPosition(
       (p) => {
+        if (!firstFixTime) firstFixTime = Date.now();
         if (!best || p.coords.accuracy < best.coords.accuracy) best = p;
-        if (p.coords.accuracy <= 15) onDone(p);
+        
+        // If accuracy is good enough (<20m), process immediately without waiting for timeout
+        if (p.coords.accuracy <= 20) {
+          processPosition(p);
+        }
       },
-      () => onDone(best),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
+      (error) => handleError(error),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
     );
   };
 
