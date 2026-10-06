@@ -109,6 +109,13 @@ export default function DashboardPage() {
           <span style={{ fontWeight: 500 }}>เช็คชื่อเข้ากิจกรรม</span>
         </Link>
         
+        <Link href="/check-in/history" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer' }}>
+          <div style={{ background: 'rgba(46, 213, 115, 0.1)', padding: '1rem', borderRadius: '50%' }}>
+            <Calendar size={32} color="var(--success)" />
+          </div>
+          <span style={{ fontWeight: 500 }}>ประวัติการเข้าซ้อม</span>
+        </Link>
+        
         {(user?.role === 'admin' || user?.role === 'section_leader') && (
           <Link href="/admin/scanner" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid #feca57' }}>
             <div style={{ background: 'rgba(254, 202, 87, 0.2)', padding: '1rem', borderRadius: '50%' }}>
