@@ -20,6 +20,8 @@ export default function ConsentPage() {
 
   const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
   const [parentName, setParentName] = useState('');
+  
+  const [documentImage, setDocumentImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -30,11 +32,20 @@ export default function ConsentPage() {
   useEffect(() => {
     async function checkConsent() {
       try {
-        const res = await fetch('/api/consent');
+        const [res, settingsRes] = await Promise.all([
+          fetch('/api/consent'),
+          fetch('/api/settings?key=consent_document_image')
+        ]);
+        
         const data = await res.json();
         if (res.ok && data.consent) {
           setHasSubmitted(true);
           setSubmittedData(data.consent);
+        }
+
+        const settingsData = await settingsRes.json();
+        if (settingsRes.ok && settingsData.data) {
+          setDocumentImage(settingsData.data);
         }
       } catch (e) {
         console.error(e);
@@ -148,37 +159,47 @@ export default function ConsentPage() {
         <h1 style={{ textAlign: 'center', fontSize: '1.5rem', margin: '0 0 2rem 0' }}>ใบขออนุญาตผู้ปกครอง</h1>
 
         {/* Document Content */}
-        <div style={{ 
-          background: 'rgba(255,255,255,0.95)', 
-          color: '#333', 
-          padding: '2rem', 
-          borderRadius: '8px', 
-          marginBottom: '2rem',
-          fontFamily: 'sans-serif',
-          lineHeight: '1.6',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ textAlign: 'center', fontSize: '1.2rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>
-            เรื่อง ขออนุญาตให้นักเรียนทำกิจกรรมและฝึกซ้อมในช่วงปิดภาคเรียน<br/>
-            เรียน ผู้ปกครองนักเรียน
-          </h2>
-          
-          <p style={{ textIndent: '2rem', marginBottom: '1rem', textAlign: 'justify' }}>
-            ด้วยนักเรียนกิจกรรมชุมนุมสานฝันด้วยเส้นเสียง ซึ่งประกอบด้วยวงขับร้องประสานเสียง และวงสตริง ของโรงเรียนพะเยาพิทยาคม 
-            มีความตั้งใจและมุ่งมั่นที่จะศึกษาเรียนรู้เพิ่มเติมและพัฒนาทักษะทางด้านดนตรี เพื่อเตรียมความพร้อมสำหรับการเข้าร่วมแข่งขันในงานศิลปหัตถกรรมนักเรียน ประจำปีการศึกษา ๒๕๖๗ 
-            ตลอดจนเตรียมความพร้อมสำหรับภารกิจอื่นๆ ในการแสดงตามที่โรงเรียนได้รับมอบหมาย
-          </p>
-          <p style={{ textIndent: '2rem', marginBottom: '1rem', textAlign: 'justify' }}>
-            เนื่องจากในช่วงเปิดภาคเรียนปกติมีเวลาในการฝึกซ้อมค่อนข้างจำกัด โดยคณะครูผู้ดูแลกิจกรรม ได้เล็งเห็นถึงความมุ่งมั่นตั้งใจของนักเรียน 
-            และยินดีที่จะเสียสละเวลาเพื่อดูแลการฝึกซ้อมอย่างเต็มกำลังความสามารถ ดังนั้น จึงได้ดำเนินการทำกิจกรรมและฝึกซ้อมในช่วงปิดภาคเรียน 
-            <strong> ในระหว่างวันที่ ๙ - ๑๕ ตุลาคม ๒๕๖๗ </strong> ณ ห้อง อส๕ ห้องขับร้องประสานเสียง อาคารเอนกประสงค์ ชั้น นั้น
-          </p>
-          <p style={{ textIndent: '2rem', marginBottom: '1rem', textAlign: 'justify' }}>
-            ในการนี้ โรงเรียนพะเยาพิทยาคม จึงขออนุญาตนำนักเรียนในความปกครองของท่าน ทำกิจกรรมและฝึกซ้อมในช่วงปิดภาคเรียน 
-            โดยกำหนดการฝึกซ้อม ดังนี้ วงขับร้องประสานเสียง : ทำการฝึกซ้อมในทุกวันจันทร์ วันพุธ และวันศุกร์ เวลา ๐๙.๐๐ - ๑๕.๐๐ น. 
-            โดยขอความร่วมมือผู้ปกครองกำชับและติดตามการเดินทางกลับ หรือ รับ-ส่งนักเรียน
-          </p>
-        </div>
+        {documentImage ? (
+          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <img 
+              src={documentImage} 
+              alt="Official Document" 
+              style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} 
+            />
+          </div>
+        ) : (
+          <div style={{ 
+            background: 'rgba(255,255,255,0.95)', 
+            color: '#333', 
+            padding: '2rem', 
+            borderRadius: '8px', 
+            marginBottom: '2rem',
+            fontFamily: 'sans-serif',
+            lineHeight: '1.6',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            <h2 style={{ textAlign: 'center', fontSize: '1.2rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>
+              เรื่อง ขออนุญาตให้นักเรียนทำกิจกรรมและฝึกซ้อมในช่วงปิดภาคเรียน<br/>
+              เรียน ผู้ปกครองนักเรียน
+            </h2>
+            
+            <p style={{ textIndent: '2rem', marginBottom: '1rem', textAlign: 'justify' }}>
+              ด้วยนักเรียนกิจกรรมชุมนุมสานฝันด้วยเส้นเสียง ซึ่งประกอบด้วยวงขับร้องประสานเสียง และวงสตริง ของโรงเรียนพะเยาพิทยาคม 
+              มีความตั้งใจและมุ่งมั่นที่จะศึกษาเรียนรู้เพิ่มเติมและพัฒนาทักษะทางด้านดนตรี เพื่อเตรียมความพร้อมสำหรับการเข้าร่วมแข่งขันในงานศิลปหัตถกรรมนักเรียน ประจำปีการศึกษา ๒๕๖๗ 
+              ตลอดจนเตรียมความพร้อมสำหรับภารกิจอื่นๆ ในการแสดงตามที่โรงเรียนได้รับมอบหมาย
+            </p>
+            <p style={{ textIndent: '2rem', marginBottom: '1rem', textAlign: 'justify' }}>
+              เนื่องจากในช่วงเปิดภาคเรียนปกติมีเวลาในการฝึกซ้อมค่อนข้างจำกัด โดยคณะครูผู้ดูแลกิจกรรม ได้เล็งเห็นถึงความมุ่งมั่นตั้งใจของนักเรียน 
+              และยินดีที่จะเสียสละเวลาเพื่อดูแลการฝึกซ้อมอย่างเต็มกำลังความสามารถ ดังนั้น จึงได้ดำเนินการทำกิจกรรมและฝึกซ้อมในช่วงปิดภาคเรียน 
+              <strong> ในระหว่างวันที่ ๙ - ๑๕ ตุลาคม ๒๕๖๗ </strong> ณ ห้อง อส๕ ห้องขับร้องประสานเสียง อาคารเอนกประสงค์ ชั้น นั้น
+            </p>
+            <p style={{ textIndent: '2rem', marginBottom: '1rem', textAlign: 'justify' }}>
+              ในการนี้ โรงเรียนพะเยาพิทยาคม จึงขออนุญาตนำนักเรียนในความปกครองของท่าน ทำกิจกรรมและฝึกซ้อมในช่วงปิดภาคเรียน 
+              โดยกำหนดการฝึกซ้อม ดังนี้ วงขับร้องประสานเสียง : ทำการฝึกซ้อมในทุกวันจันทร์ วันพุธ และวันศุกร์ เวลา ๐๙.๐๐ - ๑๕.๐๐ น. 
+              โดยขอความร่วมมือผู้ปกครองกำชับและติดตามการเดินทางกลับ หรือ รับ-ส่งนักเรียน
+            </p>
+          </div>
+        )}
 
         {/* Signature Section */}
         <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

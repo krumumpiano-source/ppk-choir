@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, CheckCircle, XCircle, Search, Download } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle, XCircle, Search, Download, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminConsentsPage() {
@@ -14,6 +14,7 @@ export default function AdminConsentsPage() {
   const [consents, setConsents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || (user.role !== 'admin' && user.role !== 'section_leader'))) {
@@ -50,6 +51,61 @@ export default function AdminConsentsPage() {
 
   const allowedCount = consents.filter(c => c.isAllowed).length;
   const disallowedCount = consents.filter(c => !c.isAllowed).length;
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('กรุณาอัพโหลดไฟล์รูปภาพเท่านั้น');
+      return;
+    }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = async () => {
+        // Compress image using canvas
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Max width 1200px
+        const MAX_WIDTH = 1200;
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          
+          try {
+            const res = await fetch('/api/admin/settings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: 'consent_document_image', data: compressedDataUrl })
+            });
+            if (res.ok) {
+              toast.success('อัพเดตฟอร์มเอกสารเรียบร้อยแล้ว');
+            } else {
+              toast.error('เกิดข้อผิดพลาดในการอัพเดต');
+            }
+          } catch (err) {
+            toast.error('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+          }
+        }
+        setUploadingImage(false);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (authLoading || loading) {
     return (
@@ -101,6 +157,21 @@ export default function AdminConsentsPage() {
               className="input-field"
               style={{ paddingLeft: '2.5rem', margin: 0 }}
             />
+          </div>
+          
+          <div>
+            <input 
+              type="file" 
+              id="upload-doc" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={handleImageUpload}
+              disabled={uploadingImage}
+            />
+            <label htmlFor="upload-doc" className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: uploadingImage ? 'not-allowed' : 'pointer', opacity: uploadingImage ? 0.7 : 1 }}>
+              {uploadingImage ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
+              {uploadingImage ? 'กำลังอัพโหลด...' : 'เปลี่ยนรูปเอกสาร (ตัวจริง)'}
+            </label>
           </div>
         </div>
 
