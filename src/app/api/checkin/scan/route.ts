@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { requireRole, serverError } from '@/lib/auth-guard';
-import { randomUUID } from 'crypto';
 
 export const runtime = 'edge';
 
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     // Insert Checkin record
-    const id = randomUUID();
+    const id = crypto.randomUUID();
     // Use scanner's location if available, otherwise just use session's center location to satisfy schema
     const scannerLat = body.lat || (session.location ? JSON.parse(session.location as string).lat : 0);
     const scannerLng = body.lng || (session.location ? JSON.parse(session.location as string).lng : 0);
