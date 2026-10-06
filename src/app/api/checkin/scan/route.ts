@@ -49,14 +49,25 @@ export async function POST(request: Request) {
 
     // Insert Checkin record
     const id = crypto.randomUUID();
-    // Use scanner's location if available, otherwise just use session's center location to satisfy schema
-    const scannerLat = body.lat || (session.location ? JSON.parse(session.location as string).lat : 0);
-    const scannerLng = body.lng || (session.location ? JSON.parse(session.location as string).lng : 0);
+    // Safely parse session location
+    let scannerLat = body.lat || 0;
+    let scannerLng = body.lng || 0;
+    
+    if (!scannerLat || !scannerLng) {
+      if (session.location && typeof session.location === 'string' && session.location.includes('{')) {
+        try {
+          const parsed = JSON.parse(session.location);
+          scannerLat = scannerLat || parsed.lat || 0;
+          scannerLng = scannerLng || parsed.lng || 0;
+        } catch (e) {
+          console.error("Failed to parse session location:", e);
+        }
+      }
+    }
 
-    const room = student.room || 'ไม่ระบุห้อง';
-    // actualStudentId refers to the human readable ID like '35282'
-    const actualStudentId = student.studentId || '';
-
+    const room = student.room || student.section || 'ไม่ระบุห้อง';
+    
+    // Create simple object to store in DB
     const locationObj = { lat: scannerLat, lng: scannerLng };
 
     await db.prepare(`
@@ -67,8 +78,9 @@ export async function POST(request: Request) {
       JSON.stringify(locationObj), scannerLat, scannerLng, 'scanner', room
     ).run();
 
-    return NextResponse.json({ success: true, action: 'checkin', timestamp, studentName: student.name });
+    return NextResponse.json({ success: true, action: 'checkin', timestamp, studentName: studentName || student.name });
   } catch (error: any) {
-    return serverError(error);
+    console.error('SCAN_ERROR_CAUGHT:', error);
+    return NextResponse.json({ error: error.message || String(error) }, { status: 500 });
   }
 }
