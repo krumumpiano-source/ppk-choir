@@ -80,6 +80,11 @@ export async function PUT(request: Request, context: Ctx) {
       'address', 'advisorName', 'voiceType', 'bandPosition',
       'section', 'profileUrl'
     ];
+    
+    // Only admins can update studentId and role
+    if (user.role === 'admin') {
+      allowedFields.push('studentId', 'role');
+    }
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) {

@@ -60,3 +60,21 @@ export async function updateUserStatus(id: string, status: 'pending' | 'approved
     return { success: false, error: error.message };
   }
 }
+
+export async function updateUser(id: string, data: Partial<User>): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json() as any;
+    if (!res.ok || !result.success) {
+      return { success: false, error: result.error || 'Failed to update user' };
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating user:", error);
+    return { success: false, error: error.message };
+  }
+}

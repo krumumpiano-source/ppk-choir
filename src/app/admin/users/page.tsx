@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, UserPlus, Trash2, Loader2, Save, Check, X, User as UserIcon, Search, Filter, Eye, Key } from 'lucide-react';
-import { getAllUsers, createUser, deleteUser, updateUserStatus } from '@/lib/services/users';
+import { ArrowLeft, Users, UserPlus, Trash2, Loader2, Save, Check, X, User as UserIcon, Search, Filter, Eye, Key, Edit } from 'lucide-react';
+import { getAllUsers, createUser, deleteUser, updateUserStatus, updateUser } from '@/lib/services/users';
 import { User, UserRole } from '@/types/user';
 import { VoiceType } from '@/lib/services/library';
 
@@ -56,6 +56,7 @@ export default function AdminUsersPage() {
   
   // Modal State
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   // Form State
   const [newId, setNewId] = useState('');
@@ -144,6 +145,29 @@ export default function AdminUsersPage() {
     } else {
       toast.error(`เกิดข้อผิดพลาด: ${res.error}`);
     }
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    setIsSubmitting(true);
+    const res = await updateUser(editingUser.id, {
+      name: editingUser.name,
+      nickname: editingUser.nickname,
+      studentId: editingUser.studentId,
+      voiceType: editingUser.voiceType,
+      role: editingUser.role
+    });
+    
+    if (res.success) {
+      toast.success('แก้ไขข้อมูลสำเร็จ');
+      setEditingUser(null);
+      loadUsers();
+    } else {
+      toast.error(`ข้อผิดพลาด: ${res.error}`);
+    }
+    setIsSubmitting(false);
   };
 
   const filteredUsers = users.filter(u => {
@@ -331,6 +355,9 @@ export default function AdminUsersPage() {
                           <button onClick={() => setSelectedUser(u)} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer' }} title="ดูรายละเอียด">
                             <Eye size={18} />
                           </button>
+                          <button onClick={() => setEditingUser({...u})} style={{ background: 'none', border: 'none', color: '#7bed9f', cursor: 'pointer', marginLeft: '0.2rem' }} title="แก้ไข">
+                            <Edit size={18} />
+                          </button>
                           {(!u.status || u.status === 'pending') && (
                             <button onClick={() => handleStatusChange(u.id, 'approved')} style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer' }} title="อนุมัติ">
                               <Check size={18} />
@@ -430,6 +457,86 @@ export default function AdminUsersPage() {
             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setSelectedUser(null)} className="btn-secondary">ปิดหน้าต่าง</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }} onClick={() => setEditingUser(null)}>
+          <div 
+            className="glass-panel" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '500px', 
+              position: 'relative',
+              padding: '2rem'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Edit size={24} color="var(--accent-primary)" />
+              แก้ไขข้อมูล
+            </h2>
+            
+            <form onSubmit={handleUpdateUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="input-group">
+                <label>รหัสนักเรียน / ID</label>
+                <input type="text" className="input-field" value={editingUser.studentId || editingUser.id} onChange={e => setEditingUser({...editingUser, studentId: e.target.value})} required />
+              </div>
+              <div className="input-group">
+                <label>ชื่อ-สกุล</label>
+                <input type="text" className="input-field" value={editingUser.name || ''} onChange={e => setEditingUser({...editingUser, name: e.target.value})} required />
+              </div>
+              <div className="input-group">
+                <label>ชื่อเล่น</label>
+                <input type="text" className="input-field" value={editingUser.nickname || ''} onChange={e => setEditingUser({...editingUser, nickname: e.target.value})} />
+              </div>
+              <div className="input-group">
+                <label>แนวเสียง</label>
+                <select className="input-field" value={editingUser.voiceType} onChange={e => setEditingUser({...editingUser, voiceType: e.target.value as VoiceType})} style={{ appearance: 'auto' }}>
+                  <option value="Soprano 1">Soprano 1</option>
+                  <option value="Soprano 2">Soprano 2</option>
+                  <option value="Alto 1">Alto 1</option>
+                  <option value="Alto 2">Alto 2</option>
+                  <option value="Tenor 1">Tenor 1</option>
+                  <option value="Tenor 2">Tenor 2</option>
+                  <option value="Baritone">Baritone</option>
+                  <option value="Bass">Bass</option>
+                  <option value="นักดนตรี (Instrumentalist)">นักดนตรี (Instrumentalist)</option>
+                  <option value="All">All (สำหรับ Admin)</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>บทบาท</label>
+                <select className="input-field" value={editingUser.role} onChange={e => setEditingUser({...editingUser, role: e.target.value as UserRole})} style={{ appearance: 'auto' }}>
+                  <option value="student">นักเรียน (Student)</option>
+                  <option value="section_leader">หัวหน้าพาร์ท (Section Leader)</option>
+                  <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+                </select>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" onClick={() => setEditingUser(null)} className="btn-secondary">ยกเลิก</button>
+                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                  บันทึกการแก้ไข
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
