@@ -445,111 +445,59 @@ export default function AdminSessionsPage() {
           <Loader2 size={48} className="animate-spin" color="var(--accent-primary)" />
         </div>
       ) : (
-        <div className="glass-panel" style={{ padding: '0', overflowX: 'auto', width: '100%' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
-            <thead>
-              <tr style={{ background: 'rgba(0,0,0,0.4)' }}>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>สถานะ</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>ชื่อกิจกรรม</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เป้าหมาย</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>เวลา (เริ่ม - จบ)</th>
-                <th style={{ padding: '1.2rem', color: 'var(--text-secondary)', textAlign: 'right', whiteSpace: 'nowrap' }}>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!Array.isArray(sessions) || sessions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                    ยังไม่มีกิจกรรมที่สร้างไว้
-                  </td>
-                </tr>
-              ) : (
-                sessions.map(session => {
-                  const active = isCurrent(session);
-                  return (
-                    <tr key={session.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
-                      <td style={{ padding: '1rem 1.2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+          {!Array.isArray(sessions) || sessions.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              ยังไม่มีกิจกรรมที่สร้างไว้
+            </div>
+          ) : (
+            sessions.map(session => {
+              const active = isCurrent(session);
+              return (
+                <div key={session.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>{session.name}</strong>
                         <span style={{ 
-                          padding: '0.3rem 0.8rem', borderRadius: '50px', fontSize: '0.85rem', fontWeight: 600,
+                          padding: '0.2rem 0.6rem', borderRadius: '50px', fontSize: '0.75rem', fontWeight: 600,
                           background: active ? 'rgba(46, 213, 115, 0.1)' : session.isActive ? 'rgba(255, 171, 0, 0.1)' : 'rgba(255, 71, 87, 0.1)',
                           color: active ? 'var(--success)' : session.isActive ? '#ffab00' : 'var(--danger)',
                           border: `1px solid ${active ? 'var(--success)' : session.isActive ? '#ffab00' : 'var(--danger)'}`
                         }}>
                           {active ? 'กำลังดำเนินอยู่' : session.isActive ? 'เปิดระบบไว้' : 'ปิดระบบแล้ว'}
                         </span>
-                      </td>
-                      <td style={{ padding: '1rem 1.2rem' }}>
-                        <strong style={{ display: 'block', color: 'var(--text-primary)' }}>{session.name}</strong>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{session.type}</span>
-                      </td>
-                      <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem' }}>
-                        {Array.isArray(session.targetGroups) ? session.targetGroups.join(', ') : 'All'}
-                      </td>
-                      <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+                        <strong>ประเภท:</strong> <span style={{ textTransform: 'capitalize' }}>{session.type}</span>
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.2rem', maxWidth: '100%', wordBreak: 'break-word' }}>
+                        <strong>กลุ่มเป้าหมาย:</strong> {Array.isArray(session.targetGroups) ? session.targetGroups.join(', ') : 'All'}
+                      </div>
+                      <div style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
                         {session.isRecurring ? (
                           <>
-                            ทุกวัน{Array.isArray(session.daysOfWeek) && session.daysOfWeek.length > 0 ? session.daysOfWeek.map(getDayName).join(', ') : getDayName(session.dayOfWeek ?? 1)} <br/>
-                            {session.recurringStartTime} ถึง {session.recurringEndTime}
+                            📅 ทุกวัน{Array.isArray(session.daysOfWeek) && session.daysOfWeek.length > 0 ? session.daysOfWeek.map(getDayName).join(', ') : getDayName(session.dayOfWeek ?? 1)} | ⏰ {session.recurringStartTime} - {session.recurringEndTime}
                           </>
                         ) : (
                           <>
-                            {formatTime(session.startTime)} <br/> ถึง <br/> {formatTime(session.endTime)}
+                            📅 {formatTime(session.startTime)} ถึง {formatTime(session.endTime)}
                           </>
                         )}
-                      </td>
-                      <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                          <button 
-                            onClick={() => {
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                              handleEdit(session);
-                            }}
-                            style={{ 
-                              padding: '0.5rem', borderRadius: '8px', cursor: 'pointer',
-                              background: 'rgba(255, 255, 255, 0.1)', border: 'none',
-                              color: 'var(--text-primary)'
-                            }}
-                            title="แก้ไขกิจกรรม"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <Link
-                            href={`/admin/sessions/${session.id}`}
-                            style={{ 
-                              padding: '0.5rem', borderRadius: '8px', cursor: 'pointer',
-                              background: 'var(--accent-primary)', border: 'none',
-                              color: '#000'
-                            }}
-                            title="ดูรายชื่อที่เช็คชื่อแล้ว"
-                          >
-                            <Users size={18} />
-                          </Link>
-                          <button 
-                            onClick={() => toggleSessionStatus(session)}
-                            style={{ 
-                              padding: '0.5rem', borderRadius: '8px', cursor: 'pointer',
-                              background: 'transparent', border: '1px solid rgba(255,255,255,0.2)',
-                              color: session.isActive ? 'var(--danger)' : 'var(--success)'
-                            }}
-                            title={session.isActive ? "ปิดรับเช็คชื่อ (Force Close)" : "เปิดรับเช็คชื่อ (Force Open)"}
-                          >
-                            <Power size={18} />
-                          </button>
-                          <button 
-                            onClick={() => deleteSession(session.id!)}
-                            style={{ padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--danger)' }}
-                            title="ลบกิจกรรม"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); handleEdit(session); }} style={{ padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: 'var(--text-primary)' }} title="แก้ไขกิจกรรม"><Edit size={18} /></button>
+                      <Link href={`/admin/sessions/${session.id}`} style={{ padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', background: 'var(--accent-primary)', border: 'none', color: '#000' }} title="ดูรายชื่อที่เช็คชื่อแล้ว"><Users size={18} /></Link>
+                      <button onClick={() => toggleSessionStatus(session)} style={{ padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: session.isActive ? 'var(--danger)' : 'var(--success)' }} title={session.isActive ? "ปิดรับเช็คชื่อ (Force Close)" : "เปิดรับเช็คชื่อ (Force Open)"}><Power size={18} /></button>
+                      <button onClick={() => deleteSession(session.id!)} style={{ padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--danger)' }} title="ลบกิจกรรม"><Trash2 size={18} /></button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
     </div>
