@@ -3,33 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, Navigation, CheckCircle, AlertTriangle, ArrowLeft, ShieldCheck, Loader2, LogOut } from 'lucide-react';
-import { saveCheckIn, getActiveSessions, ScheduledSession } from '../../lib/services/checkin';
+import { MapPin, Navigation, CheckCircle, AlertTriangle, ArrowLeft, ShieldCheck, Loader2, LogOut, QrCode } from 'lucide-react';
+import { getActiveSessions, ScheduledSession } from '../../lib/services/checkin';
 import { useAuth } from '@/components/providers/AuthProvider';
-
-function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371e3; 
-  const p1 = lat1 * Math.PI/180;
-  const p2 = lat2 * Math.PI/180;
-  const deltaP = p2 - p1;
-  const deltaLon = lon2 - lon1;
-  const deltaLambda = (deltaLon * Math.PI) / 180;
-  const a = Math.sin(deltaP/2) * Math.sin(deltaP/2) +
-            Math.cos(p1) * Math.cos(p2) *
-            Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function CheckInPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   
-  const [showPdpa, setShowPdpa] = useState(false);
-  const [pdpaAccepted, setPdpaAccepted] = useState(false);
-  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
-  const [status, setStatus] = useState<'idle' | 'locating' | 'success' | 'checked_out' | 'already_in' | 'failed' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'showing_qr' | 'already_in' | 'checked_out' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkinTime, setCheckinTime] = useState<string | null>(null);
@@ -40,8 +23,32 @@ export default function CheckInPage() {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const watchIdRef = useRef<number | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Live Location Tracking
+  // Poll to see if scanned by section leader
+  useEffect(() => {
+    if (status === 'showing_qr' && selectedSession && user) {
+      pollingIntervalRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/checkin?studentId=${user.id}&sessionId=${selectedSession.id}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.checkin && !data.checkin.checkoutTime) {
+              setCheckinTime(data.checkin.timestamp);
+              setStatus('already_in');
+            }
+          }
+        } catch (e) {}
+      }, 3000);
+    } else if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+    return () => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    };
+  }, [status, selectedSession, user]);
+
+  // Live Location Tracking ONCE checked in
   useEffect(() => {
     let lastUpdateTime = 0;
     if (status === 'already_in' && !checkoutTime && selectedSession?.id && user?.id) {
@@ -49,8 +56,7 @@ export default function CheckInPage() {
         watchIdRef.current = navigator.geolocation.watchPosition(
           async (position) => {
             const now = Date.now();
-            // Throttle updates to at most once every 15 seconds to prevent D1 database locks (SQLITE_BUSY)
-            if (now - lastUpdateTime < 15000) return;
+            if (now - lastUpdateTime < 15000) return; // limit to 15s
             lastUpdateTime = now;
 
             const { latitude, longitude } = position.coords;
@@ -103,7 +109,6 @@ export default function CheckInPage() {
         let isTimeValid = false;
 
         if (session.isRecurring) {
-          // Convert to Thailand time (UTC+7) explicitly to avoid device timezone issues
           const thaiTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
           const currentDay = thaiTime.getUTCDay();
           const currentHour = thaiTime.getUTCHours().toString().padStart(2, '0');
@@ -129,7 +134,6 @@ export default function CheckInPage() {
       setAvailableSessions(eligibleSessions);
       if (eligibleSessions.length === 1) {
         setSelectedSession(eligibleSessions[0]);
-        // Check if user already checked in for this session
         await checkExistingCheckin(user.id, eligibleSessions[0].id!);
       }
       setCheckingSession(false);
@@ -167,122 +171,23 @@ export default function CheckInPage() {
     }
   };
 
-  const initiateCheckIn = () => {
-    if (!selectedSession) { alert('กรุณาเลือกกิจกรรมที่ต้องการเช็คชื่อ'); return; }
-    if (!pdpaAccepted) { setShowPdpa(true); return; }
-    handleCheckIn();
-  };
-
-  const acceptPdpa = () => {
-    setPdpaAccepted(true);
-    setShowPdpa(false);
-    handleCheckIn();
-  };
-
-  const handleCheckIn = () => {
-    setStatus('locating');
-    if (!navigator.geolocation) {
-      setStatus('error');
-      setErrorMessage('เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง GPS');
-      return;
-    }
-    if (!selectedSession?.location) {
-      setStatus('error');
-      setErrorMessage('กิจกรรมนี้ไม่มีการตั้งค่าพิกัด');
-      return;
-    }
-
-    // Sample GPS up to 12s (stop early at <=15m) and keep the most accurate fix
-    const MAX_ACCURACY_M = 50;
-    let best: GeolocationPosition | null = null;
-    let watchId = 0;
-    let firstFixTime = 0;
-    let checkInterval: ReturnType<typeof setInterval>;
+  const handleShowQR = () => {
+    if (!selectedSession) { alert('กรุณาเลือกกิจกรรม'); return; }
     
-    const stopLocating = () => {
-      clearInterval(checkInterval);
-      if (watchId) navigator.geolocation.clearWatch(watchId);
-    };
-
-    const processPosition = async (position: GeolocationPosition) => {
-      stopLocating();
-      
-      if (position.coords.accuracy > MAX_ACCURACY_M) {
-        setStatus('error');
-        setErrorMessage(`สัญญาณ GPS ไม่แม่นยำพอ (คลาดเคลื่อน ~${Math.round(position.coords.accuracy)} เมตร) กรุณาเดินไปใกล้หน้าต่างหรือที่โล่ง เปิด GPS โหมดความแม่นยำสูง แล้วลองใหม่`);
-        return;
-      }
-      
-      const { latitude, longitude } = position.coords;
-      setLocation({ lat: latitude, lng: longitude });
-      const targetLoc = selectedSession.location!;
-      const dist = getDistanceFromLatLonInM(latitude, longitude, targetLoc.lat, targetLoc.lng);
-      setDistance(dist);
-      const isSuccess = dist <= targetLoc.radius;
-      
-      if (user && isSuccess) {
-        const res = await saveCheckIn({
-          studentId: user.id,
-          studentName: user.name,
-          location: { lat: latitude, lng: longitude },
-          devicePlatform: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
-          room: user.room || 'ไม่ระบุห้อง',
-          sessionId: selectedSession.id
-        });
-        if (res.success) {
-          setCheckinTime(new Date().toISOString());
-          setStatus('already_in');
-        } else {
-          setStatus('error');
-          setErrorMessage(typeof res.error === 'string' ? res.error : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        }
-      } else if (!isSuccess) {
-        setStatus('failed');
-      } else {
-        setStatus('error');
-        setErrorMessage('ไม่พบข้อมูลผู้ใช้งาน');
-      }
-    };
-
-    const handleError = (error: GeolocationPositionError) => {
-      stopLocating();
-      setStatus('error');
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          setErrorMessage('กรุณาอนุญาตให้เว็บเข้าถึง GPS ของคุณ (คุณอาจต้องไปตั้งค่าในเบราว์เซอร์เพื่อเปิดการเข้าถึงตำแหน่ง)');
-          break;
-        case error.POSITION_UNAVAILABLE:
-          setErrorMessage('ไม่สามารถระบุตำแหน่งของคุณได้ในขณะนี้ กรุณาลองใหม่');
-          break;
-        case error.TIMEOUT:
-          setErrorMessage('ใช้เวลานานเกินไปในการดึงตำแหน่ง (Timeout) กรุณาลองอีกครั้งในที่ที่รับสัญญาณ GPS ได้ดี');
-          break;
-        default:
-          setErrorMessage('เกิดข้อผิดพลาดในการระบุตำแหน่ง: ' + error.message);
-      }
-    };
-
-    // Keep checking if we have spent too much time *after* getting the first fix
-    checkInterval = setInterval(() => {
-      if (firstFixTime > 0 && Date.now() - firstFixTime > 12000) {
-        // 12 seconds have passed since we got the first inaccurate location
-        if (best) processPosition(best);
-      }
-    }, 1000);
-
-    watchId = navigator.geolocation.watchPosition(
-      (p) => {
-        if (!firstFixTime) firstFixTime = Date.now();
-        if (!best || p.coords.accuracy < best.coords.accuracy) best = p;
-        
-        // If accuracy is good enough (<20m), process immediately without waiting for timeout
-        if (p.coords.accuracy <= 20) {
-          processPosition(p);
-        }
-      },
-      (error) => handleError(error),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
-    );
+    // Request location permission first so that background tracking works smoothly later
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        () => setStatus('showing_qr'),
+        () => {
+          if(confirm('ระบบต้องใช้พิกัดเพื่อติดตามความปลอดภัยระหว่างซ้อม กรุณาอนุญาต GPS ก่อนแสดง QR Code')) {
+            setStatus('showing_qr');
+          }
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      setStatus('showing_qr');
+    }
   };
 
   const handleCheckOut = async () => {
@@ -322,30 +227,17 @@ export default function CheckInPage() {
 
   if (!user) return null;
 
+  const qrData = JSON.stringify({
+    type: 'CHOIR_CHECKIN',
+    id: user.id,
+    sid: user.studentId,
+    name: user.name,
+    room: user.room || '-',
+    session: selectedSession?.id
+  });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>
-      {/* PDPA Modal */}
-      {showPdpa && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-          <div className="glass-panel animate-fade-in" style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-secondary)' }}>
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <ShieldCheck size={48} color="var(--accent-primary)" style={{ margin: '0 auto' }} />
-              <h2 style={{ marginTop: '1rem' }}>ข้อตกลงการประมวลผลข้อมูล (PDPA)</h2>
-            </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
-              ในการเช็คชื่อเข้ากิจกรรม &quot;ชุมนุมสานฝันด้วยเส้นเสียง&quot; ทางโรงเรียนมีความจำเป็นต้องเข้าถึง <strong>ตำแหน่งที่ตั้ง (GPS)</strong> ของคุณ เพื่อตรวจสอบว่าคุณอยู่ในบริเวณที่กำหนด 
-              รวมถึง <strong>ติดตามตำแหน่งแบบเรียลไทม์ระหว่างที่คุณยังอยู่ในกิจกรรม</strong> เพื่อความปลอดภัยขณะอยู่ในความดูแลของคุณครู
-              <br/><br/>
-              ข้อมูลตำแหน่งจะถูกใช้เฉพาะขณะทำการเช็คชื่อและในระหว่างที่คุณทำกิจกรรมอยู่เท่านั้น ระบบจะหยุดแชร์ตำแหน่งทันทีเมื่อคุณกดเช็คชื่อออก (Check-out) และจะไม่มีการนำไปเปิดเผยเพื่อวัตถุประสงค์อื่น
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowPdpa(false)} style={{ padding: '0.8rem 1.5rem', background: 'transparent', border: '1px solid var(--text-secondary)', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>ปฏิเสธ</button>
-              <button onClick={acceptPdpa} className="btn-primary" style={{ borderRadius: '8px' }}>ยินยอมและดำเนินการต่อ</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="glass-panel animate-fade-in" style={{ maxWidth: '500px', width: '100%', position: 'relative', marginTop: '2rem' }}>
         <Link href="/dashboard" style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', color: 'var(--text-secondary)' }}>
           <ArrowLeft size={20} />
@@ -353,7 +245,7 @@ export default function CheckInPage() {
         
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ display: 'inline-flex', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', marginBottom: '1rem' }}>
-            <MapPin size={40} color="var(--accent-primary)" />
+            <QrCode size={40} color="var(--accent-primary)" />
           </div>
           <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>ระบบเช็คชื่อกิจกรรม</h2>
           
@@ -363,30 +255,14 @@ export default function CheckInPage() {
             </div>
           ) : (
             <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255, 71, 87, 0.1)', color: 'var(--danger)', borderRadius: '8px', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
-              <div>
-                ขณะนี้ไม่มีกิจกรรมที่เปิดรับการเช็คชื่อสำหรับคุณ
-                <br/>
-                <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                  (คุณลงทะเบียนเป็น: {user.voiceType || 'ไม่ระบุ'}{user.bandPosition ? ` / ${user.bandPosition}` : ''})
-                </span>
-              </div>
-              <button 
-                onClick={() => window.location.href = window.location.pathname + '?update=' + Date.now()}
-                style={{
-                  background: 'var(--danger)', color: 'white', border: 'none', padding: '0.5rem 1rem', 
-                  borderRadius: '20px', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
-                }}
-              >
-                <span>ไม่เห็นกิจกรรม? กดเพื่อรีเฟรชหน้าต่างใหม่</span>
-              </button>
+              <div>ขณะนี้ไม่มีกิจกรรมที่เปิดรับการเช็คชื่อสำหรับคุณ</div>
             </div>
           )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
           
-          {/* Session selector */}
-          {availableSessions.length > 0 && (
+          {availableSessions.length > 0 && status === 'idle' && (
             <div style={{ width: '100%' }}>
               <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>เลือกกิจกรรม:</p>
               {availableSessions.map(session => (
@@ -401,28 +277,45 @@ export default function CheckInPage() {
                   }}
                 >
                   <strong style={{ display: 'block', color: 'var(--text-primary)' }}>{session.name}</strong>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>รัศมีอนุญาต: {session.location?.radius || 0} เมตร</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ให้หัวหน้าพาร์ทสแกนเพื่อเช็คชื่อ</span>
                 </div>
               ))}
+              
+              <button
+                onClick={handleShowQR}
+                className="btn-primary"
+                disabled={!selectedSession}
+                style={{ width: '100%', marginTop: '1rem', opacity: !selectedSession ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+              >
+                <QrCode size={20} />
+                สร้าง QR Code เช็คชื่อ
+              </button>
             </div>
           )}
 
-          {/* Status displays */}
-          {status === 'locating' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
-              <Navigation className="animate-spin" size={20} />
-              <span>กำลังดึงตำแหน่ง GPS ของคุณ...</span>
+          {status === 'showing_qr' && selectedSession && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', width: '100%' }}>
+              <h3 style={{ color: 'var(--accent-primary)', textAlign: 'center' }}>ยื่น QR Code ให้หัวหน้าพาร์ทสแกน</h3>
+              <div style={{ background: 'white', padding: '1rem', borderRadius: '12px' }}>
+                <QRCodeSVG value={qrData} size={250} level="M" includeMargin={true} />
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center' }}>
+                หน้าต่างนี้จะปิดอัตโนมัติเมื่อหัวหน้าพาร์ทสแกนสำเร็จ
+              </p>
+              <div className="animate-pulse" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+                <Loader2 size={16} className="animate-spin" />
+                กำลังรอการสแกน...
+              </div>
+              <button onClick={() => setStatus('idle')} className="btn-secondary" style={{ width: '100%', marginTop: '1rem' }}>ยกเลิก</button>
             </div>
           )}
 
-          {/* Already checked in — show check-out button */}
           {status === 'already_in' && (
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: 'var(--success)' }}>
                 <CheckCircle size={48} />
                 <h3 style={{ fontSize: '1.2rem' }}>เช็คชื่อเข้าสำเร็จ ✅</h3>
                 {checkinTime && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เวลาเข้า: {formatTime(checkinTime)}</p>}
-                {distance !== null && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>ระยะห่าง: {distance.toFixed(0)} เมตร</p>}
               </div>
 
               {!checkoutTime && (
@@ -430,7 +323,7 @@ export default function CheckInPage() {
                   <div className="animate-pulse" style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--danger)', marginTop: '4px', flexShrink: 0 }}></div>
                   <div>
                     <p style={{ margin: 0, fontWeight: 'bold', color: 'var(--danger)', fontSize: '0.9rem' }}>กำลังแชร์ตำแหน่งแบบเรียลไทม์</p>
-                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>เพื่อความปลอดภัยขณะทำกิจกรรม ระบบจะแชร์ตำแหน่งของคุณให้คุณครูทราบ และจะหยุดทันทีเมื่อเช็คชื่อออก หรือปิดหน้านี้</p>
+                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>เพื่อความปลอดภัยขณะทำกิจกรรม ระบบกำลังส่งตำแหน่งของคุณให้คุณครูทราบผ่าน GPS จะหยุดเมื่อเช็คชื่อออก กรุณาเปิดหน้านี้ทิ้งไว้ในพื้นหลัง</p>
                   </div>
                 </div>
               )}
@@ -452,7 +345,6 @@ export default function CheckInPage() {
             </div>
           )}
 
-          {/* Fully checked out */}
           {status === 'checked_out' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', textAlign: 'center' }}>
               <div style={{ color: 'var(--success)' }}>
@@ -467,36 +359,11 @@ export default function CheckInPage() {
             </div>
           )}
 
-          {status === 'failed' && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: 'var(--danger)', textAlign: 'center' }}>
-              <AlertTriangle size={48} />
-              <h3 style={{ fontSize: '1.2rem' }}>คุณอยู่นอกพื้นที่</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                คุณอยู่ห่างจากจุดศูนย์กลาง {distance?.toFixed(0)} เมตร<br/>
-                (ต้องอยู่ภายในระยะ {selectedSession?.location?.radius || 0} เมตร)
-              </p>
-            </div>
-          )}
-
           {status === 'error' && (
             <div style={{ color: 'var(--danger)', textAlign: 'center', fontSize: '0.9rem' }}>
               {errorMessage}
             </div>
           )}
-
-          {/* Check-in button — only show when not yet checked in */}
-          {(status === 'idle' || status === 'failed' || status === 'error') && availableSessions.length > 0 && (
-            <button
-              onClick={initiateCheckIn}
-              className="btn-primary"
-              disabled={!selectedSession}
-              style={{ width: '100%', marginTop: '0.5rem', opacity: !selectedSession ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-            >
-              <MapPin size={20} />
-              {status === 'failed' || status === 'error' ? 'ลองเช็คชื่อใหม่อีกครั้ง' : 'กดเพื่อเช็คชื่อเข้ากิจกรรม'}
-            </button>
-          )}
-          
         </div>
       </div>
     </div>

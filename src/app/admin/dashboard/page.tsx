@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Clock, FileAudio, LogOut, Settings, ClipboardCheck, LineChart, Users, MapPin } from 'lucide-react';
+import { LayoutDashboard, Clock, FileAudio, LogOut, Settings, ClipboardCheck, LineChart, Users, MapPin, Camera } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AdminDashboard() {
@@ -124,6 +124,18 @@ export default function AdminDashboard() {
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
             ดูแผนที่ตำแหน่งของนักเรียนแบบเรียลไทม์ (Real-time GPS Tracking) เพื่อดูแลความปลอดภัย
+          </p>
+        </Link>
+        
+        <Link href="/admin/scanner" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', border: '1px solid #feca57' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'rgba(254, 202, 87, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
+              <Camera size={28} color="#feca57" />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#feca57' }}>เครื่องสแกนเช็คชื่อ</h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            สแกน QR Code เพื่อเช็คชื่อนักเรียน หรือมอบหมายหน้าที่ให้หัวหน้าพาร์ท
           </p>
         </Link>
 

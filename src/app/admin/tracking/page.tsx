@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Navigation, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -30,6 +30,15 @@ export default function LiveTrackingPage() {
   const [allStudents, setAllStudents] = useState<any[]>([]);
   const [outOfBoundsStudents, setOutOfBoundsStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const prevOOBCount = React.useRef(0);
+
+  useEffect(() => {
+    if (outOfBoundsStudents.length > prevOOBCount.current) {
+      const audio = new Audio('/error.mp3');
+      audio.play().catch(() => {});
+    }
+    prevOOBCount.current = outOfBoundsStudents.length;
+  }, [outOfBoundsStudents.length]);
 
   useEffect(() => {
     async function loadData() {

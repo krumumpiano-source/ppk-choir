@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut, Settings } from 'lucide-react';
+import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut, Settings, Camera } from 'lucide-react';
 import { getStudentStats, StudentStats } from '../../lib/services/gamification';
 import { getStudentPractices, PracticeRecord } from '../../lib/services/practice';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -106,8 +106,17 @@ export default function DashboardPage() {
           <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '1rem', borderRadius: '50%' }}>
             <MapPin size={32} color="var(--accent-primary)" />
           </div>
-          <span style={{ fontWeight: 500 }}>เช็คชื่อ (GPS)</span>
+          <span style={{ fontWeight: 500 }}>เช็คชื่อเข้ากิจกรรม</span>
         </Link>
+        
+        {(user?.role === 'admin' || user?.role === 'section_leader') && (
+          <Link href="/admin/scanner" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid #feca57' }}>
+            <div style={{ background: 'rgba(254, 202, 87, 0.2)', padding: '1rem', borderRadius: '50%' }}>
+              <Camera size={32} color="#feca57" />
+            </div>
+            <span style={{ fontWeight: 500, color: '#feca57' }}>เครื่องสแกนเช็คชื่อ</span>
+          </Link>
+        )}
         
         <Link href="/library" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer' }}>
           <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '1rem', borderRadius: '50%' }}>
