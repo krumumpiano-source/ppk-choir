@@ -78,7 +78,7 @@ export default function ConsentPage() {
       return;
     }
 
-    const signatureData = sigPad.current.getTrimmedCanvas().toDataURL('image/png');
+    const signatureData = sigPad.current.getCanvas().toDataURL('image/png');
 
     setSubmitting(true);
     try {
