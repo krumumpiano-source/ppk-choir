@@ -159,7 +159,10 @@ export default function AdminConsentsPage() {
             />
           </div>
           
-          <div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Link href="/admin/consents/print?id=all" target="_blank" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+              <Download size={18} /> พิมพ์ทั้งหมด
+            </Link>
             <input 
               type="file" 
               id="upload-doc" 
@@ -184,6 +187,7 @@ export default function AdminConsentsPage() {
                 <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>ชื่อผู้ปกครอง</th>
                 <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>ลายเซ็น</th>
                 <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>วันที่เซ็น</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>พิมพ์</th>
               </tr>
             </thead>
             <tbody>
@@ -215,6 +219,11 @@ export default function AdminConsentsPage() {
                     </td>
                     <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                       {new Date(consent.timestamp).toLocaleDateString('th-TH')}
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <Link href={`/admin/consents/print?id=${consent.studentId}`} target="_blank" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>
+                        พิมพ์
+                      </Link>
                     </td>
                   </tr>
                 ))

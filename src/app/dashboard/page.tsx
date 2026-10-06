@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut, Settings, Camera } from 'lucide-react';
+import InstallPwaButton from '@/components/InstallPwaButton';
 import { getStudentStats, StudentStats } from '../../lib/services/gamification';
 import { getStudentPractices, PracticeRecord } from '../../lib/services/practice';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -97,6 +98,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <InstallPwaButton />
 
       {/* Quick Actions */}
       <h2 style={{ fontSize: '1.3rem', marginBottom: '1rem' }}>เมนูด่วน</h2>
