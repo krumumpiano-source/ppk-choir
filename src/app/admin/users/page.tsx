@@ -63,6 +63,7 @@ export default function AdminUsersPage() {
   const [newId, setNewId] = useState('');
   const [newName, setNewName] = useState('');
   const [newVoiceType, setNewVoiceType] = useState<VoiceType>('Soprano 1');
+  const [newBandPosition, setNewBandPosition] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -91,6 +92,7 @@ export default function AdminUsersPage() {
       id: newId,
       name: newName,
       voiceType: newVoiceType,
+      bandPosition: newBandPosition || undefined,
       role: newRole
     });
 
@@ -98,6 +100,7 @@ export default function AdminUsersPage() {
       toast.success('เพิ่มผู้ใช้งานสำเร็จ');
       setNewId('');
       setNewName('');
+      setNewBandPosition('');
       setIsAddUserModalOpen(false);
       loadUsers();
     } else {
@@ -289,7 +292,10 @@ export default function AdminUsersPage() {
                       <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.studentId || u.id}</td>
                       <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.name}</td>
                       <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.nickname || '-'}</td>
-                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{u.voiceType}</td>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                        {u.voiceType}
+                        {u.bandPosition && <><br/><span style={{ fontSize: '0.8rem', color: 'var(--accent-primary)' }}>{u.bandPosition}</span></>}
+                      </td>
                       <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.85rem' }}>
                           {u.phone && <span>📞 {u.phone}</span>}
@@ -393,7 +399,7 @@ export default function AdminUsersPage() {
               <Avatar src={selectedUser.photoUrl} alt={selectedUser.name} size={60} />
               <div>
                 <div style={{ fontSize: '1.5rem' }}>{selectedUser.name} {selectedUser.nickname ? `(${selectedUser.nickname})` : ''}</div>
-                <div style={{ fontSize: '1rem', color: 'var(--accent-primary)' }}>{selectedUser.voiceType} • รหัส: {selectedUser.studentId || selectedUser.id}</div>
+                <div style={{ fontSize: '1rem', color: 'var(--accent-primary)' }}>{selectedUser.voiceType} {selectedUser.bandPosition ? `(${selectedUser.bandPosition})` : ''} • รหัส: {selectedUser.studentId || selectedUser.id}</div>
               </div>
             </h2>
 
@@ -487,6 +493,17 @@ export default function AdminUsersPage() {
                 </select>
               </div>
               <div className="input-group">
+                <label>ตำแหน่งเครื่องดนตรี (ถ้ามี)</label>
+                <select className="input-field" value={editingUser.bandPosition || ''} onChange={e => setEditingUser({...editingUser, bandPosition: e.target.value})} style={{ appearance: 'auto' }}>
+                  <option value="">-- ไม่ได้เล่นเครื่องดนตรีในวง --</option>
+                  <option value="เปียโน">เปียโน</option>
+                  <option value="กลอง">กลอง</option>
+                  <option value="เบส">เบส</option>
+                  <option value="กีต้าร์">กีต้าร์</option>
+                  <option value="คีย์บอร์ด">คีย์บอร์ด</option>
+                </select>
+              </div>
+              <div className="input-group">
                 <label>บทบาท</label>
                 <select className="input-field" value={editingUser.role} onChange={e => setEditingUser({...editingUser, role: e.target.value as UserRole})} style={{ appearance: 'auto' }}>
                   <option value="student">นักเรียน (Student)</option>
@@ -565,6 +582,17 @@ export default function AdminUsersPage() {
                   <option value="เปียโน (Piano)">เปียโน (Piano)</option>
                   <option value="วงสตริง (String Band)">วงสตริง (String Band)</option>
                   <option value="All">All (สำหรับ Admin)</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>ตำแหน่งเครื่องดนตรี (ถ้ามี)</label>
+                <select className="input-field" value={newBandPosition} onChange={e => setNewBandPosition(e.target.value)} style={{ appearance: 'auto' }}>
+                  <option value="">-- ไม่ได้เล่นเครื่องดนตรีในวง --</option>
+                  <option value="เปียโน">เปียโน</option>
+                  <option value="กลอง">กลอง</option>
+                  <option value="เบส">เบส</option>
+                  <option value="กีต้าร์">กีต้าร์</option>
+                  <option value="คีย์บอร์ด">คีย์บอร์ด</option>
                 </select>
               </div>
               <div className="input-group">
