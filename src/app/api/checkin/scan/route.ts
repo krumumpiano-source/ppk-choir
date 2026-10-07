@@ -69,10 +69,17 @@ export async function POST(request: Request) {
         
         // They are checked in, but not checked out. So this scan means Check-Out!
         await db.prepare('UPDATE checkins SET checkoutTime = ? WHERE id = ?').bind(timestamp, existing.id).run();
-        return NextResponse.json({ success: true, action: 'checkout', timestamp, studentName: studentName || student.name, profileUrl: profilePic });
+        return NextResponse.json({ success: true, action: 'checkout', timestamp: timestamp + 'Z', studentName: studentName || student.name, profileUrl: profilePic });
       } else {
-        // Already checked out
-        return NextResponse.json({ error: 'นักเรียนคนนี้เช็คชื่อเข้าและออกไปแล้ว' }, { status: 400 });
+        // Already checked out, but they are scanning again.
+        // This usually means they accidentally checked out early and are now scanning to record the REAL checkout time.
+        // We allow updating the checkout time.
+        const checkinTimeMs = new Date(existing.timestamp).getTime();
+        const nowMs = new Date(timestamp).getTime();
+        // Just in case they double-scan within 5 minutes of their *previous* checkout, we can debounce, 
+        // but since they have to be with the teacher, we can just safely update it.
+        await db.prepare('UPDATE checkins SET checkoutTime = ? WHERE id = ?').bind(timestamp, existing.id).run();
+        return NextResponse.json({ success: true, action: 'checkout', timestamp: timestamp + 'Z', studentName: studentName || student.name, profileUrl: profilePic, message: 'อัปเดตเวลาเช็คเอาท์ใหม่' });
       }
     }
 
