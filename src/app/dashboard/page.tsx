@@ -127,12 +127,21 @@ export default function DashboardPage() {
         </Link>
         
         {(user?.role === 'admin' || user?.role === 'section_leader') && (
-          <Link href="/admin/scanner" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid #feca57' }}>
-            <div style={{ background: 'rgba(254, 202, 87, 0.2)', padding: '1rem', borderRadius: '50%' }}>
-              <Camera size={32} color="#feca57" />
-            </div>
-            <span style={{ fontWeight: 500, color: '#feca57' }}>เครื่องสแกนเช็คชื่อ</span>
-          </Link>
+          <>
+            <Link href="/admin/scanner" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid #feca57' }}>
+              <div style={{ background: 'rgba(254, 202, 87, 0.2)', padding: '1rem', borderRadius: '50%' }}>
+                <Camera size={32} color="#feca57" />
+              </div>
+              <span style={{ fontWeight: 500, color: '#feca57' }}>เครื่องสแกนเช็คชื่อ</span>
+            </Link>
+            
+            <Link href="/admin/attendance" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid var(--accent-primary)' }}>
+              <div style={{ background: 'rgba(230, 185, 128, 0.2)', padding: '1rem', borderRadius: '50%' }}>
+                <Users size={32} color="var(--accent-primary)" />
+              </div>
+              <span style={{ fontWeight: 500, color: 'var(--accent-primary)' }}>สถานะมาซ้อมวันนี้</span>
+            </Link>
+          </>
         )}
         
         <Link href="/library" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer' }}>

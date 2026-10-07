@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         record = await db.prepare(`
           SELECT * FROM checkins 
           WHERE studentId = ? AND sessionId = ? 
-          AND date(timestamp, '+7 hours') = date('now', '+7 hours')
+          AND date(replace(timestamp, 'T', ' '), '+7 hours') = date('now', '+7 hours')
           ORDER BY timestamp DESC
         `).bind(studentId, sessionId).first<any>();
       } else {
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       const existing = await db.prepare(`
         SELECT id FROM checkins 
         WHERE studentId = ? AND sessionId = ? 
-        AND date(timestamp, '+7 hours') = date('now', '+7 hours')
+        AND date(replace(timestamp, 'T', ' '), '+7 hours') = date('now', '+7 hours')
       `).bind(studentId, sessionId).first();
       if (existing) {
         return NextResponse.json({ error: 'คุณได้เช็คชื่อเข้าสำหรับวันนี้ไปแล้ว' }, { status: 400 });

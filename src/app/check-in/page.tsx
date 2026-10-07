@@ -222,6 +222,21 @@ export default function CheckInPage() {
     return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const [qrTimestamp, setQrTimestamp] = useState<number>(Date.now());
+
+  // Update QR timestamp every 15 seconds when showing QR
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (status === 'showing_qr') {
+      interval = setInterval(() => {
+        setQrTimestamp(Date.now());
+      }, 15000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [status]);
+
   if (authLoading || checkingSession) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -233,8 +248,8 @@ export default function CheckInPage() {
   if (!user) return null;
 
   // Optimize QR density: Use a compact format instead of JSON
-  // Format: CHK|<userId>|<sessionId>
-  const qrData = `CHK|${user.id}|${selectedSession?.id}`;
+  // Format: CHK|<userId>|<sessionId>|<timestamp>
+  const qrData = `CHK|${user.id}|${selectedSession?.id}|${qrTimestamp}`;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>

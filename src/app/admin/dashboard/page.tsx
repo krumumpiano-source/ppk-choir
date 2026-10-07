@@ -139,6 +139,18 @@ export default function AdminDashboard() {
           </p>
         </Link>
 
+        <Link href="/admin/attendance" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', border: '1px solid var(--accent-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'rgba(230, 185, 128, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>
+              <Users size={28} color="var(--accent-primary)" />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--accent-primary)' }}>สถานะมาซ้อมวันนี้</h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            ดูรายชื่อคนมาซ้อมและคนที่ยังไม่มา ในกิจกรรมที่กำลังเปิดให้เช็คชื่อวันนี้
+          </p>
+        </Link>
+
         <Link href="/admin/consents" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', border: '1px solid var(--success)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             <div style={{ background: 'rgba(46, 213, 115, 0.1)', padding: '0.8rem', borderRadius: '12px' }}>

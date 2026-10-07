@@ -11,7 +11,7 @@ export default function ScannerPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   
-  const [scanResult, setScanResult] = useState<{success: boolean, name?: string, error?: string, action?: 'checkin' | 'checkout'} | null>(null);
+  const [scanResult, setScanResult] = useState<{success: boolean, name?: string, error?: string, action?: 'checkin' | 'checkout', profileUrl?: string | null} | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [cachedLocation, setCachedLocation] = useState<{lat: number, lng: number} | null>(null);
 
@@ -31,8 +31,17 @@ export default function ScannerPage() {
     }
   }, [user, loading, router]);
 
+  const [lastScanned, setLastScanned] = useState<{text: string, time: number} | null>(null);
+
   const handleScan = async (text: string) => {
     if (isProcessing) return;
+
+    // Prevent scanning the exact same QR code within 5 seconds
+    if (lastScanned && lastScanned.text === text && Date.now() - lastScanned.time < 5000) {
+      return;
+    }
+    
+    setLastScanned({ text, time: Date.now() });
     setIsProcessing(true);
     
     try {
@@ -40,7 +49,7 @@ export default function ScannerPage() {
       if (text.startsWith('CHK|')) {
         const parts = text.split('|');
         if (parts.length >= 3) {
-          data = { type: 'CHOIR_CHECKIN', id: parts[1], session: parts[2] };
+          data = { type: 'CHOIR_CHECKIN', id: parts[1], session: parts[2], qrTimestamp: parts[3] };
         }
       } else {
         try {
@@ -64,14 +73,20 @@ export default function ScannerPage() {
           studentId: data.id,
           studentName: data.name,
           sessionId: data.session,
+          qrTimestamp: data.qrTimestamp,
           lat, lng
         })
       });
 
-      const resultData = await res.json();
+      const resultData = (await res.json()) as any;
       
       if (res.ok && resultData.success) {
-        setScanResult({ success: true, name: resultData.studentName || data.name || data.sid || 'ไม่ทราบชื่อ', action: resultData.action });
+        setScanResult({ 
+          success: true, 
+          name: resultData.studentName || data.name || data.sid || 'ไม่ทราบชื่อ', 
+          action: resultData.action,
+          profileUrl: resultData.profileUrl
+        });
         // Play success beep
         const audio = new Audio('/success.mp3');
         audio.play().catch(e => {}); // ignore error if browser blocks autoplay
@@ -83,11 +98,11 @@ export default function ScannerPage() {
       setScanResult({ success: false, error: e.message || 'QR Code ไม่ถูกต้อง หรืออ่านไม่ได้' });
     }
 
-    // Reset quickly so they can scan the next person (1.2 seconds)
+    // Reset quickly so they can scan the next person (1.5 seconds to give time to see profile pic)
     setTimeout(() => {
       setScanResult(null);
       setIsProcessing(false);
-    }, 1200);
+    }, 1500);
   };
 
   if (loading || !user) return <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="animate-spin" size={48} /></div>;
@@ -135,6 +150,15 @@ export default function ScannerPage() {
             {scanResult?.success && (
               <>
                 <CheckCircle size={64} color={scanResult.action === 'checkout' ? '#feca57' : 'var(--success)'} style={{ marginBottom: '1rem' }} />
+                
+                {scanResult.profileUrl && (
+                  <img 
+                    src={scanResult.profileUrl} 
+                    alt={scanResult.name} 
+                    style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${scanResult.action === 'checkout' ? '#feca57' : 'var(--success)'}`, marginBottom: '1rem', background: '#333' }} 
+                  />
+                )}
+                
                 <h3 style={{ color: scanResult.action === 'checkout' ? '#feca57' : 'var(--success)', margin: '0 0 0.5rem 0' }}>
                   {scanResult.action === 'checkout' ? 'เช็คชื่อออกสำเร็จ!' : 'เช็คชื่อเข้าสำเร็จ!'}
                 </h3>

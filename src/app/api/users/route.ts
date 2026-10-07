@@ -11,8 +11,10 @@ export async function GET() {
   try {
     const token = (await cookies()).get('token')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const payload = await verifyToken(token);
-    if (!payload || (payload as any).role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const payload = await verifyToken(token) as any;
+    if (!payload || (payload.role !== 'admin' && payload.role !== 'section_leader')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const db = getDb();
     const result = await db.prepare('SELECT * FROM users ORDER BY createdAt DESC').all<any>();
     
