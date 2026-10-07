@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const [advisorName, setAdvisorName] = useState('');
   
   const [room, setRoom] = useState('');
-  const [voiceType, setVoiceType] = useState<VoiceType | 'นักดนตรี (Instrumentalist)' | ''>('');
+  const [voiceType, setVoiceType] = useState<VoiceType | 'เปียโน (Piano)' | 'วงสตริง (String Band)' | ''>('');
   const [bandPosition, setBandPosition] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -93,11 +93,11 @@ export default function ProfilePage() {
     }
 
     if (!voiceType) {
-      toast.error('กรุณาเลือกแนวเสียง หรือเลือก "นักดนตรี" หากเล่นดนตรีอย่างเดียว');
+      toast.error('กรุณาเลือกแนวเสียง หรือตำแหน่งในวง');
       return;
     }
 
-    if (voiceType === 'นักดนตรี (Instrumentalist)' && !bandPosition) {
+    if (voiceType === 'วงสตริง (String Band)' && !bandPosition) {
       toast.error('กรุณาเลือกตำแหน่งเครื่องดนตรี');
       return;
     }
@@ -268,13 +268,13 @@ export default function ProfilePage() {
           </div>
 
           <div className="input-group">
-            <label>แนวเสียง / ตำแหน่งในวง (นักเรียนวงสตริงให้เลือก &quot;นักดนตรี&quot;)</label>
+            <label>แนวเสียง / ตำแหน่งในวง</label>
             <select 
               value={voiceType} 
               required
               onChange={(e) => {
                 setVoiceType(e.target.value as any);
-                if (e.target.value !== 'นักดนตรี (Instrumentalist)') {
+                if (e.target.value !== 'วงสตริง (String Band)') {
                   setBandPosition('');
                 }
               }}
@@ -296,13 +296,14 @@ export default function ProfilePage() {
                 <option value="Baritone">Baritone (เสียงกลางชาย)</option>
                 <option value="Bass">Bass</option>
               </optgroup>
-              <optgroup label="อื่นๆ">
-                <option value="นักดนตรี (Instrumentalist)">นักดนตรี (เล่นดนตรีอย่างเดียว ไม่ร้อง)</option>
+              <optgroup label="ดนตรี">
+                <option value="เปียโน (Piano)">เปียโน (Piano)</option>
+                <option value="วงสตริง (String Band)">วงสตริง (String Band)</option>
               </optgroup>
             </select>
           </div>
 
-          {voiceType === 'นักดนตรี (Instrumentalist)' && (
+          {voiceType === 'วงสตริง (String Band)' && (
             <div className="input-group animate-fade-in">
               <label>ตำแหน่งเครื่องดนตรี</label>
               <select 

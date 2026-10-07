@@ -115,7 +115,7 @@ export default function VoiceAllocationPage() {
     // Filter students with valid auditions or registered voiceTypes, EXCLUDING Instrumentalists
     const auditioned = studentList.filter((s) => 
       (s.audition || (s.voiceType && s.voiceType !== 'All' && s.voiceType !== 'Unassigned' && s.voiceType !== '')) &&
-      s.voiceType !== 'นักดนตรี (Instrumentalist)'
+      s.voiceType !== 'เปียโน (Piano)' && s.voiceType !== 'วงสตริง (String Band)'
     ).map((s) => {
       let lowestNote = 'C4';
       let highestNote = 'C5';
