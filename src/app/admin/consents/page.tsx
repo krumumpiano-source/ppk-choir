@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, CheckCircle, XCircle, Search, Download, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle, XCircle, Search, Download, UploadCloud, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminConsentsPage() {
@@ -15,6 +15,8 @@ export default function AdminConsentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [docImage, setDocImage] = useState<string | null>(null);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || (user.role !== 'admin' && user.role !== 'section_leader'))) {
@@ -31,6 +33,13 @@ export default function AdminConsentsPage() {
           setConsents(data.consents || []);
         } else {
           toast.error(data.error || 'โหลดข้อมูลล้มเหลว');
+        }
+        
+        // Fetch document template image
+        const docRes = await fetch('/api/admin/settings?id=consent_document_image');
+        const docData = await docRes.json();
+        if (docRes.ok && docData.data) {
+          setDocImage(docData.data);
         }
       } catch (e) {
         toast.error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
@@ -93,6 +102,7 @@ export default function AdminConsentsPage() {
             });
             if (res.ok) {
               toast.success('อัพเดตฟอร์มเอกสารเรียบร้อยแล้ว');
+              setDocImage(compressedDataUrl);
             } else {
               toast.error('เกิดข้อผิดพลาดในการอัพเดต');
             }
@@ -159,7 +169,14 @@ export default function AdminConsentsPage() {
             />
           </div>
           
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <button 
+              onClick={() => docImage ? setIsDocModalOpen(true) : toast.error('ยังไม่มีรูปเอกสาร')}
+              className="btn-secondary" 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <Eye size={18} /> ดูเอกสาร (ตัวจริง)
+            </button>
             <Link href="/admin/consents/print?id=all" target="_blank" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
               <Download size={18} /> พิมพ์ทั้งหมด
             </Link>
@@ -232,6 +249,47 @@ export default function AdminConsentsPage() {
           </table>
         </div>
       </div>
+
+      {/* Document Image Modal */}
+      {isDocModalOpen && docImage && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '2rem'
+        }} onClick={() => setIsDocModalOpen(false)}>
+          <div 
+            style={{ 
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              background: '#fff',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setIsDocModalOpen(false)}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', cursor: 'pointer', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <XCircle size={24} />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={docImage} alt="Consent Document Template" style={{ width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain' }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

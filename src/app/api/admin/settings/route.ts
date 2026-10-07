@@ -4,6 +4,24 @@ import { requireRole, serverError } from '@/lib/auth-guard';
 
 export const runtime = 'edge';
 
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 });
+    }
+
+    const db = getDb();
+    const result = await db.prepare('SELECT data FROM settings WHERE id = ?').bind(id).first<{data: string}>();
+    
+    return NextResponse.json({ data: result?.data || null });
+  } catch (error: any) {
+    return serverError(error);
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const auth = await requireRole(['admin']);
