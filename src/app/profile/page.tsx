@@ -268,18 +268,13 @@ export default function ProfilePage() {
           </div>
 
           <div className="input-group">
-            <label>แนวเสียง / ตำแหน่งในวง</label>
+            <label>แนวเสียงหลัก</label>
             <select 
               value={voiceType} 
               required
-              onChange={(e) => {
-                setVoiceType(e.target.value as any);
-                if (e.target.value !== 'วงสตริง (String Band)') {
-                  setBandPosition('');
-                }
-              }}
+              onChange={(e) => setVoiceType(e.target.value as any)}
             >
-              <option value="">-- เลือกแนวเสียง / นักดนตรี --</option>
+              <option value="">-- เลือกแนวเสียงหลัก --</option>
               <optgroup label="Soprano (เสียงสูงหญิง)">
                 <option value="Soprano 1">Soprano 1</option>
                 <option value="Soprano 2">Soprano 2</option>
@@ -296,28 +291,26 @@ export default function ProfilePage() {
                 <option value="Baritone">Baritone (เสียงกลางชาย)</option>
                 <option value="Bass">Bass</option>
               </optgroup>
-              <optgroup label="ดนตรี">
+              <optgroup label="ดนตรี (เล่นอย่างเดียว ไม่ร้อง)">
                 <option value="เปียโน (Piano)">เปียโน (Piano)</option>
                 <option value="วงสตริง (String Band)">วงสตริง (String Band)</option>
               </optgroup>
             </select>
           </div>
 
-          {voiceType === 'วงสตริง (String Band)' && (
-            <div className="input-group animate-fade-in">
-              <label>ตำแหน่งเครื่องดนตรี</label>
-              <select 
-                value={bandPosition} 
-                onChange={(e) => setBandPosition(e.target.value)}
-                required
-              >
-                <option value="">-- เลือกเครื่องดนตรี --</option>
-                {BAND_POSITIONS.map(pos => (
-                  <option key={pos} value={pos}>{pos}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="input-group animate-fade-in">
+            <label>ตำแหน่งเครื่องดนตรี <span style={{color: 'var(--text-secondary)', fontSize: '0.8rem'}}>(เลือกถ้าคุณเล่นเครื่องดนตรีด้วย)</span></label>
+            <select 
+              value={bandPosition} 
+              onChange={(e) => setBandPosition(e.target.value)}
+              required={voiceType === 'วงสตริง (String Band)'}
+            >
+              <option value="">-- ไม่ได้เล่นเครื่องดนตรีในวง --</option>
+              {BAND_POSITIONS.map(pos => (
+                <option key={pos} value={pos}>{pos}</option>
+              ))}
+            </select>
+          </div>
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div className="input-group" style={{ flex: 1 }}>
