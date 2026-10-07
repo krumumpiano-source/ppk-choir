@@ -112,6 +112,15 @@ export default function AttendanceTodayPage() {
 
   const attendanceList = getAttendanceList();
   
+  const formatTime = (iso: string | null) => {
+    if (!iso) return '-';
+    let safeIso = iso;
+    if (!iso.endsWith('Z') && !iso.includes('+')) {
+      safeIso = iso.replace(' ', 'T') + 'Z';
+    }
+    return new Date(safeIso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  };
+
   const presentCount = attendanceList.filter(s => s.attendanceStatus === 'checked_in' || s.attendanceStatus === 'checked_out').length;
   const absentCount = attendanceList.filter(s => s.attendanceStatus === 'absent').length;
 
@@ -191,10 +200,10 @@ export default function AttendanceTodayPage() {
                         )}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
-                        {student.checkinRecord?.timestamp ? new Date(student.checkinRecord.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                        {formatTime(student.checkinRecord?.timestamp)}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
-                        {student.checkinRecord?.checkoutTime ? new Date(student.checkinRecord.checkoutTime).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                        {formatTime(student.checkinRecord?.checkoutTime)}
                       </td>
                     </tr>
                   ))}

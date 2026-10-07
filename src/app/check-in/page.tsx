@@ -219,7 +219,11 @@ export default function CheckInPage() {
 
   const formatTime = (iso: string | null) => {
     if (!iso) return '-';
-    return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    let safeIso = iso;
+    if (!iso.endsWith('Z') && !iso.includes('+')) {
+      safeIso = iso.replace(' ', 'T') + 'Z';
+    }
+    return new Date(safeIso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
   };
 
   const [qrTimestamp, setQrTimestamp] = useState<number>(Date.now());

@@ -45,7 +45,7 @@ export default function LiveMapComponent({ center, students }: LiveMapComponentP
             <div style={{ padding: '0.5rem', fontFamily: 'var(--font-body)' }}>
               <h4 style={{ margin: '0 0 0.5rem 0', color: '#1a1a24', fontSize: '1.1rem' }}>{s.name}</h4>
               <p style={{ margin: '0 0 1rem 0', color: '#666', fontSize: '0.9rem' }}>
-                อัปเดต: {new Date(s.lastUpdate).toLocaleTimeString('th-TH')}
+                อัปเดต: {new Date((s.lastUpdate && !s.lastUpdate.endsWith('Z') && !s.lastUpdate.includes('+')) ? s.lastUpdate.replace(' ', 'T') + 'Z' : s.lastUpdate).toLocaleTimeString('th-TH')}
               </p>
               
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
