@@ -162,6 +162,7 @@ export default function AdminUsersPage() {
       nickname: editingUser.nickname,
       studentId: editingUser.studentId,
       voiceType: editingUser.voiceType,
+      bandPosition: editingUser.bandPosition || '',
       role: editingUser.role
     });
     
