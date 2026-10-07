@@ -57,6 +57,7 @@ export default function AdminUsersPage() {
   // Modal State
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
 
   // Form State
   const [newId, setNewId] = useState('');
@@ -97,6 +98,7 @@ export default function AdminUsersPage() {
       toast.success('เพิ่มผู้ใช้งานสำเร็จ');
       setNewId('');
       setNewName('');
+      setIsAddUserModalOpen(false);
       loadUsers();
     } else {
       toast.error(`ข้อผิดพลาด: ${res.error}`);
@@ -192,56 +194,19 @@ export default function AdminUsersPage() {
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
         
-        {/* Form Add User */}
-        <div className="glass-panel animate-fade-in" style={{ flex: '1 1 320px', maxWidth: '500px' }}>
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <UserPlus size={20} color="var(--accent-primary)" />
-            เพิ่มผู้ใช้งานใหม่
-          </h2>
-          <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="input-group">
-              <label>รหัสนักเรียน / ID</label>
-              <input type="text" className="input-field" value={newId} onChange={e => setNewId(e.target.value)} placeholder="เช่น 65001" required />
-            </div>
-            <div className="input-group">
-              <label>ชื่อ-สกุล</label>
-              <input type="text" className="input-field" value={newName} onChange={e => setNewName(e.target.value)} placeholder="เช่น สมชาย ใจดี" required />
-            </div>
-            <div className="input-group">
-              <label>แนวเสียง</label>
-              <select className="input-field" value={newVoiceType} onChange={e => setNewVoiceType(e.target.value as VoiceType)} style={{ appearance: 'auto' }}>
-                <option value="Soprano 1">Soprano 1</option>
-                <option value="Soprano 2">Soprano 2</option>
-                <option value="Alto 1">Alto 1</option>
-                <option value="Alto 2">Alto 2</option>
-                <option value="Tenor 1">Tenor 1</option>
-                <option value="Tenor 2">Tenor 2</option>
-                <option value="Baritone">Baritone</option>
-                <option value="Bass">Bass</option>
-                <option value="นักดนตรี (Instrumentalist)">นักดนตรี (Instrumentalist)</option>
-                <option value="All">All (สำหรับ Admin)</option>
-              </select>
-            </div>
-            <div className="input-group">
-              <label>บทบาท</label>
-              <select className="input-field" value={newRole} onChange={e => setNewRole(e.target.value as UserRole)} style={{ appearance: 'auto' }}>
-                <option value="student">นักเรียน (Student)</option>
-                <option value="section_leader">หัวหน้าพาร์ท (Section Leader)</option>
-                <option value="admin">ผู้ดูแลระบบ (Admin)</option>
-              </select>
-            </div>
-            
-            <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ marginTop: '0.5rem' }}>
-              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              บันทึกข้อมูล
-            </button>
-          </form>
-        </div>
-
         {/* User List */}
-        <div className="glass-panel animate-fade-in delay-1" style={{ flex: '3 1 800px', width: '100%', overflow: 'hidden' }}>
+        <div className="glass-panel animate-fade-in delay-1" style={{ width: '100%', overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <h2 style={{ fontSize: '1.2rem', margin: 0 }}>รายชื่อผู้ใช้ทั้งหมด ({filteredUsers.length})</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <h2 style={{ fontSize: '1.2rem', margin: 0 }}>รายชื่อผู้ใช้ทั้งหมด ({filteredUsers.length})</h2>
+              <button 
+                onClick={() => setIsAddUserModalOpen(true)}
+                className="btn-primary" 
+                style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <UserPlus size={16} /> เพิ่มผู้ใช้งานใหม่
+              </button>
+            </div>
             
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <div className="input-group" style={{ margin: 0, position: 'relative' }}>
@@ -351,28 +316,28 @@ export default function AdminUsersPage() {
                         {!u.status && <span style={{ color: 'var(--success)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>อนุมัติแล้ว</span>}
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                          <button onClick={() => setSelectedUser(u)} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer' }} title="ดูรายละเอียด">
-                            <Eye size={18} />
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                          <button onClick={() => setSelectedUser(u)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(230, 185, 128, 0.1)', border: '1px solid rgba(230, 185, 128, 0.3)', color: 'var(--accent-primary)', cursor: 'pointer', transition: 'all 0.2s' }} title="ดูรายละเอียด">
+                            <Eye size={16} />
                           </button>
-                          <button onClick={() => setEditingUser({...u})} style={{ background: 'none', border: 'none', color: '#7bed9f', cursor: 'pointer', marginLeft: '0.2rem' }} title="แก้ไข">
-                            <Edit size={18} />
+                          <button onClick={() => setEditingUser({...u})} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(123, 237, 159, 0.1)', border: '1px solid rgba(123, 237, 159, 0.3)', color: '#7bed9f', cursor: 'pointer', transition: 'all 0.2s' }} title="แก้ไขข้อมูล">
+                            <Edit size={16} />
                           </button>
                           {(!u.status || u.status === 'pending') && (
-                            <button onClick={() => handleStatusChange(u.id, 'approved')} style={{ background: 'none', border: 'none', color: 'var(--success)', cursor: 'pointer' }} title="อนุมัติ">
-                              <Check size={18} />
+                            <button onClick={() => handleStatusChange(u.id, 'approved')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(46, 213, 115, 0.1)', border: '1px solid rgba(46, 213, 115, 0.3)', color: 'var(--success)', cursor: 'pointer', transition: 'all 0.2s' }} title="อนุมัติ">
+                              <Check size={16} />
                             </button>
                           )}
                           {(!u.status || u.status === 'pending') && (
-                            <button onClick={() => handleStatusChange(u.id, 'rejected')} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer' }} title="ไม่อนุมัติ">
-                              <X size={18} />
+                            <button onClick={() => handleStatusChange(u.id, 'rejected')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.3)', color: 'var(--danger)', cursor: 'pointer', transition: 'all 0.2s' }} title="ไม่อนุมัติ">
+                              <X size={16} />
                             </button>
                           )}
-                          <button onClick={() => handleResetPassword(u.id, u.studentId || '123456')} style={{ background: 'none', border: 'none', color: '#feca57', cursor: 'pointer', marginLeft: '0.2rem' }} title="รีเซ็ตรหัสผ่านเป็นรหัสประจำตัวนักเรียน">
-                            <Key size={18} />
+                          <button onClick={() => handleResetPassword(u.id, u.studentId || '123456')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(254, 202, 87, 0.1)', border: '1px solid rgba(254, 202, 87, 0.3)', color: '#feca57', cursor: 'pointer', transition: 'all 0.2s' }} title="รีเซ็ตรหัสผ่านเป็นรหัสประจำตัวนักเรียน">
+                            <Key size={16} />
                           </button>
-                          <button onClick={() => handleDelete(u.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', marginLeft: '0.2rem' }} title="ลบ">
-                            <Trash2 size={18} />
+                          <button onClick={() => handleDelete(u.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.3)', color: 'var(--danger)', cursor: 'pointer', transition: 'all 0.2s' }} title="ลบผู้ใช้งาน">
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -536,6 +501,83 @@ export default function AdminUsersPage() {
                   บันทึกการแก้ไข
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Add User Modal */}
+      {isAddUserModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }} onClick={() => setIsAddUserModalOpen(false)}>
+          <div 
+            className="glass-panel" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '500px', 
+              position: 'relative',
+              padding: '2rem'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setIsAddUserModalOpen(false)}
+              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+            >
+              <X size={24} />
+            </button>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <UserPlus size={20} color="var(--accent-primary)" />
+              เพิ่มผู้ใช้งานใหม่
+            </h2>
+            <form onSubmit={handleAddUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="input-group">
+                <label>รหัสนักเรียน / ID</label>
+                <input type="text" className="input-field" value={newId} onChange={e => setNewId(e.target.value)} placeholder="เช่น 65001" required />
+              </div>
+              <div className="input-group">
+                <label>ชื่อ-สกุล</label>
+                <input type="text" className="input-field" value={newName} onChange={e => setNewName(e.target.value)} placeholder="เช่น สมชาย ใจดี" required />
+              </div>
+              <div className="input-group">
+                <label>แนวเสียง</label>
+                <select className="input-field" value={newVoiceType} onChange={e => setNewVoiceType(e.target.value as VoiceType)} style={{ appearance: 'auto' }}>
+                  <option value="Soprano 1">Soprano 1</option>
+                  <option value="Soprano 2">Soprano 2</option>
+                  <option value="Alto 1">Alto 1</option>
+                  <option value="Alto 2">Alto 2</option>
+                  <option value="Tenor 1">Tenor 1</option>
+                  <option value="Tenor 2">Tenor 2</option>
+                  <option value="Baritone">Baritone</option>
+                  <option value="Bass">Bass</option>
+                  <option value="นักดนตรี (Instrumentalist)">นักดนตรี (Instrumentalist)</option>
+                  <option value="All">All (สำหรับ Admin)</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>บทบาท</label>
+                <select className="input-field" value={newRole} onChange={e => setNewRole(e.target.value as UserRole)} style={{ appearance: 'auto' }}>
+                  <option value="student">นักเรียน (Student)</option>
+                  <option value="section_leader">หัวหน้าพาร์ท (Section Leader)</option>
+                  <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+                </select>
+              </div>
+              
+              <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ marginTop: '0.5rem' }}>
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                บันทึกข้อมูล
+              </button>
             </form>
           </div>
         </div>

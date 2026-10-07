@@ -17,7 +17,8 @@ import {
   LogOut,
   Mic,
   UsersRound,
-  PieChart
+  PieChart,
+  Camera
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -45,6 +46,8 @@ export default function Sidebar() {
 
   const sectionLeaderLinks = [
     { name: 'หน้าแรก', path: '/dashboard', icon: Home },
+    { name: 'เครื่องสแกนเช็คชื่อ', path: '/admin/scanner', icon: Camera },
+    { name: 'สถานะมาซ้อมวันนี้', path: '/admin/attendance', icon: Users },
     { name: 'เช็คชื่อกิจกรรม', path: '/check-in', icon: MapPin },
     { name: 'คัดเลือกช่วงเสียง', path: '/admin/auditions', icon: Mic },
     { name: 'คลังสื่อ', path: '/library', icon: Music },

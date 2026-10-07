@@ -177,9 +177,30 @@ export default function ScannerPage() {
         )}
       </div>
 
-      <p style={{ marginTop: '2rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5' }}>
+      <p style={{ marginTop: '2rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: '1.5', marginBottom: '1rem' }}>
         ให้หัวหน้าพาร์ทหรือผู้ดูแลระบบนำกล้องไปจ่อที่ QR Code บนจอมือถือของนักเรียนเพื่อ <strong>เช็คชื่อเข้าซ้อม</strong> หรือ <strong>เช็คชื่อออก (กลับบ้าน)</strong>
       </p>
+
+      <Link 
+        href="/admin/attendance" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: '0.5rem', 
+          padding: '1rem 2rem', 
+          background: 'rgba(230, 185, 128, 0.1)',
+          textDecoration: 'none', 
+          color: 'var(--accent-primary)', 
+          borderRadius: '50px', 
+          border: '1px solid var(--accent-primary)',
+          fontWeight: 'bold',
+          width: '100%',
+          maxWidth: '400px'
+        }}
+      >
+        ดูสถานะมาซ้อมวันนี้ / รายชื่อนักเรียน
+      </Link>
 
     </div>
   );

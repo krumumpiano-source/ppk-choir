@@ -36,8 +36,10 @@ export default function AttendanceTodayPage() {
           const resUsers = await fetch('/api/users');
           if (resUsers.ok) {
             const dataUsers = (await resUsers.json()) as any;
-            // Filter only approved students
-            const activeStudents = (dataUsers.users || []).filter((u: any) => u.role === 'student' && u.status === 'approved');
+            // Filter only approved students and section leaders
+            const activeStudents = (dataUsers.users || []).filter((u: any) => 
+              (u.role === 'student' || u.role === 'section_leader') && u.status === 'approved'
+            );
             setStudents(activeStudents);
           }
 
@@ -80,19 +82,13 @@ export default function AttendanceTodayPage() {
     if (session.targetGroups && session.targetGroups.length > 0 && !session.targetGroups.includes('All')) {
       targetStudents = students.filter(s => 
         session.targetGroups.includes(s.voiceType) || 
-        (s.bandPosition && session.targetGroups.includes(s.bandPosition))
+        (s.bandPosition && session.targetGroups.includes(s.bandPosition)) ||
+        checkins.some(c => c.studentId === s.id) // Include if they checked in regardless of target group
       );
     }
 
     return targetStudents.map(student => {
-      // Look for a checkin record today for this student
-      const today = new Date();
-      // Adjust server time string to Date object
-      const studentCheckins = checkins.filter(c => {
-        if (c.studentId !== student.id) return false;
-        const cDate = new Date(c.timestamp);
-        return cDate.getDate() === today.getDate() && cDate.getMonth() === today.getMonth() && cDate.getFullYear() === today.getFullYear();
-      });
+      const studentCheckins = checkins.filter(c => c.studentId === student.id);
       
       const latestCheckin = studentCheckins.length > 0 ? studentCheckins[0] : null;
       

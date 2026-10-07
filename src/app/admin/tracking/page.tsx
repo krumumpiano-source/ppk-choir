@@ -58,7 +58,11 @@ export default function LiveTrackingPage() {
               if (!c.liveLat && !c.location) return false;
               
               // Filter out check-ins that are older than 12 hours (stuck pins from previous days)
-              const checkinTime = new Date(c.timestamp).getTime();
+              let safeIso = c.timestamp;
+              if (safeIso && !safeIso.endsWith('Z') && !safeIso.includes('+')) {
+                safeIso = safeIso.replace(' ', 'T') + 'Z';
+              }
+              const checkinTime = new Date(safeIso).getTime();
               if (now - checkinTime > 12 * 60 * 60 * 1000) return false;
               
               return true;
