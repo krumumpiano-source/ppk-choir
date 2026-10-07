@@ -12,6 +12,7 @@ export default function AttendanceTodayPage() {
   const router = useRouter();
 
   const [activeSessions, setActiveSessions] = useState<ScheduledSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [checkins, setCheckins] = useState<CheckInRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,8 +41,13 @@ export default function AttendanceTodayPage() {
             setStudents(activeStudents);
           }
 
-          // 3. Fetch checkins for the first active session
-          const activeSessionId = sessions[0].id;
+          // Set default selected session if none is selected
+          let activeSessionId = selectedSessionId;
+          if (!activeSessionId) {
+            activeSessionId = sessions[0].id;
+            setSelectedSessionId(activeSessionId);
+          }
+          
           if (activeSessionId) {
             const checkinData = await getSessionCheckIns(activeSessionId);
             setCheckins(checkinData);
@@ -60,19 +66,22 @@ export default function AttendanceTodayPage() {
       const interval = setInterval(loadData, 30000);
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [user, selectedSessionId]);
 
   if (authLoading || !user) return null;
 
   // Process data to map each student to their checkin status
   const getAttendanceList = () => {
-    if (activeSessions.length === 0) return [];
-    const session = activeSessions[0];
+    if (activeSessions.length === 0 || !selectedSessionId) return [];
+    const session = activeSessions.find(s => s.id === selectedSessionId) || activeSessions[0];
 
     // Filter students based on session targetGroups if needed
     let targetStudents = students;
     if (session.targetGroups && session.targetGroups.length > 0 && !session.targetGroups.includes('All')) {
-      targetStudents = students.filter(s => session.targetGroups.includes(s.voiceType) || session.targetGroups.includes(s.bandPosition));
+      targetStudents = students.filter(s => 
+        session.targetGroups.includes(s.voiceType) || 
+        (s.bandPosition && session.targetGroups.includes(s.bandPosition))
+      );
     }
 
     return targetStudents.map(student => {
@@ -146,7 +155,31 @@ export default function AttendanceTodayPage() {
         ) : (
           <>
             <div style={{ marginBottom: '2rem' }}>
-              <h2 style={{ margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>กิจกรรม: {activeSessions[0].name}</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>
+                  กิจกรรม: {activeSessions.find(s => s.id === selectedSessionId)?.name || activeSessions[0].name}
+                </h2>
+                {activeSessions.length > 1 && (
+                  <select 
+                    value={selectedSessionId || ''} 
+                    onChange={(e) => setSelectedSessionId(e.target.value)}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {activeSessions.map(s => (
+                      <option key={s.id} value={s.id} style={{ color: '#000' }}>{s.name} ({s.targetGroups.includes('All') ? 'รวม' : s.targetGroups.join(', ')})</option>
+                    ))}
+                  </select>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '150px' }}>
                   <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>จำนวนนักเรียนเป้าหมาย</p>

@@ -33,6 +33,7 @@ export async function GET() {
       address: row.address,
       advisorName: row.advisorName,
       voiceType: row.voiceType,
+      bandPosition: row.bandPosition,
       role: row.role,
       status: row.status || 'approved',
       photoUrl: row.profileUrl,
