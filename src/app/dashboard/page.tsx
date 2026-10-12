@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut, Settings, Camera } from 'lucide-react';
+import { User as UserIcon, Mic2, MapPin, Library, Award, Flame, Users, Calendar, Activity, Loader2, LogOut, Settings, Camera, CalendarX } from 'lucide-react';
 import InstallPwaButton from '@/components/InstallPwaButton';
 import { getStudentStats, StudentStats } from '../../lib/services/gamification';
 import { getStudentPractices, PracticeRecord } from '../../lib/services/practice';
@@ -117,6 +117,13 @@ export default function DashboardPage() {
             <Calendar size={32} color="var(--success)" />
           </div>
           <span style={{ fontWeight: 500 }}>ประวัติการเข้าซ้อม</span>
+        </Link>
+
+        <Link href="/leave" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid rgba(255, 118, 117, 0.3)' }}>
+          <div style={{ background: 'rgba(255, 118, 117, 0.15)', padding: '1rem', borderRadius: '50%' }}>
+            <CalendarX size={32} color="#ff7675" />
+          </div>
+          <span style={{ fontWeight: 500, color: '#ff7675' }}>แจ้งลาซ้อม / ขาดกิจกรรม</span>
         </Link>
         
         <Link href="/consent" className="glass-panel animate-fade-in delay-1" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textDecoration: 'none', padding: '1.5rem', transition: 'transform 0.2s', cursor: 'pointer', border: '1px solid #0984e3' }}>

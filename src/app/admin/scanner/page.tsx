@@ -49,7 +49,14 @@ export default function ScannerPage() {
       if (text.startsWith('CHK|')) {
         const parts = text.split('|');
         if (parts.length >= 3) {
-          data = { type: 'CHOIR_CHECKIN', id: parts[1], session: parts[2], qrTimestamp: parts[3] };
+          data = { 
+            type: 'CHOIR_CHECKIN', 
+            id: parts[1], 
+            session: parts[2], 
+            qrTimestamp: parts[3],
+            deviceId: parts[4] || '',
+            deviceModel: parts[5] ? decodeURIComponent(parts[5]) : ''
+          };
         }
       } else {
         try {
@@ -74,6 +81,8 @@ export default function ScannerPage() {
           studentName: data.name,
           sessionId: data.session,
           qrTimestamp: data.qrTimestamp,
+          deviceId: data.deviceId,
+          deviceModel: data.deviceModel,
           lat, lng
         })
       });
@@ -85,7 +94,10 @@ export default function ScannerPage() {
           success: true, 
           name: resultData.studentName || data.name || data.sid || 'ไม่ทราบชื่อ', 
           action: resultData.action,
-          profileUrl: resultData.profileUrl
+          profileUrl: resultData.profileUrl,
+          isSuspicious: resultData.isSuspicious,
+          deviceNote: resultData.deviceNote,
+          deviceModel: resultData.deviceModel || data.deviceModel
         });
         // Play success beep
         const audio = new Audio('/success.mp3');
@@ -98,11 +110,11 @@ export default function ScannerPage() {
       setScanResult({ success: false, error: e.message || 'QR Code ไม่ถูกต้อง หรืออ่านไม่ได้' });
     }
 
-    // Reset quickly so they can scan the next person (1.5 seconds to give time to see profile pic)
+    // Reset overlay (allow extra time if suspicious alert is displayed)
     setTimeout(() => {
       setScanResult(null);
       setIsProcessing(false);
-    }, 1500);
+    }, 2000);
   };
 
   if (loading || !user) return <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="animate-spin" size={48} /></div>;
@@ -162,7 +174,17 @@ export default function ScannerPage() {
                 <h3 style={{ color: scanResult.action === 'checkout' ? '#feca57' : 'var(--success)', margin: '0 0 0.5rem 0' }}>
                   {scanResult.action === 'checkout' ? 'เช็คชื่อออกสำเร็จ!' : 'เช็คชื่อเข้าสำเร็จ!'}
                 </h3>
-                <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{scanResult.name}</p>
+                <p style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 0.5rem 0' }}>{scanResult.name}</p>
+                {scanResult.deviceModel && (
+                  <p style={{ fontSize: '0.85rem', color: '#ccc', margin: '0 0 0.3rem 0' }}>
+                    📱 {scanResult.deviceModel}
+                  </p>
+                )}
+                {scanResult.isSuspicious === 1 && (
+                  <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.8rem', background: 'rgba(255, 71, 87, 0.25)', border: '1px solid #ff4757', borderRadius: '8px', color: '#ff6b81', fontSize: '0.8rem' }}>
+                    {scanResult.deviceNote || '⚠️ อุปกรณ์นี้อาจไม่ใช่เครื่องของนักเรียน'}
+                  </div>
+                )}
               </>
             )}
 

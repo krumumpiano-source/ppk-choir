@@ -11,25 +11,41 @@ export async function POST(request: Request) {
     if (auth.error) return auth.error;
 
     const body = await request.json() as any;
-    const { studentId, studentName, sessionId, qrTimestamp } = body;
+    const { studentId, studentName, sessionId, qrTimestamp, deviceId, deviceModel } = body;
     
     if (!studentId || !sessionId) {
       return NextResponse.json({ error: 'ข้อมูล QR Code ไม่สมบูรณ์' }, { status: 400 });
     }
 
-    // 1. Validate Dynamic QR Code Timestamp (Required to prevent screenshot sharing)
+    // Validate Dynamic QR Code Timestamp (Required to prevent screenshot sharing)
     if (!qrTimestamp) {
       return NextResponse.json({ error: 'QR Code รูปแบบเก่าไม่อนุญาตให้ใช้งาน กรุณารีเฟรชหน้าเว็บเพื่อรับ QR ล่าสุด' }, { status: 400 });
     }
     
     const now = Date.now();
     const qrTime = parseInt(qrTimestamp, 10);
-    // If QR code is older than 60 seconds (60000 ms) or invalid, reject it
     if (isNaN(qrTime) || now - qrTime > 60000) {
       return NextResponse.json({ error: 'QR Code หมดอายุแล้ว (กรุณาให้ผู้เรียนเปิดหน้าเว็บใหม่เพื่อรับ QR ล่าสุด)' }, { status: 400 });
     }
 
     const db = getDb();
+    const { ensureSystemTables } = await import('@/lib/db-schema');
+    const { verifyAndRegisterDevice } = await import('@/lib/device-server');
+    await ensureSystemTables(db);
+
+    const clientIp = request.headers.get('cf-connecting-ip') || 
+                     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     '';
+
+    const { isSuspicious, deviceNote } = await verifyAndRegisterDevice(
+      db,
+      studentId,
+      studentName || 'นักเรียน',
+      deviceId,
+      deviceModel,
+      null,
+      clientIp
+    );
     
     // Check if session exists and is active
     const session = await db.prepare('SELECT * FROM sessions WHERE id = ?').bind(sessionId).first();
@@ -107,14 +123,24 @@ export async function POST(request: Request) {
     const locationObj = { lat: scannerLat, lng: scannerLng };
 
     await db.prepare(`
-      INSERT INTO checkins (id, studentId, studentName, sessionId, timestamp, location, liveLat, liveLng, devicePlatform, room)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO checkins (id, studentId, studentName, sessionId, timestamp, location, liveLat, liveLng, devicePlatform, room, deviceId, deviceModel, isSuspicious, deviceNote)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, studentId, studentName || student.name, sessionId, timestamp,
-      JSON.stringify(locationObj), scannerLat, scannerLng, 'scanner', room
+      JSON.stringify(locationObj), scannerLat, scannerLng, deviceModel || 'scanner', room,
+      deviceId || null, deviceModel || null, isSuspicious, deviceNote
     ).run();
 
-    return NextResponse.json({ success: true, action: 'checkin', timestamp, studentName: studentName || student.name, profileUrl: profilePic });
+    return NextResponse.json({ 
+      success: true, 
+      action: 'checkin', 
+      timestamp, 
+      studentName: studentName || student.name, 
+      profileUrl: profilePic,
+      isSuspicious,
+      deviceNote,
+      deviceModel: deviceModel || null
+    });
   } catch (error: any) {
     console.error('SCAN_ERROR_CAUGHT:', error);
     return NextResponse.json({ error: error.message || String(error) }, { status: 500 });

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Clock, FileAudio, LogOut, Settings, ClipboardCheck, LineChart, Users, MapPin, Camera } from 'lucide-react';
+import { LayoutDashboard, Clock, FileAudio, LogOut, Settings, ClipboardCheck, LineChart, Users, MapPin, Camera, CalendarX } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AdminDashboard() {
@@ -148,6 +148,18 @@ export default function AdminDashboard() {
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
             ดูรายชื่อคนมาซ้อมและคนที่ยังไม่มา ในกิจกรรมที่กำลังเปิดให้เช็คชื่อวันนี้
+          </p>
+        </Link>
+
+        <Link href="/admin/leaves" className="glass-panel animate-fade-in delay-1" style={{ display: 'block', textDecoration: 'none', border: '1px solid #74b9ff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'rgba(9, 132, 227, 0.15)', padding: '0.8rem', borderRadius: '12px' }}>
+              <CalendarX size={28} color="#74b9ff" />
+            </div>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#74b9ff' }}>จัดการคำขอลาซ้อม</h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            ตรวจสอบและอนุมัติการลาย้อนหลัง/ล่วงหน้าของนักเรียน พร้อมระบบตรวจจับอุปกรณ์
           </p>
         </Link>
 

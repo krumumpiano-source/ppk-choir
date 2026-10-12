@@ -140,7 +140,12 @@ export default function SessionCheckinsPage({ params }: { params: { id: string }
                       {formatTime(record.timestamp)}
                     </td>
                     <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                      {record.devicePlatform}
+                      <div>📱 {record.deviceModel || record.devicePlatform || '-'}</div>
+                      {(record as any).isSuspicious === 1 && (
+                        <div style={{ marginTop: '0.2rem', fontSize: '0.75rem', color: '#ff6b81' }} title={(record as any).deviceNote}>
+                          ⚠️ {(record as any).deviceNote || 'เครื่องน่าสงสัย'}
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: '1rem 1.2rem', fontSize: '0.9rem' }}>
                       {record.location ? (

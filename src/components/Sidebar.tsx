@@ -18,7 +18,8 @@ import {
   Mic,
   UsersRound,
   PieChart,
-  Camera
+  Camera,
+  CalendarX
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -34,6 +35,7 @@ export default function Sidebar() {
 
   const adminLinks = [
     { name: 'แดชบอร์ด', path: '/admin/dashboard', icon: Home },
+    { name: 'จัดการคำขอลา', path: '/admin/leaves', icon: CalendarX },
     { name: 'คัดเลือกช่วงเสียง', path: '/admin/auditions', icon: Mic },
     { name: 'จัดสรรแนวเสียงวง', path: '/admin/voice-allocation', icon: PieChart },
     { name: 'จัดการกิจกรรม', path: '/admin/sessions', icon: MapPin },
@@ -48,7 +50,9 @@ export default function Sidebar() {
     { name: 'หน้าแรก', path: '/dashboard', icon: Home },
     { name: 'เครื่องสแกนเช็คชื่อ', path: '/admin/scanner', icon: Camera },
     { name: 'สถานะมาซ้อมวันนี้', path: '/admin/attendance', icon: Users },
+    { name: 'จัดการคำขอลา', path: '/admin/leaves', icon: CalendarX },
     { name: 'เช็คชื่อกิจกรรม', path: '/check-in', icon: MapPin },
+    { name: 'แจ้งลาซ้อม', path: '/leave', icon: CalendarX },
     { name: 'คัดเลือกช่วงเสียง', path: '/admin/auditions', icon: Mic },
     { name: 'คลังสื่อ', path: '/library', icon: Music },
     { name: 'ส่งงาน/ฝึกซ้อม', path: '/practice', icon: Mic },
@@ -58,6 +62,7 @@ export default function Sidebar() {
   const studentLinks = [
     { name: 'หน้าแรก', path: '/dashboard', icon: Home },
     { name: 'เช็คชื่อกิจกรรม', path: '/check-in', icon: MapPin },
+    { name: 'แจ้งลาซ้อม', path: '/leave', icon: CalendarX },
     { name: 'คลังสื่อ', path: '/library', icon: Music },
     { name: 'ส่งงาน/ฝึกซ้อม', path: '/practice', icon: Mic },
     { name: 'เพียร์ประเมิน', path: '/peers', icon: UsersRound },

@@ -15,6 +15,7 @@ export default function AttendanceTodayPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [checkins, setCheckins] = useState<CheckInRecord[]>([]);
+  const [leaves, setLeaves] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +31,15 @@ export default function AttendanceTodayPage() {
         // 1. Fetch active sessions
         const { sessions } = await getActiveSessions();
         setActiveSessions(sessions);
+
+        // Fetch approved leaves
+        try {
+          const resLeaves = await fetch('/api/leave?status=approved');
+          if (resLeaves.ok) {
+            const dataLeaves = await resLeaves.json();
+            setLeaves(dataLeaves.leaves || []);
+          }
+        } catch (e) {}
 
         if (sessions.length > 0) {
           // 2. Fetch all students
@@ -87,11 +97,17 @@ export default function AttendanceTodayPage() {
       );
     }
 
+    const todayStr = new Date().toISOString().slice(0, 10);
+
     return targetStudents.map(student => {
       const studentCheckins = checkins.filter(c => c.studentId === student.id);
-      
       const latestCheckin = studentCheckins.length > 0 ? studentCheckins[0] : null;
       
+      const studentLeave = leaves.find(l => 
+        l.studentId === student.id && 
+        (l.sessionId === selectedSessionId || l.leaveDate === todayStr)
+      );
+
       let status = 'absent';
       if (latestCheckin) {
         if (latestCheckin.checkoutTime) {
@@ -99,17 +115,20 @@ export default function AttendanceTodayPage() {
         } else {
           status = 'checked_in';
         }
+      } else if (studentLeave) {
+        status = 'leave';
       }
 
       return {
         ...student,
         checkinRecord: latestCheckin,
+        leaveRecord: studentLeave,
         attendanceStatus: status
       };
     }).sort((a, b) => {
-      // Sort by status: checked_in first, then checked_out, then absent
-      const order = { 'checked_in': 1, 'checked_out': 2, 'absent': 3 };
-      const diff = order[a.attendanceStatus as keyof typeof order] - order[b.attendanceStatus as keyof typeof order];
+      // Sort by status: checked_in first, then checked_out, then leave, then absent
+      const order = { 'checked_in': 1, 'checked_out': 2, 'leave': 3, 'absent': 4 };
+      const diff = (order[a.attendanceStatus as keyof typeof order] || 9) - (order[b.attendanceStatus as keyof typeof order] || 9);
       if (diff !== 0) return diff;
       return (a.name || '').localeCompare(b.name || '');
     });
@@ -127,6 +146,7 @@ export default function AttendanceTodayPage() {
   };
 
   const presentCount = attendanceList.filter(s => s.attendanceStatus === 'checked_in' || s.attendanceStatus === 'checked_out').length;
+  const leaveCount = attendanceList.filter(s => s.attendanceStatus === 'leave').length;
   const absentCount = attendanceList.filter(s => s.attendanceStatus === 'absent').length;
 
   return (
@@ -177,17 +197,21 @@ export default function AttendanceTodayPage() {
                 )}
               </div>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '150px' }}>
-                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>จำนวนนักเรียนเป้าหมาย</p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '2rem', fontWeight: 'bold' }}>{attendanceList.length}</p>
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '130px' }}>
+                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>เป้าหมาย</p>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', fontWeight: 'bold' }}>{attendanceList.length}</p>
                 </div>
-                <div style={{ background: 'rgba(46, 213, 115, 0.1)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '150px' }}>
-                  <p style={{ margin: 0, color: 'var(--success)', fontSize: '0.9rem' }}>มาซ้อมแล้ว (เช็คอิน/เช็คเอาท์)</p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--success)' }}>{presentCount}</p>
+                <div style={{ background: 'rgba(46, 213, 115, 0.1)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '130px' }}>
+                  <p style={{ margin: 0, color: 'var(--success)', fontSize: '0.9rem' }}>มาซ้อมแล้ว</p>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--success)' }}>{presentCount}</p>
                 </div>
-                <div style={{ background: 'rgba(255, 71, 87, 0.1)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '150px' }}>
-                  <p style={{ margin: 0, color: 'var(--danger)', fontSize: '0.9rem' }}>ยังไม่มา (ขาด/สาย)</p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--danger)' }}>{absentCount}</p>
+                <div style={{ background: 'rgba(9, 132, 227, 0.15)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '130px' }}>
+                  <p style={{ margin: 0, color: '#74b9ff', fontSize: '0.9rem' }}>ลาซ้อม</p>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', fontWeight: 'bold', color: '#74b9ff' }}>{leaveCount}</p>
+                </div>
+                <div style={{ background: 'rgba(255, 71, 87, 0.1)', padding: '1rem', borderRadius: '8px', flex: 1, minWidth: '130px' }}>
+                  <p style={{ margin: 0, color: 'var(--danger)', fontSize: '0.9rem' }}>ยังไม่มา</p>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--danger)' }}>{absentCount}</p>
                 </div>
               </div>
             </div>
@@ -222,6 +246,18 @@ export default function AttendanceTodayPage() {
                             <Clock size={14} /> กลับแล้ว
                           </span>
                         )}
+                        {student.attendanceStatus === 'leave' && (
+                          <div>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(9, 132, 227, 0.2)', color: '#74b9ff', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                              ℹ️ ลาซ้อม ({student.leaveRecord?.leaveType === 'sick' ? 'ลาป่วย' : student.leaveRecord?.leaveType === 'business' ? 'ลากิจ' : 'มีใบลา'})
+                            </span>
+                            {student.leaveRecord?.reason && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                                {student.leaveRecord.reason}
+                              </div>
+                            )}
+                          </div>
+                        )}
                         {student.attendanceStatus === 'absent' && (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(255, 71, 87, 0.2)', color: 'var(--danger)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold' }}>
                             <XCircle size={14} /> ยังไม่มา
@@ -229,7 +265,17 @@ export default function AttendanceTodayPage() {
                         )}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
-                        {formatTime(student.checkinRecord?.timestamp)}
+                        <div>{formatTime(student.checkinRecord?.timestamp)}</div>
+                        {student.checkinRecord?.deviceModel && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                            📱 {student.checkinRecord.deviceModel}
+                          </div>
+                        )}
+                        {(student.checkinRecord as any)?.isSuspicious === 1 && (
+                          <div style={{ fontSize: '0.75rem', color: '#ff6b81', marginTop: '0.2rem' }}>
+                            ⚠️ {(student.checkinRecord as any)?.deviceNote || 'เครื่องน่าสงสัย'}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
                         {formatTime(student.checkinRecord?.checkoutTime)}

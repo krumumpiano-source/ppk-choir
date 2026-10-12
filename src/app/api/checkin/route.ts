@@ -73,11 +73,14 @@ export async function POST(request: Request) {
 
     const body = await request.json() as any;
     const db = getDb();
+    const { ensureSystemTables } = await import('@/lib/db-schema');
+    const { verifyAndRegisterDevice } = await import('@/lib/device-server');
+    await ensureSystemTables(db);
     
     const isAdminUser = auth.user.role === 'admin';
     const studentId = isAdminUser && body.studentId ? body.studentId : auth.user.id;
     const studentName = isAdminUser && body.studentName ? body.studentName : (auth.user.name || body.studentName);
-    let { location, devicePlatform, room, sessionId } = body;
+    let { location, devicePlatform, room, sessionId, deviceId, deviceModel } = body;
     if (room) {
       let r = room.trim();
       const match = r.match(/^(?:ม\.|ม\.?\s*)?([1-6])\s*\/\s*([1-9][0-9]?)$/);
@@ -85,6 +88,21 @@ export async function POST(request: Request) {
         room = `ม.${match[1]}/${match[2]}`;
       }
     }
+
+    const clientIp = request.headers.get('cf-connecting-ip') || 
+                     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     '';
+    const userAgent = request.headers.get('user-agent') || '';
+
+    const { isSuspicious, deviceNote } = await verifyAndRegisterDevice(
+      db,
+      studentId,
+      studentName,
+      deviceId,
+      deviceModel || devicePlatform,
+      userAgent,
+      clientIp
+    );
     
     if (sessionId) {
       const existing = await db.prepare(`
@@ -104,10 +122,14 @@ export async function POST(request: Request) {
     
     const id = crypto.randomUUID();
     await db.prepare(
-      'INSERT INTO checkins (id, studentId, studentName, location, devicePlatform, room, sessionId) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    ).bind(id, studentId, studentName, location ? JSON.stringify(location) : null, devicePlatform, room || '', sessionId || '').run();
+      'INSERT INTO checkins (id, studentId, studentName, location, devicePlatform, room, sessionId, deviceId, deviceModel, isSuspicious, deviceNote) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      id, studentId, studentName, location ? JSON.stringify(location) : null,
+      deviceModel || devicePlatform || 'Unknown', room || '', sessionId || '',
+      deviceId || null, deviceModel || devicePlatform || null, isSuspicious, deviceNote
+    ).run();
     
-    return NextResponse.json({ success: true, id });
+    return NextResponse.json({ success: true, id, isSuspicious, deviceNote });
   } catch (error: any) {
     return serverError(error);
   }

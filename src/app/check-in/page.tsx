@@ -7,6 +7,7 @@ import { MapPin, Navigation, CheckCircle, AlertTriangle, ArrowLeft, ShieldCheck,
 import { getActiveSessions, ScheduledSession } from '../../lib/services/checkin';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { QRCodeSVG } from 'qrcode.react';
+import { getDeviceId, getDeviceModel } from '@/lib/device';
 
 export default function CheckInPage() {
   const { user, loading: authLoading } = useAuth();
@@ -252,8 +253,10 @@ export default function CheckInPage() {
   if (!user) return null;
 
   // Optimize QR density: Use a compact format instead of JSON
-  // Format: CHK|<userId>|<sessionId>|<timestamp>
-  const qrData = `CHK|${user.id}|${selectedSession?.id}|${qrTimestamp}`;
+  // Format: CHK|<userId>|<sessionId>|<timestamp>|<deviceId>|<encodedModel>
+  const deviceId = typeof window !== 'undefined' ? getDeviceId() : '';
+  const deviceModel = typeof window !== 'undefined' ? encodeURIComponent(getDeviceModel()) : '';
+  const qrData = `CHK|${user.id}|${selectedSession?.id}|${qrTimestamp}|${deviceId}|${deviceModel}`;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', padding: '2rem' }}>

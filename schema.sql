@@ -61,6 +61,11 @@ CREATE TABLE IF NOT EXISTS checkins (
   liveLat REAL,
   liveLng REAL,
   lastLocationUpdate DATETIME,
+  deviceId TEXT,
+  deviceModel TEXT,
+  ipAddress TEXT,
+  isSuspicious INTEGER DEFAULT 0,
+  deviceNote TEXT,
   FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -124,3 +129,42 @@ CREATE TABLE IF NOT EXISTS consents (
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- leaves table (student leave requests)
+CREATE TABLE IF NOT EXISTS leaves (
+  id TEXT PRIMARY KEY,
+  studentId TEXT NOT NULL,
+  studentName TEXT NOT NULL,
+  leaveDate TEXT NOT NULL,
+  sessionId TEXT,
+  sessionName TEXT,
+  leaveType TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  attachmentUrl TEXT,
+  status TEXT DEFAULT 'pending',
+  adminComment TEXT,
+  approvedBy TEXT,
+  approvedAt DATETIME,
+  deviceId TEXT,
+  deviceModel TEXT,
+  ipAddress TEXT,
+  isSuspicious INTEGER DEFAULT 0,
+  deviceNote TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(studentId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- user_devices table (device fingerprint and binding)
+CREATE TABLE IF NOT EXISTS user_devices (
+  id TEXT PRIMARY KEY,
+  studentId TEXT NOT NULL,
+  studentName TEXT,
+  deviceId TEXT NOT NULL,
+  deviceModel TEXT,
+  userAgent TEXT,
+  lastIp TEXT,
+  firstSeenAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  lastSeenAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(studentId, deviceId)
+);
+
