@@ -165,14 +165,28 @@ export async function saveCheckIn(data: CheckInRecord) {
   }
 }
 
-export async function getSessionCheckIns(sessionId: string): Promise<CheckInRecord[]> {
+export async function getSessionCheckIns(sessionId: string, date?: string): Promise<CheckInRecord[]> {
   try {
-    const res = await fetch(`/api/checkin?sessionId=${sessionId}`, { cache: 'no-store' });
+    const url = date 
+      ? `/api/checkin?sessionId=${sessionId}&date=${encodeURIComponent(date)}` 
+      : `/api/checkin?sessionId=${sessionId}`;
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = (await res.json()) as any;
-    return data.checkins;
+    return data.checkins || [];
   } catch (error) {
     console.error('Error getting session checkins:', error);
     return [];
+  }
+}
+
+export async function deleteCheckIn(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/checkin?id=${id}`, { method: 'DELETE' });
+    const data = await res.json() as any;
+    return { success: res.ok && data.success, error: data.error };
+  } catch (error: any) {
+    console.error('Error deleting checkin:', error);
+    return { success: false, error: error.message };
   }
 }

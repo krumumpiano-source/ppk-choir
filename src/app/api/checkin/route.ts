@@ -46,12 +46,28 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const result = await db.prepare(`
+    const dateParam = url.searchParams.get('date');
+
+    let query = `
       SELECT checkins.*, users.phone, users.lineId, users.studentId as actualStudentId
       FROM checkins 
       LEFT JOIN users ON checkins.studentId = users.id 
-      WHERE sessionId = ? ORDER BY timestamp DESC
-    `).bind(sessionId).all<any>();
+      WHERE sessionId = ?
+    `;
+    const params: any[] = [sessionId];
+
+    if (dateParam && dateParam !== 'all') {
+      if (dateParam === 'today') {
+        query += ` AND date(replace(timestamp, 'T', ' '), '+7 hours') = date('now', '+7 hours')`;
+      } else {
+        query += ` AND date(replace(timestamp, 'T', ' '), '+7 hours') = ?`;
+        params.push(dateParam);
+      }
+    }
+
+    query += ` ORDER BY timestamp DESC`;
+
+    const result = await db.prepare(query).bind(...params).all<any>();
     
     const checkins = result.results.map((c: any) => {
       if (c.location && typeof c.location === 'string') {
@@ -150,12 +166,21 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'studentId and sessionId are required' }, { status: 400 });
     }
 
-    // Find the latest checkin for this session that hasn't been checked out, preferably today's
-    const existing = await db.prepare(`
+    // Find the checkin for this session (prioritize today's) that hasn't been checked out
+    let existing = await db.prepare(`
       SELECT id, checkoutTime FROM checkins 
       WHERE studentId = ? AND sessionId = ? 
+      AND date(replace(timestamp, 'T', ' '), '+7 hours') = date('now', '+7 hours')
       ORDER BY timestamp DESC
     `).bind(studentId, sessionId).first<any>();
+
+    if (!existing) {
+      existing = await db.prepare(`
+        SELECT id, checkoutTime FROM checkins 
+        WHERE studentId = ? AND sessionId = ? 
+        ORDER BY timestamp DESC
+      `).bind(studentId, sessionId).first<any>();
+    }
     
     if (!existing) {
       return NextResponse.json({ error: 'ไม่พบข้อมูลการเช็คชื่อเข้า กรุณาเช็คชื่อเข้าก่อน' }, { status: 400 });
@@ -169,6 +194,25 @@ export async function PATCH(request: Request) {
       .bind(checkoutTime, existing.id).run();
     
     return NextResponse.json({ success: true, checkoutTime });
+  } catch (error: any) {
+    return serverError(error);
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const auth = await requireRole(['admin']);
+    if (auth.error) return auth.error;
+
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    }
+
+    const db = getDb();
+    await db.prepare('DELETE FROM checkins WHERE id = ?').bind(id).run();
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     return serverError(error);
   }
